@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 // logo moved to public/img — use public path in Image src
 import BrandedLogo from '../components/BrandedLogo';
 import WholesaleForm from '../components/WholesaleForm';
+import ClientBuilder from '../components/ClientBuilder';
 import { formatCurrency, getSheetPrice } from '../lib/pricing';
 import { submitOrder } from '../lib/api';
 
@@ -561,7 +562,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           animate={{ opacity: 1, y: 0 }}
           className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur"
         >
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-14 w-14 min-w-[3.5rem] items-center justify-center rounded-3xl bg-black p-2 sm:h-16 sm:w-16">
                 <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={64} height={64} />
@@ -633,210 +634,27 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                       : 'border border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                   }`}
                 >
-                  {modeOption === 'individual'
-                    ? '📱 Individual Device Builder'
-                    : '🏪 Store Partner / Bulk Wholesale'}
+                  {modeOption === 'individual' ? (
+                    <span className="inline-flex items-center gap-2">
+                      <i className="bx bx-mobile text-xl" />
+                      <span>Individual Device Builder</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <i className="bx bx-store text-xl" />
+                      <span>Store Partner / Bulk Wholesale</span>
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
           </div>
         </section>
 
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_0.9fr]">
+        <div className={`grid gap-8 ${form.mode === 'individual' ? '' : 'lg:grid-cols-[1.5fr_0.9fr]'}`}>
           <div className="space-y-8">
             {form.mode === 'individual' ? (
-              <section id="builder" className="space-y-6 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">1. Select device</p>
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    {DEVICE_OPTIONS.map((device) => (
-                      <button
-                        key={device.value}
-                        type="button"
-                        onClick={() => updateDevice(device.value)}
-                        className={`rounded-[1.75rem] border-[3px] px-5 py-5 text-left transition-all duration-200 ${
-                          form.device === device.value
-                            ? 'border-black bg-white text-black shadow-[0_0_0_2px_rgba(0,0,0,0.04)]'
-                            : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/30 hover:bg-white'
-                        }`}
-                      >
-                        <div className="text-[1.05rem] font-semibold tracking-[-0.02em] md:text-[1.3rem]">{device.label}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {form.device === 'laptop' && (
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">2. Choose laptop coverage</p>
-                    <div className="mt-4 space-y-3">
-                      {COVERAGE_OPTIONS.map((option) => (
-                        <label
-                          key={option.value}
-                          className={`flex min-w-0 flex-col gap-3 rounded-[1.5rem] border-[3px] px-4 py-4 transition-all duration-200 sm:flex-row sm:items-center sm:justify-between ${
-                            form.coverage.includes(option.value)
-                              ? 'border-black bg-white text-black shadow-[0_0_0_2px_rgba(0,0,0,0.04)]'
-                              : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/30 hover:bg-white'
-                          }`}
-                        >
-                          <span className="min-w-0 text-lg font-medium tracking-[-0.02em]">{option.label}</span>
-                          <span className="min-w-0 text-base font-medium text-black/80 sm:ml-4">{formatCurrency(getSheetPrice(form.finish, form.mode))}</span>
-                          <input
-                            type="checkbox"
-                            className="hidden"
-                            checked={form.coverage.includes(option.value)}
-                            onChange={() => toggleCoverage(option.value)}
-                          />
-                        </label>
-                      ))}
-                    </div>
-
-                    {form.coverage.length > 0 && (
-                      <div className="mt-6 space-y-4 rounded-2xl border border-black/10 bg-[#f7f7f5] p-4">
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Surface designs</p>
-                        {form.coverage.map((surface) => {
-                          const option = COVERAGE_OPTIONS.find((item) => item.value === surface);
-                          const design = form.surfaceDesigns[surface];
-
-                          return (
-                            <div key={surface} className="space-y-3 rounded-2xl border border-black/10 bg-white p-3">
-                              <div className="text-sm font-semibold text-black">{option?.label ?? surface}</div>
-                              <input
-                                value={design.customText}
-                                onChange={(event) =>
-                                  setForm((current) => ({
-                                    ...current,
-                                    surfaceDesigns: {
-                                      ...current.surfaceDesigns,
-                                      [surface]: { ...current.surfaceDesigns[surface], customText: event.target.value },
-                                    },
-                                  }))
-                                }
-                                placeholder="Custom text for this surface"
-                                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black"
-                              />
-                              <div className="space-y-2">
-                                <input
-                                  id={`surface-upload-${surface}`}
-                                  type="file"
-                                  onChange={(event) => {
-                                    const fileName = event.target.files?.[0]?.name ?? 'No design uploaded yet';
-                                    setForm((current) => ({
-                                      ...current,
-                                      surfaceDesigns: {
-                                        ...current.surfaceDesigns,
-                                        [surface]: { ...current.surfaceDesigns[surface], uploadLabel: fileName },
-                                      },
-                                    }));
-                                  }}
-                                  className="hidden"
-                                />
-                                <label
-                                  htmlFor={`surface-upload-${surface}`}
-                                  className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-[#f7f7f5] px-4 py-3 text-sm font-medium text-black transition hover:border-black/40 hover:bg-white"
-                                >
-                                  <span className="min-w-0">Choose file</span>
-                                  <span className="min-w-0 truncate text-black/60">{design.uploadLabel}</span>
-                                </label>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">3. Choose finish</p>
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {FINISH_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setForm((current) => ({ ...current, finish: option.value }))}
-                        className={`rounded-[1.5rem] border-[3px] p-4 text-left transition-all duration-200 ${
-                          form.finish === option.value
-                            ? 'border-black bg-white text-black shadow-[0_0_0_2px_rgba(0,0,0,0.04)]'
-                            : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/30 hover:bg-white'
-                        }`}
-                      >
-                        <div className="text-lg font-semibold tracking-[-0.02em]">{option.label}</div>
-                        <div className="mt-2 text-sm text-black/70">
-                          {form.mode === 'wholesale'
-                            ? option.value === 'standard'
-                              ? '₦2,000 per sheet wholesale'
-                              : '₦2,500 per sheet wholesale'
-                            : option.value === 'standard'
-                            ? '₦3,500 per sheet'
-                            : '₦4,000 per sheet'}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">4. Customization</p>
-                  <div className="mt-4 space-y-4">
-                    <label className="block">
-                      <span className="mb-2 block text-sm text-black/70">Custom name / monogram</span>
-                      <input
-                        value={form.customText}
-                        onChange={(event) => setForm((current) => ({ ...current, customText: event.target.value }))}
-                        placeholder="e.g. STUN"
-                        className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-black outline-none ring-0 transition focus:border-black"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3">
-                      <div>
-                        <div className="font-medium">Installation requested</div>
-                        <div className="text-sm text-black/60">Turn off for DIY purchase</div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={form.installRequested}
-                        onChange={(event) => setForm((current) => ({ ...current, installRequested: event.target.checked }))}
-                        className="h-5 w-5 accent-black"
-                      />
-                    </label>
-
-                    <div className="block">
-                      <span className="mb-2 block text-sm text-black/70">Upload design reference</span>
-                      <input
-                        id="order-upload-reference"
-                        type="file"
-                        onChange={(event) => {
-                          const fileName = event.target.files?.[0]?.name ?? 'No design uploaded yet';
-                          setForm((current) => ({ ...current, uploadLabel: fileName }));
-                        }}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="order-upload-reference"
-                        className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-[#f7f7f5] px-4 py-3 text-sm font-medium text-black transition hover:border-black/40 hover:bg-white"
-                      >
-                        <span className="min-w-0">Choose file</span>
-                        <span className="min-w-0 truncate text-black/60">{form.uploadLabel}</span>
-                      </label>
-                    </div>
-
-                    <label className="block">
-                      <span className="mb-2 block text-sm text-black/70">Quantity</span>
-                      <input
-                        type="number"
-                        min={1}
-                        value={form.quantity}
-                        onChange={(event) =>
-                          setForm((current) => ({ ...current, quantity: Math.max(1, Number(event.target.value) || 1) }))
-                        }
-                        className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-black outline-none focus:border-black"
-                      />
-                    </label>
-                  </div>
-                </div>
-              </section>
+              <ClientBuilder />
             ) : (
               <section id="wholesale" className="rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
                 <WholesaleForm />
@@ -844,25 +662,23 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             )}
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Live order summary</p>
-                  <h2 className="mt-2 text-2xl font-black text-black">{form.mode === 'individual' ? 'Individual order' : 'Wholesale estimate'}</h2>
-                </div>
-                <span className="rounded-full bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                  {form.mode === 'individual' ? 'Client' : 'Partner'} mode
-                </span>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
-                  <div className="text-sm text-black/60">Total cost</div>
-                  <div className="mt-2 text-3xl font-black text-black">{formatCurrency(orderTotal)}</div>
+          {form.mode === 'wholesale' && (
+            <aside className="space-y-6">
+              <div className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Live order summary</p>
+                    <h2 className="mt-2 text-2xl font-black text-black">Wholesale estimate</h2>
+                  </div>
+                  <span className="rounded-full bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">Partner mode</span>
                 </div>
 
-                {form.mode === 'wholesale' ? (
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
+                    <div className="text-sm text-black/60">Total cost</div>
+                    <div className="mt-2 text-3xl font-black text-black">{formatCurrency(orderTotal)}</div>
+                  </div>
+
                   <div className="space-y-4 rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
                     <div className="rounded-3xl bg-white p-4">
                       <div className="text-sm text-black/60">Unit price</div>
@@ -879,41 +695,40 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
-                    <div className="text-sm text-black/60">Selected finish</div>
-                    <div className="mt-1 text-lg font-semibold text-black">
-                      {form.finish === 'standard' ? 'Standard' : 'Shiny Stones Sparkle'}
-                    </div>
-                  </div>
-                )}
 
-                <button
-                  type="button"
-                  onClick={handlePlaceOrder}
-                  className="w-full rounded-3xl bg-black px-5 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800"
-                >
-                  Place order
-                </button>
+                  <button
+                    type="button"
+                    onClick={handlePlaceOrder}
+                    className="w-full rounded-3xl bg-black px-5 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800"
+                  >
+                    Place order
+                  </button>
+                </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          )}
         </div>
 
         <section className="mt-12 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
           <div className="grid gap-5 sm:grid-cols-3">
             <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="text-4xl">🎯</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
+                <i className="bx bx-target-lock" />
+              </div>
               <h3 className="mt-4 text-lg font-bold text-black">Precision Vector Fit</h3>
               <p className="mt-2 text-sm text-black/70">Exact cutouts for ports, cameras, and buttons for flawless wrap alignment.</p>
             </div>
             <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="text-4xl">✨</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
+                <i className="bx bx-brightness" />
+              </div>
               <h3 className="mt-4 text-lg font-bold text-black">Shiny Stones Lamination</h3>
               <p className="mt-2 text-sm text-black/70">Dazzling light-catching sparkle that keeps devices looking premium.</p>
             </div>
             <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="text-4xl">🛠️</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
+                <i className="bx bx-wrench" />
+              </div>
               <h3 className="mt-4 text-lg font-bold text-black">Free Campus Heat-Fitting</h3>
               <p className="mt-2 text-sm text-black/70">Professional bubble-free installation included with campus orders.</p>
             </div>

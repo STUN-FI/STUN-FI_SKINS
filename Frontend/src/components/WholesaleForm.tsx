@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { submitOrder } from '../lib/api';
+import { getSheetPrice } from '../lib/pricing';
 
 type WholesaleFormState = {
   storeName: string;
@@ -25,11 +26,14 @@ export default function WholesaleForm() {
   });
 
   const totalUnits = useMemo(() => form.standardQty + form.shinyStonesQty, [form.standardQty, form.shinyStonesQty]);
-  const moqSatisfied = totalUnits >= 10;
+  const moqSatisfied = totalUnits >= 8;
   const freeUnits = useMemo(() => Math.floor(totalUnits / 12), [totalUnits]);
   const unitsReceived = useMemo(() => totalUnits + freeUnits, [totalUnits, freeUnits]);
-  const technicianFee = useMemo(() => (form.technicianRequested ? totalUnits * 500 : 0), [form.technicianRequested, totalUnits]);
-  const totalCost = useMemo(() => form.standardQty * 2000 + form.shinyStonesQty * 2500 + technicianFee, [form.standardQty, form.shinyStonesQty, technicianFee]);
+  const technicianFee = useMemo(() => (form.technicianRequested ? 5000 : 0), [form.technicianRequested]);
+  const totalCost = useMemo(
+    () => form.standardQty * getSheetPrice('standard', 'wholesale') + form.shinyStonesQty * getSheetPrice('shiny-stones', 'wholesale') + technicianFee,
+    [form.standardQty, form.shinyStonesQty, technicianFee]
+  );
 
   const updateField = (key: keyof WholesaleFormState, value: string | number | boolean) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -56,7 +60,8 @@ export default function WholesaleForm() {
         throw new Error(result.error || 'Wholesale order submission failed');
       }
 
-      const orderId = result.orderId || 'PENDING';
+      const rawOrderId = result.orderId || 'PENDING';
+      const orderId = rawOrderId.startsWith('STN-') ? rawOrderId : `STN-${rawOrderId}`;
       const message = encodeURIComponent(
         `Hello STUN-FI Skins,\n\n*Order Reference:* #${orderId}\nStore Name: ${form.storeName}\nContact Name: ${form.contactName}\nWhatsApp Number: ${form.whatsappNumber}\nStore Address: ${form.storeAddress}\nStandard Qty: ${form.standardQty}\nShiny Stones Qty: ${form.shinyStonesQty}\nTechnician Requested: ${form.technicianRequested ? 'Yes' : 'No'}\nTotal order cost: ₦${totalCost.toLocaleString()}\n\nPlease confirm this wholesale order request.`
       );
@@ -80,7 +85,17 @@ export default function WholesaleForm() {
 
       {!moqSatisfied ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-          Minimum wholesale order is 10 units.
+          Minimum wholesale order is 8 sheets.
+        </div>
+      ) : null}
+
+      {totalUnits >= 12 ? (
+        <div className="rounded-2xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900">
+          🎁 You earned {freeUnits} FREE Bonus Sheet{freeUnits === 1 ? '' : 's'}! Total Delivered: {unitsReceived}.
+        </div>
+      ) : totalUnits >= 8 ? (
+        <div className="rounded-2xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+          Add {12 - totalUnits} more sheet{totalUnits === 11 ? '' : 's'} to unlock a FREE Bonus Sheet!
         </div>
       ) : null}
 

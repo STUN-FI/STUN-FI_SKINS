@@ -1,3 +1,4 @@
+import 'boxicons/css/boxicons.min.css';
 import './globals.css';
 import type { Metadata } from 'next';
 
