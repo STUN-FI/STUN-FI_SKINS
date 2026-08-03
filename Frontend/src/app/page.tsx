@@ -823,7 +823,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                     </div>
 
                     <label className="block">
-                      <span className="mb-2 block text-sm text-black/70">{form.mode === 'wholesale' ? 'Sheets' : 'Quantity'}</span>
+                      <span className="mb-2 block text-sm text-black/70">Quantity</span>
                       <input
                         type="number"
                         min={1}
