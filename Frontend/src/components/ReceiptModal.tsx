@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { formatCurrency } from '../lib/pricing';
 
@@ -73,13 +73,26 @@ export default function ReceiptModal({
     }
   }, [orderId, receiptMessage, totalPrice]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative h-full w-full max-w-full max-h-full overflow-hidden bg-white shadow-2xl sm:rounded-[1.75rem]">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-xl md:max-w-3xl h-[calc(100vh-2rem)] overflow-hidden rounded-[1.75rem] bg-white shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -89,8 +102,8 @@ export default function ReceiptModal({
           ×
         </button>
 
-        <div className="flex h-full flex-col overflow-hidden">
-          <div className="overflow-y-auto h-full px-4 py-5 sm:px-6 sm:py-6">
+        <div className="flex min-h-0 h-full flex-col overflow-hidden">
+          <div className="overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
             <div className="mb-6 flex flex-col gap-4 rounded-[1.75rem] border border-black/10 bg-[#f8fafc] p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -101,7 +114,7 @@ export default function ReceiptModal({
               </div>
             </div>
 
-            <div ref={receiptRef} className="space-y-6 rounded-[2rem] border border-black/10 bg-[#f9fafb] p-5 sm:p-6">
+            <div ref={receiptRef} className="space-y-6 rounded-[2rem] border border-black/10 bg-[#f9fafb] p-4 sm:p-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Client</p>
@@ -144,7 +157,7 @@ export default function ReceiptModal({
             </div>
           </div>
 
-          <div className="border-t border-black/10 bg-white p-4 sm:p-5">
+          <div className="border-t border-black/10 bg-white p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
                 type="button"

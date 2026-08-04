@@ -7,7 +7,10 @@ import { useMemo, useState } from 'react';
 // logo moved to public/img — use public path in Image src
 import BrandedLogo from '../components/BrandedLogo';
 import WholesaleForm from '../components/WholesaleForm';
-import ClientBuilder from '../components/ClientBuilder';
+import ClientBuilder, { type ReceiptData } from '../components/ClientBuilder';
+import VideoShowcase from '../components/VideoShowcase';
+import ReceiptModal from '../components/ReceiptModal';
+import FloatingPricingButton from '../components/FloatingPricingButton';
 import { formatCurrency, getSheetPrice } from '../lib/pricing';
 import { submitOrder } from '../lib/api';
 
@@ -389,8 +392,21 @@ export default function HomePage() {
     return formData;
   };
 
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [builderPrice, setBuilderPrice] = useState<number | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleReceiptOpen = (receipt: ReceiptData) => {
+    setReceiptData(receipt);
+    setReceiptOpen(true);
+  };
+
+  const handleReceiptClose = () => {
+    setReceiptOpen(false);
+    setReceiptData(null);
+  };
 
   const handlePlaceOrder = () => {
     setShowOrderModal(true);
@@ -654,7 +670,10 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         <div className={`grid gap-8 ${form.mode === 'individual' ? '' : 'lg:grid-cols-[1.5fr_0.9fr]'}`}>
           <div className="space-y-8">
             {form.mode === 'individual' ? (
-              <ClientBuilder />
+              <>
+                <ClientBuilder onReceiptOpen={handleReceiptOpen} onPriceChange={setBuilderPrice} />
+                <VideoShowcase />
+              </>
             ) : (
               <section id="wholesale" className="rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
                 <WholesaleForm />
@@ -769,6 +788,22 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </footer>
       </div>
+
+      <FloatingPricingButton price={form.mode === 'wholesale' ? orderTotal : builderPrice} />
+
+      {receiptData && (
+        <ReceiptModal
+          isOpen={receiptOpen}
+          orderId={receiptData.orderId}
+          clientName={receiptData.clientName}
+          deviceModel={receiptData.deviceModel}
+          date={receiptData.date}
+          category={receiptData.category}
+          lineItems={receiptData.lineItems}
+          totalPrice={receiptData.totalPrice}
+          onClose={handleReceiptClose}
+        />
+      )}
 
       {showOrderModal && (
         <div

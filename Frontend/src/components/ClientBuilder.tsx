@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { submitOrder } from '../lib/api';
 import {
   calculateClientOrderPricing,
@@ -13,7 +13,6 @@ import {
   formatCurrency,
 } from '../lib/pricing';
 import LaptopPreviewModal from './LaptopPreviewModal';
-import ReceiptModal from './ReceiptModal';
 
 const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: 'laptop', label: 'Laptop' },
@@ -67,7 +66,22 @@ const DEFAULT_LAPTOP_CATALOG: Record<LaptopSurface, string> = {
   'bottom-base': '',
 };
 
-export default function ClientBuilder() {
+export type ReceiptData = {
+  orderId: string;
+  clientName: string;
+  deviceModel: string;
+  date: string;
+  category: string;
+  lineItems: Array<{ label: string; price: number }>;
+  totalPrice: number;
+};
+
+type ClientBuilderProps = {
+  onReceiptOpen: (receipt: ReceiptData) => void;
+  onPriceChange?: (price: number | null) => void;
+};
+
+export default function ClientBuilder({ onReceiptOpen, onPriceChange }: ClientBuilderProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -107,16 +121,6 @@ export default function ClientBuilder() {
   const [hasStartedSelection, setHasStartedSelection] = useState(false);
   const [previewSurface, setPreviewSurface] = useState<LaptopSurface | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
-  const [receiptOpen, setReceiptOpen] = useState(false);
-  const [receiptData, setReceiptData] = useState<{
-    orderId: string;
-    clientName: string;
-    deviceModel: string;
-    date: string;
-    category: string;
-    lineItems: Array<{ label: string; price: number }>;
-    totalPrice: number;
-  } | null>(null);
 
   const markSelectionStarted = () => setHasStartedSelection(true);
 
@@ -174,6 +178,14 @@ export default function ClientBuilder() {
 
   const pricingQuotePending = 'quotePending' in pricing && pricing.quotePending;
 
+  useEffect(() => {
+    if (!onPriceChange) {
+      return;
+    }
+
+    onPriceChange(pricingQuotePending ? 0 : pricing.total);
+  }, [onPriceChange, pricingQuotePending, pricing.total]);
+
   const canAdvanceToStep2 = clientName.trim() !== '' && phoneNumber.trim() !== '';
   const canAdvanceToStep3 =
     category !== 'others' || (itemName.trim() !== '' && instructions.trim() !== '');
@@ -228,9 +240,6 @@ export default function ClientBuilder() {
     }
   };
 
-  const handlePriceJump = () => {
-    document.getElementById('price-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const handlePreviewClose = () => {
     if (previewImageUrl.startsWith('blob:')) {
@@ -353,7 +362,7 @@ export default function ClientBuilder() {
         setSubmissionResult(`Order queued with reference #${finalOrderId}.`);
       }
 
-      setReceiptData({
+      onReceiptOpen({
         orderId: finalOrderId,
         clientName,
         deviceModel:
@@ -369,7 +378,6 @@ export default function ClientBuilder() {
         lineItems: pricing.lineItems,
         totalPrice: pricingQuotePending ? 0 : pricing.total,
       });
-      setReceiptOpen(true);
     } catch (error) {
       console.error('Order submission failed:', error);
       setSubmissionResult('Unable to send your order right now. Please try again or contact support.');
@@ -899,18 +907,6 @@ export default function ClientBuilder() {
         </div>
       </div>
 
-      {hasStartedSelection ? (
-        <button
-          type="button"
-          onClick={handlePriceJump}
-          className="fixed top-4 right-4 z-[9999] flex items-center gap-3 rounded-full border border-black/10 bg-white/95 px-4 py-3 shadow-2xl shadow-black/15 backdrop-blur-sm transition hover:-translate-y-0.5"
-          style={{ pointerEvents: 'auto' }}
-        >
-          <span className="rounded-full bg-black px-2.5 py-1 text-xs font-semibold text-white">{pricingQuotePending ? 'Quote' : formatCurrency(pricing.total)}</span>
-          <span className="text-sm font-semibold text-black">View Price</span>
-        </button>
-      ) : null}
-
       {previewSurface && previewImageUrl ? (
         <LaptopPreviewModal
           imageUrl={previewImageUrl}
@@ -919,19 +915,6 @@ export default function ClientBuilder() {
         />
       ) : null}
 
-      {receiptOpen && receiptData ? (
-        <ReceiptModal
-          isOpen={receiptOpen}
-          orderId={receiptData.orderId}
-          clientName={receiptData.clientName}
-          deviceModel={receiptData.deviceModel}
-          date={receiptData.date}
-          category={receiptData.category}
-          lineItems={receiptData.lineItems}
-          totalPrice={receiptData.totalPrice}
-          onClose={() => setReceiptOpen(false)}
-        />
-      ) : null}
     </section>
   );
 }
