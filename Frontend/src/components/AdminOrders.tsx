@@ -3,11 +3,17 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import BrandedLogo from './BrandedLogo';
+import OrderDetailModal from './admin/OrderDetailModal';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
-const STATUS_OPTIONS = ['Pending', 'Confirmed', 'In Production', 'Completed'] as const;
+const ADMIN_API_BASE = '/api/admin/orders';
+const STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'confirmed', label: 'Confirmed' },
+  { value: 'in_production', label: 'In Production' },
+  { value: 'completed', label: 'Completed' },
+] as const;
 
-type Status = (typeof STATUS_OPTIONS)[number];
+type Status = (typeof STATUS_OPTIONS)[number]['value'];
 
 type WholesaleDetails = {
   standardQty?: number;
@@ -33,10 +39,28 @@ type CustomerInfo = {
   storeAddress?: string;
 };
 
+type SurfaceItem = {
+  name?: string;
+  imageUrl?: string;
+  monogramText?: string;
+};
+
+type LineItem = {
+  label: string;
+  price: number;
+};
+
 type Order = {
   orderId: string;
   mode: 'individual' | 'wholesale';
   createdAt?: string;
+  clientName?: string;
+  whatsappNumber?: string;
+  deviceModel?: string;
+  category?: string;
+  surfaces?: SurfaceItem[];
+  items?: LineItem[];
+  totalAmount?: number;
   customerInfo: CustomerInfo;
   retailDetails?: RetailDetails;
   wholesaleDetails?: WholesaleDetails;
@@ -55,18 +79,21 @@ const formatCurrency = (value?: number) => {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(value);
 };
 
-const getArtworkUrl = (order: Order) => {
-  const designs = order.retailDetails?.surfaceDesigns;
+const getArtworkItems = (order: Order) => {
+  const designs = order.retailDetails?.surfaceDesigns ?? order.surfaces;
   const items = Array.isArray(designs) ? designs : designs ? Object.values(designs) : [];
-
-  for (const design of items) {
-    if (!design || typeof design !== 'object') continue;
-    if (typeof design.imageUrl === 'string' && design.imageUrl) return design.imageUrl;
-    if (typeof design.url === 'string' && design.url) return design.url;
-    if (typeof design.secure_url === 'string' && design.secure_url) return design.secure_url;
-  }
-
-  return undefined;
+  return items
+    .filter((item): item is { surface?: string; name?: string; imageUrl?: string } =>
+      Boolean(item && typeof item === 'object' && typeof item.imageUrl === 'string' && item.imageUrl),
+    )
+    .map((item) => ({
+      label: item.surface
+        ? String(item.surface).replace(/-/g, ' ')
+        : item.name
+        ? String(item.name).replace(/-/g, ' ')
+        : 'Artwork',
+      url: item.imageUrl,
+    }));
 };
 
 const getOrderSummary = (order: Order) => {
@@ -92,22 +119,33 @@ const getOrderSummary = (order: Order) => {
 };
 
 const getCustomerName = (order: Order) => {
+  const fallbackName = order.clientName || order.customerInfo.contactName || order.customerInfo.storeName || 'Customer';
   return order.mode === 'wholesale'
-    ? order.customerInfo.storeName || order.customerInfo.contactName || 'Wholesale Partner'
-    : order.customerInfo.contactName || order.customerInfo.storeName || 'Retail Customer';
+    ? order.customerInfo.storeName || order.customerInfo.contactName || order.clientName || 'Wholesale Partner'
+    : order.customerInfo.contactName || order.customerInfo.storeName || order.clientName || 'Retail Customer';
 };
 
 const getCustomerWhatsapp = (order: Order) => {
-  return order.customerInfo.whatsappNumber?.replace(/\s+/g, '') || '';
+  return order.customerInfo.whatsappNumber?.replace(/\s+/g, '') || order.whatsappNumber?.replace(/\s+/g, '') || '';
+};
+
+const getDeviceModel = (order: Order) => {
+  if (order.mode === 'wholesale') {
+    return 'Wholesale';
+  }
+  const device = order.deviceModel || order.retailDetails?.device || 'Unknown';
+  return String(device)
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const getStatusBadgeClasses = (status: Status) => {
   switch (status) {
-    case 'Confirmed':
+    case 'confirmed':
       return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-    case 'In Production':
+    case 'in_production':
       return 'bg-amber-100 text-amber-800 border-amber-200';
-    case 'Completed':
+    case 'completed':
       return 'bg-sky-100 text-sky-800 border-sky-200';
     default:
       return 'bg-slate-100 text-slate-800 border-slate-200';
@@ -120,13 +158,15 @@ export default function AdminOrders() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const fetchOrders = async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(ADMIN_API_BASE, { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data?.error || 'Unable to fetch orders');
@@ -158,12 +198,12 @@ export default function AdminOrders() {
 
   const totalRevenue = useMemo(() => {
     return orders
-      .filter((order) => ['Confirmed', 'Completed'].includes(order.status))
+      .filter((order) => ['confirmed', 'completed'].includes(order.status))
       .reduce((sum, order) => sum + (order.pricing?.totalAmount ?? 0), 0);
   }, [orders]);
 
   const pendingJobs = useMemo(() => {
-    return orders.filter((order) => order.status !== 'Completed').length;
+    return orders.filter((order) => order.status !== 'completed').length;
   }, [orders]);
 
   const activeWholesalePartners = useMemo(() => {
@@ -181,7 +221,7 @@ export default function AdminOrders() {
   const updateOrderStatus = async (orderId: string, newStatus: Status) => {
     setUpdatingOrderId(orderId);
     try {
-      const response = await fetch(`${API_URL}/${orderId}/status`, {
+      const response = await fetch(`${ADMIN_API_BASE}/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -191,12 +231,27 @@ export default function AdminOrders() {
         throw new Error(data?.error || 'Unable to update status');
       }
       setOrders((current) => current.map((order) => (order.orderId === orderId ? data.order : order)));
+      if (selectedOrder?.orderId === orderId) {
+        setSelectedOrder(data.order);
+      }
+      return data.order as Order;
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Unable to update order status');
+      return null;
     } finally {
       setUpdatingOrderId(null);
     }
+  };
+
+  const openDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDetailOpen(true);
+  };
+
+  const closeDetails = () => {
+    setIsDetailOpen(false);
+    setSelectedOrder(null);
   };
 
   return (
@@ -263,11 +318,12 @@ export default function AdminOrders() {
               <thead>
                 <tr className="bg-slate-100 text-left text-[11px] uppercase tracking-[0.2em] text-slate-600 sm:text-xs">
                   <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Order Ref</th>
-                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Date</th>
-                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Type</th>
-                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Customer / Store</th>
-                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Order Summary</th>
+                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Customer Name</th>
+                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">WhatsApp</th>
+                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Device Model</th>
+                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Order Mode</th>
                   <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Amount</th>
+                  <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Artwork Files</th>
                   <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Status</th>
                   <th className="border-b border-slate-200 px-3 py-3 sm:px-4">Actions</th>
                 </tr>
@@ -281,35 +337,57 @@ export default function AdminOrders() {
                   </tr>
                 ) : (
                   filteredOrders.map((order) => {
-                    const artworkUrl = getArtworkUrl(order);
                     const whatsappNumber = getCustomerWhatsapp(order);
+                    const artworkItems = getArtworkItems(order);
                     return (
                       <tr key={order.orderId} className="border-b border-slate-200 last:border-b-0">
                         <td className="px-3 py-4 sm:px-4">
                           <div className="font-semibold text-slate-900">#{order.orderId}</div>
                         </td>
-                        <td className="px-3 py-4 sm:px-4">
-                          <div>{order.createdAt ? new Date(order.createdAt).toLocaleString() : '—'}</div>
-                        </td>
-                        <td className="px-3 py-4 sm:px-4 capitalize">{order.mode}</td>
                         <td className="px-3 py-4 sm:px-4">{getCustomerName(order)}</td>
-                        <td className="px-3 py-4 sm:px-4 max-w-[220px] break-words text-slate-600">{getOrderSummary(order)}</td>
+                        <td className="px-3 py-4 sm:px-4">
+                          {whatsappNumber ? (
+                            <a
+                              href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              {whatsappNumber}
+                            </a>
+                          ) : (
+                            'N/A'
+                          )}
+                        </td>
+                        <td className="px-3 py-4 sm:px-4">{getDeviceModel(order)}</td>
+                        <td className="px-3 py-4 sm:px-4">{order.mode === 'individual' ? 'Individual' : 'Wholesale'}</td>
                         <td className="px-3 py-4 sm:px-4 font-semibold">{formatCurrency(order.pricing?.totalAmount)}</td>
                         <td className="px-3 py-4 sm:px-4">
+                          {artworkItems.length > 0 ? (
+                            <div className="grid gap-2">
+                              {artworkItems.map((artwork, index) => (
+                                <a
+                                  key={`${order.orderId}-${index}`}
+                                  href={artwork.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-900 transition hover:border-slate-300"
+                                >
+                                  Download {artwork.label}
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-500">No artwork</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-4 sm:px-4">
                           <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.12em] ${getStatusBadgeClasses(order.status)}`}>
-                            {order.status}
+                            {STATUS_OPTIONS.find((option) => option.value === order.status)?.label ?? order.status}
                           </span>
                         </td>
                         <td className="px-3 py-4 sm:px-4 space-y-2">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <button
-                              type="button"
-                              disabled={!artworkUrl}
-                              onClick={() => artworkUrl && window.open(artworkUrl, '_blank')}
-                              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-900 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              View Artwork
-                            </button>
+                          <div className="grid gap-2">
                             <select
                               value={order.status}
                               onChange={(event) => updateOrderStatus(order.orderId, event.target.value as Status)}
@@ -317,8 +395,8 @@ export default function AdminOrders() {
                               disabled={updatingOrderId === order.orderId}
                             >
                               {STATUS_OPTIONS.map((statusOption) => (
-                                <option key={statusOption} value={statusOption}>
-                                  {statusOption}
+                                <option key={statusOption.value} value={statusOption.value}>
+                                  {statusOption.label}
                                 </option>
                               ))}
                             </select>
@@ -330,7 +408,14 @@ export default function AdminOrders() {
                               }
                               className="rounded-2xl border border-slate-200 bg-black px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              WhatsApp Customer
+                              WhatsApp
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openDetails(order)}
+                              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-900 transition hover:border-slate-300"
+                            >
+                              View Details
                             </button>
                           </div>
                         </td>
@@ -343,6 +428,13 @@ export default function AdminOrders() {
           </div>
         )}
       </div>
+
+      <OrderDetailModal
+        order={selectedOrder}
+        isOpen={isDetailOpen}
+        onClose={closeDetails}
+        onStatusChange={updateOrderStatus}
+      />
     </div>
   );
 }

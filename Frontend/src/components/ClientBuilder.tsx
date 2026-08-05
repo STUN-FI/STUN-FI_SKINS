@@ -251,39 +251,74 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange }: ClientBu
 
   const buildOrderId = () => `STN-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const buildArtworkDetails = () => {
-    switch (category) {
-      case 'laptop':
-        return laptopSelectedSurfaces.map((surface) => {
-          const label = laptopsArtworkLabel(surface);
-          return `${LAPTOP_SURFACES.find((item) => item.value === surface)?.label ?? surface}: ${label}`;
-        });
-      case 'phone':
-        return [`Artwork: ${phoneArtworkLabel}`];
-      case 'controller':
-        return [`Artwork: ${controllerArtworkLabel}`];
-      case 'others':
-        return [photoFile ? `Dimension photo: ${photoFile.name}` : 'No reference photo uploaded'];
-      default:
-        return [];
+  const getDeviceModelLabel = () => {
+    if (category === 'laptop') {
+      return laptopModel || 'Laptop';
     }
+
+    if (category === 'phone') {
+      return PHONE_COVERAGE_OPTIONS.find((item) => item.value === phoneCoverage)?.label || 'Phone';
+    }
+
+    if (category === 'controller') {
+      return CONTROLLER_SUBTYPES.find((item) => item.value === controllerSubtype)?.label || 'Controller';
+    }
+
+    return itemName || 'Other';
   };
 
-  const buildOrderPayload = () => {
+  const buildSurfaces = () => {
+    if (category === 'laptop') {
+      return laptopSelectedSurfaces.map((surface) => ({
+        name: LAPTOP_SURFACES.find((item) => item.value === surface)?.label || surface,
+        imageUrl: '',
+        monogramText: laptopTexts[surface] || '',
+      }));
+    }
+
+    if (category === 'phone') {
+      return [
+        {
+          name: PHONE_COVERAGE_OPTIONS.find((item) => item.value === phoneCoverage)?.label || 'Phone Artwork',
+          imageUrl: '',
+          monogramText: phoneCustomText || '',
+        },
+      ];
+    }
+
+    if (category === 'controller') {
+      return [
+        {
+          name: CONTROLLER_SUBTYPES.find((item) => item.value === controllerSubtype)?.label || 'Controller Artwork',
+          imageUrl: '',
+          monogramText: controllerGamerTag || '',
+        },
+      ];
+    }
+
+    if (category === 'others') {
+      return [
+        {
+          name: 'Reference Photo',
+          imageUrl: '',
+          monogramText: instructions || '',
+        },
+      ];
+    }
+
+    return [];
+  };
+
+  const buildOrderPayload = (orderId: string) => {
     const payload: Record<string, any> = {
+      orderId,
       clientName,
-      phoneNumber,
+      whatsappNumber: phoneNumber,
       category,
-      installationType:
-        category === 'laptop'
-          ? laptopInstallOption
-          : category === 'phone'
-          ? phoneInstallOption
-          : category === 'controller'
-          ? controllerInstallOption
-          : undefined,
-      orderSummary: pricing.lineItems.map((item) => `${item.label}: ${item.price >= 0 ? formatCurrency(item.price) : `-${formatCurrency(Math.abs(item.price))}`}`),
-      totalPrice: pricingQuotePending ? 'Pending Quote' : formatCurrency(pricing.total),
+      deviceModel: getDeviceModelLabel(),
+      surfaces: buildSurfaces(),
+      items: pricing.lineItems,
+      totalAmount: pricingQuotePending ? 0 : pricing.total,
     };
 
     if (category === 'laptop') {
@@ -324,11 +359,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange }: ClientBu
   const handleSubmit = async () => {
     setIsSubmitting(true);
     const orderId = buildOrderId();
-    const orderPayload = buildOrderPayload();
+    const orderPayload = buildOrderPayload(orderId);
     const formData = new FormData();
     formData.append('clientName', clientName);
-    formData.append('phoneNumber', phoneNumber);
+    formData.append('whatsappNumber', phoneNumber);
     formData.append('category', category);
+    formData.append('orderId', orderId);
+    formData.append('deviceModel', orderPayload.deviceModel);
+    formData.append('surfaces', JSON.stringify(orderPayload.surfaces));
+    formData.append('items', JSON.stringify(orderPayload.items));
+    formData.append('totalAmount', String(orderPayload.totalAmount));
     formData.append('orderPayload', JSON.stringify(orderPayload));
 
     if (category === 'laptop') {
@@ -354,13 +394,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange }: ClientBu
 
     try {
       const result = await submitOrder(formData);
-      const finalOrderId = result.orderId || orderId;
-
-      if (result.success) {
-        setSubmissionResult(`Order submitted successfully as #${finalOrderId}.`);
-      } else {
-        setSubmissionResult(`Order queued with reference #${finalOrderId}.`);
+      if (!result.success) {
+        throw new Error(result.error || 'Order submission failed');
       }
+
+      const finalOrderId = result.orderId || orderId;
+      setSubmissionResult(`Order submitted successfully as #${finalOrderId}.`);
 
       onReceiptOpen({
         orderId: finalOrderId,

@@ -42,9 +42,33 @@ const CustomerInfoSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const SurfaceSchema = new mongoose.Schema(
+  {
+    name: { type: String },
+    imageUrl: { type: String },
+    monogramText: { type: String },
+  },
+  { _id: false }
+);
+
+const LineItemSchema = new mongoose.Schema(
+  {
+    label: { type: String },
+    price: { type: Number },
+  },
+  { _id: false }
+);
+
 const OrderSchema = new mongoose.Schema(
   {
     orderId: { type: String, unique: true },
+    clientName: { type: String },
+    whatsappNumber: { type: String },
+    deviceModel: { type: String },
+    category: { type: String },
+    surfaces: [SurfaceSchema],
+    items: [LineItemSchema],
+    totalAmount: { type: Number, default: 0 },
     mode: { type: String, enum: ['individual', 'wholesale'], default: 'individual', required: true },
     customerInfo: CustomerInfoSchema,
     retailDetails: RetailDetailsSchema,
