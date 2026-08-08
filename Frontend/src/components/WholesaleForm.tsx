@@ -91,7 +91,7 @@ export default function WholesaleForm() {
 
       {totalUnits >= 12 ? (
         <div className="rounded-2xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900">
-          🎁 You earned {freeUnits} FREE Bonus Sheet{freeUnits === 1 ? '' : 's'}! Total Delivered: {unitsReceived}.
+          <i className="bx bx-gift mr-2" /> You earned {freeUnits} FREE Bonus Sheet{freeUnits === 1 ? '' : 's'}! Total Delivered: {unitsReceived}.
         </div>
       ) : totalUnits >= 8 ? (
         <div className="rounded-2xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
