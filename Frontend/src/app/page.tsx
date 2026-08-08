@@ -10,8 +10,10 @@ import WholesaleForm from '../components/WholesaleForm';
 import ClientBuilder, { type ReceiptData } from '../components/ClientBuilder';
 import VideoShowcase from '../components/VideoShowcase';
 import ReceiptModal from '../components/ReceiptModal';
+import HelpModal from '../components/HelpModal';
+import CatalogGalleryModal from '../components/CatalogGalleryModal';
 import FloatingPricingButton from '../components/FloatingPricingButton';
-import { formatCurrency, getSheetPrice } from '../lib/pricing';
+import { formatCurrency, getSheetPrice, type LaptopSurface } from '../lib/pricing';
 import { submitOrder } from '../lib/api';
 
 type DeviceType = 'laptop' | 'phone' | 'controller';
@@ -394,6 +396,10 @@ export default function HomePage() {
 
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogSurface, setCatalogSurface] = useState<LaptopSurface | null>(null);
+  const [catalogSelection, setCatalogSelection] = useState<{ surface: LaptopSurface; imageUrl: string } | null>(null);
   const [builderPrice, setBuilderPrice] = useState<number | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -406,6 +412,22 @@ export default function HomePage() {
   const handleReceiptClose = () => {
     setReceiptOpen(false);
     setReceiptData(null);
+  };
+
+  const handleHelpOpen = () => {
+    setHelpOpen(true);
+  };
+
+  const handleCatalogOpen = (surface: LaptopSurface) => {
+    setCatalogSurface(surface);
+    setCatalogOpen(true);
+  };
+
+  const handleCatalogSelect = (imageUrl: string) => {
+    if (!catalogSurface) return;
+    setCatalogSelection({ surface: catalogSurface, imageUrl });
+    setCatalogOpen(false);
+    setCatalogSurface(null);
   };
 
   const handlePlaceOrder = () => {
@@ -671,7 +693,13 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           <div className="space-y-8">
             {form.mode === 'individual' ? (
               <>
-                <ClientBuilder onReceiptOpen={handleReceiptOpen} onPriceChange={setBuilderPrice} />
+                <ClientBuilder
+                  onReceiptOpen={handleReceiptOpen}
+                  onPriceChange={setBuilderPrice}
+                  onHelpOpen={handleHelpOpen}
+                  onCatalogOpen={handleCatalogOpen}
+                  catalogSelection={catalogSelection}
+                />
                 <VideoShowcase />
               </>
             ) : (
@@ -801,9 +829,20 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           category={receiptData.category}
           lineItems={receiptData.lineItems}
           totalPrice={receiptData.totalPrice}
+          surfacePreviews={receiptData.surfacePreviews}
           onClose={handleReceiptClose}
         />
       )}
+
+      <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+      <CatalogGalleryModal
+        isOpen={catalogOpen}
+        onClose={() => {
+          setCatalogOpen(false);
+          setCatalogSurface(null);
+        }}
+        onSelectArtwork={handleCatalogSelect}
+      />
 
       {showOrderModal && (
         <div

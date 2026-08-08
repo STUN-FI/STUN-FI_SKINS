@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as htmlToImage from 'html-to-image';
@@ -13,6 +13,7 @@ type ReceiptModalProps = {
   category: string;
   lineItems: Array<{ label: string; price: number }>;
   totalPrice: number;
+  surfacePreviews?: Array<{ label: string; previewUrl: string }>;
   onClose: () => void;
 };
 
@@ -25,6 +26,7 @@ export default function ReceiptModal({
   category,
   lineItems,
   totalPrice,
+  surfacePreviews = [],
   onClose,
 }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement | null>(null);
@@ -135,6 +137,30 @@ export default function ReceiptModal({
                   <p className="mt-2 text-base font-semibold text-black sm:text-lg">{category}</p>
                 </div>
               </div>
+
+              {surfacePreviews.length > 0 && (
+                <div className="rounded-[1.5rem] bg-white p-4 shadow-sm sm:p-5">
+                  <div className="mb-4 text-sm font-semibold text-black">Surface previews</div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    {surfacePreviews.map((item) => (
+                      <div key={item.label} className="rounded-[1.5rem] border border-black/10 bg-[#f8fafc] p-3 text-center">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-black/50">{item.label}</p>
+                        {item.previewUrl ? (
+                          <img
+                            src={item.previewUrl}
+                            alt={`${item.label} preview`}
+                            className="mx-auto h-28 w-full max-w-[160px] rounded-3xl object-cover"
+                          />
+                        ) : (
+                          <div className="mx-auto flex h-28 w-full max-w-[160px] items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#f2f4f7] text-xs text-black/50">
+                            No artwork selected
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="rounded-[1.5rem] bg-white p-4 shadow-sm sm:p-5">
                 <div className="mb-4 flex items-center justify-between border-b border-black/10 pb-3">
