@@ -32,7 +32,11 @@ export async function GET(request: NextRequest) {
     }
 
     const sorted = Array.isArray(data.orders)
-      ? data.orders.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      ? data.orders.slice().sort((a: BackendOrder, b: BackendOrder) => {
+          const aTime = new Date(a.createdAt as string | number | Date).getTime();
+          const bTime = new Date(b.createdAt as string | number | Date).getTime();
+          return bTime - aTime;
+        })
       : [];
 
     return NextResponse.json({ orders: sorted.map(normalizeOrder) });
