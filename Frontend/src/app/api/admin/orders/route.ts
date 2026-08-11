@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const VALID_STATUS = ['pending', 'confirmed', 'in_production', 'completed'] as const;
