@@ -1060,11 +1060,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               <div className="text-2xl font-black text-black">{pricingQuotePending ? 'Custom Quote' : formatCurrency(pricing.total)}</div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Receipt generation is currently disabled. */}
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={true}
+                disabled={isSubmitting}
                 className="rounded-3xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-black/40"
               >
                 {isSubmitting ? 'Generating receipt...' : 'Generate Receipt'}
