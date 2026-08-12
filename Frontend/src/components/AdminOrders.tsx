@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import BrandedLogo from './BrandedLogo';
 import OrderDetailModal from './admin/OrderDetailModal';
 
@@ -160,6 +160,7 @@ export default function AdminOrders() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -253,6 +254,14 @@ export default function AdminOrders() {
     setIsDetailOpen(false);
     setSelectedOrder(null);
   };
+
+  useEffect(() => {
+    if (isDetailOpen && detailsRef.current) {
+      setTimeout(() => {
+        detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+  }, [isDetailOpen]);
 
   return (
     <div className="space-y-8 px-4 py-8 sm:px-6 lg:px-8">
@@ -429,12 +438,14 @@ export default function AdminOrders() {
         )}
       </div>
 
-      <OrderDetailModal
-        order={selectedOrder}
-        isOpen={isDetailOpen}
-        onClose={closeDetails}
-        onStatusChange={updateOrderStatus}
-      />
+      <div ref={detailsRef}>
+        <OrderDetailModal
+          order={selectedOrder}
+          isOpen={isDetailOpen}
+          onClose={closeDetails}
+          onStatusChange={updateOrderStatus}
+        />
+      </div>
     </div>
   );
 }
