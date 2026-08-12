@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { submitOrder } from '../lib/api';
 import {
@@ -499,9 +500,17 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   return (
     <section id="builder" className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
       <div className="space-y-6">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Client Order Configurator</p>
-          <h2 className="mt-2 text-3xl font-black text-black">Build a custom device order</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Client Order Configurator</p>
+            <h2 className="mt-2 text-3xl font-black text-black">Build a custom device order</h2>
+          </div>
+          <Link
+            href="/orders"
+            className="inline-flex items-center justify-center rounded-2xl border border-black/20 bg-black/5 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/30 hover:bg-black/10"
+          >
+            Order History
+          </Link>
         </div>
 
         <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-6">
