@@ -73,7 +73,7 @@ export default function ReceiptModal({
     } finally {
       setIsSharing(false);
     }
-  }, [orderId, receiptMessage, totalPrice]);
+  }, [orderId, receiptMessage]);
 
   useEffect(() => {
     if (!isOpen) {
