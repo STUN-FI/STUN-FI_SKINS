@@ -45,7 +45,7 @@ router.post('/', upload.any(), async (req, res) => {
 
     const mode = (body.mode || payload.mode || 'individual').toString().toLowerCase();
 
-    const orderId = body.orderId || payload.orderId || undefined;
+    const orderId = body.orderId || payload.orderId || `STN-${Math.floor(1000 + Math.random() * 9000)}`;
     const clientName = body.clientName || payload.clientName || '';
     const whatsappNumber = body.whatsappNumber || payload.whatsappNumber || '';
     const deviceModel = body.deviceModel || payload.deviceModel || '';

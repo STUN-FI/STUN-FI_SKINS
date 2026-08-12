@@ -86,13 +86,4 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Auto-generate a simple orderId like STN-1234
-OrderSchema.pre('save', function (next) {
-  if (!this.orderId) {
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    this.orderId = `STN-${rand}`;
-  }
-  next();
-});
-
 module.exports = mongoose.models.Order || mongoose.model('Order', OrderSchema);
