@@ -65,6 +65,7 @@ type OrderDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onStatusChange: (orderId: string, status: Status) => Promise<Order | null>;
+  onDelete?: (orderId: string) => Promise<void>;
 };
 
 const formatCurrency = (value?: number) => {
@@ -128,9 +129,10 @@ const getReceiptLineItems = (order: Order) => {
   return [{ label: 'Order total', price: order.pricing.totalAmount }];
 };
 
-export default function OrderDetailModal({ order, isOpen, onClose, onStatusChange }: OrderDetailModalProps) {
+export default function OrderDetailModal({ order, isOpen, onClose, onStatusChange, onDelete }: OrderDetailModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<Status>(order?.status ?? 'pending');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
@@ -176,6 +178,24 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
       setError(err instanceof Error ? err.message : 'Unable to update status');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!order || !onDelete) return;
+    const confirmed = window.confirm(`Are you sure you want to delete order #${order.orderId}? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setError('');
+    try {
+      await onDelete(order.orderId);
+      window.alert(`Order #${order.orderId} has been deleted successfully.`);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to delete order');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -261,7 +281,15 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
                 </select>
                 {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
               </div>
-              <div className="flex items-end justify-end">
+              <div className="flex items-end justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="inline-flex rounded-3xl border border-red-300 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Order'}
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsReceiptOpen(true)}

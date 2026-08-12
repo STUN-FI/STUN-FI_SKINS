@@ -245,6 +245,23 @@ export default function AdminOrders() {
     }
   };
 
+  const deleteOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`${ADMIN_API_BASE}/${orderId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data?.error || 'Unable to delete order');
+      }
+      setOrders((current) => current.filter((order) => order.orderId !== orderId));
+      closeDetails();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const openDetails = (order: Order) => {
     setSelectedOrder(order);
     setIsDetailOpen(true);
@@ -444,6 +461,7 @@ export default function AdminOrders() {
           isOpen={isDetailOpen}
           onClose={closeDetails}
           onStatusChange={updateOrderStatus}
+          onDelete={deleteOrder}
         />
       </div>
     </div>

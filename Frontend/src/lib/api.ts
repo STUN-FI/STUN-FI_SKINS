@@ -1,5 +1,62 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
 
+// Type definitions
+export type Status = 'pending' | 'confirmed' | 'in_production' | 'completed';
+
+export type WholesaleDetails = {
+  standardQty?: number;
+  shinyStonesQty?: number;
+  totalPaidUnits?: number;
+  totalReceivedUnits?: number;
+  freeBonusUnits?: number;
+  technicianRequested?: boolean;
+};
+
+export type RetailDetails = {
+  device?: string;
+  coverage?: string[];
+  finish?: string;
+  customText?: string;
+  surfaceDesigns?: Array<Record<string, any>> | Record<string, any> | any;
+};
+
+export type CustomerInfo = {
+  storeName?: string;
+  contactName?: string;
+  whatsappNumber?: string;
+  storeAddress?: string;
+};
+
+export type SurfaceItem = {
+  name?: string;
+  imageUrl?: string;
+  monogramText?: string;
+};
+
+export type LineItem = {
+  label: string;
+  price: number;
+};
+
+export type Order = {
+  _id?: string;
+  orderId: string;
+  mode: 'individual' | 'wholesale';
+  createdAt?: string;
+  clientName?: string;
+  whatsappNumber?: string;
+  deviceModel?: string;
+  category?: string;
+  surfaces?: SurfaceItem[];
+  items?: LineItem[];
+  totalAmount?: number;
+  customerInfo: CustomerInfo;
+  retailDetails?: RetailDetails;
+  wholesaleDetails?: WholesaleDetails;
+  pricing: { totalAmount: number; currency?: string };
+  status: Status;
+};
+
 type SubmitOrderResult = {
   success: boolean;
   orderId: string;

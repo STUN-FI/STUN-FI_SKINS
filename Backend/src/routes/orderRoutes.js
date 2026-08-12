@@ -270,6 +270,35 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/customer/:identifier', async (req, res) => {
+  try {
+    if (!isDbConnected()) {
+      return res.status(500).json({
+        success: false,
+        error: 'MongoDB connection unavailable. Unable to fetch orders.',
+      });
+    }
+
+    const { identifier } = req.params;
+    if (!identifier) {
+      return res.status(400).json({ success: false, error: 'Customer identifier (phone number or name) is required' });
+    }
+
+    const filters = {
+      $or: [
+        { whatsappNumber: identifier },
+        { clientName: { $regex: identifier, $options: 'i' } },
+      ],
+    };
+
+    const orders = await Order.find(filters).sort({ createdAt: -1 }).lean();
+    return res.json({ success: true, count: orders.length, orders });
+  } catch (err) {
+    console.error('Customer orders fetch error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.patch('/:orderId/status', async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -310,6 +339,18 @@ router.get('/:orderId', async (req, res) => {
     return res.json({ success: true, order });
   } catch (err) {
     console.error('Order fetch error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findOneAndDelete({ orderId }).lean();
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    return res.json({ success: true, message: 'Order deleted successfully', orderId });
+  } catch (err) {
+    console.error('Order delete error', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
