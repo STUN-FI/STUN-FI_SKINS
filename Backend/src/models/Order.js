@@ -4,7 +4,7 @@ const SurfaceDesignSchema = new mongoose.Schema(
   {
     surface: { type: String },
     customText: { type: String },
-    imageUrl: { type: String }, // Cloudinary or public URL
+    imageUrl: { type: String }, // Cloudinary URL, public URL, or data URL fallback
   },
   { _id: false }
 );

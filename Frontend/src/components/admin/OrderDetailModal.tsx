@@ -340,7 +340,11 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
                       </div>
                       <div className="mt-4 grid gap-4 sm:grid-cols-[120px_1fr] sm:items-center">
                         <div className="overflow-hidden rounded-3xl bg-slate-100 p-2">
-                          <img src={surface.imageUrl} alt={`${surface.label} artwork preview`} className="h-28 w-full object-cover rounded-2xl" />
+                          {surface.imageUrl && surface.imageUrl.trim() ? (
+                            <img src={surface.imageUrl} alt={`${surface.label} artwork preview`} className="h-28 w-full object-cover rounded-2xl" />
+                          ) : (
+                            <div className="h-28 w-full flex items-center justify-center rounded-2xl bg-slate-200 text-xs text-slate-600">No artwork</div>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Monogram / Custom text</p>

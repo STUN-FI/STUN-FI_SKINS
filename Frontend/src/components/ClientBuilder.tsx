@@ -714,7 +714,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                               >
                                 <i className="bx bx-palette mr-2" /> Browse Design Gallery
                               </button>
-                              {laptopArtworkCatalog[surface] ? (
+                              {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
                                 <div className="flex items-center gap-2">
                                   <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
                                   <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="text-sm text-red-600">Remove</button>

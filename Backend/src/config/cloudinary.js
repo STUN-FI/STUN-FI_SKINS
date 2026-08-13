@@ -14,7 +14,7 @@ if (isCloudinaryConfigured) {
     secure: true,
   });
 } else {
-  console.warn('Cloudinary is not configured. File uploads will be skipped.');
+  console.warn('Cloudinary is not configured. Using MongoDB data-URL fallback for uploaded files.');
 }
 
 module.exports = {

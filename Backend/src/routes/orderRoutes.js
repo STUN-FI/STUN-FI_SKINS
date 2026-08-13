@@ -70,7 +70,10 @@ router.post('/', upload.any(), async (req, res) => {
     const uploadedUrls = [];
     if (req.files && req.files.length > 0) {
       if (!isCloudinaryConfigured) {
-        console.warn('Cloudinary upload skipped because configuration is missing.');
+        for (const file of req.files) {
+          const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          uploadedUrls.push(dataUri);
+        }
       } else {
         for (const file of req.files) {
           const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;

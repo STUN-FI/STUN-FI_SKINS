@@ -85,12 +85,6 @@ export default function LaptopPreviewModal({ imageUrl, surface, onClose }: Lapto
               </div>
             </div>
           ) : null}
-
-          <img
-            src={`/templates/${surface}-overlay.png`}
-            alt={`${SURFACE_LABELS[surface]} overlay template`}
-            className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-          />
         </div>
 
         <div className="border-t border-black/10 px-6 py-4 text-sm text-black/70">
