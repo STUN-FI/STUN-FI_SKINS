@@ -117,7 +117,7 @@ function getLaptopOrderPricing(
 
   const hasFullLaptopDiscount = selectedCount === 3 && !installRequested;
   if (hasFullLaptopDiscount) {
-    lineItems.push({ label: 'Self-application discount', price: -DIY_DISCOUNT });
+    lineItems.push({ label: 'Self-application', price: -DIY_DISCOUNT });
   }
 
   const total = lineItems.reduce((sum, item) => sum + item.price, 0);
