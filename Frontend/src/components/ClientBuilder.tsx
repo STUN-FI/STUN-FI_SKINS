@@ -776,7 +776,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'DIY discount (-₦1,500 if all 3 surfaces selected)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application discount (-₦1,500 if all 3 surfaces selected)'}</div>
                     </button>
                   ))}
                 </div>
@@ -882,7 +882,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'DIY discount (-₦500)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application discount (-₦500)'}</div>
                     </button>
                   ))}
                 </div>
@@ -987,7 +987,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'DIY discount (-₦500)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application discount (-₦500)'}</div>
                     </button>
                   ))}
                 </div>

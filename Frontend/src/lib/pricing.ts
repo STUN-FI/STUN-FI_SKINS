@@ -94,7 +94,7 @@ export function calculateLaptopPricing(options: {
   }
 
   if (allSelected && options.installOption === 'diy') {
-    lineItems.push({ label: 'DIY discount', price: -LAPTOP_DYI_DISCOUNT });
+    lineItems.push({ label: 'Self-application discount', price: -LAPTOP_DYI_DISCOUNT });
   }
 
   return {
@@ -123,7 +123,7 @@ export function calculatePhonePricing(options: {
   }
 
   if (options.installOption === 'diy') {
-    lineItems.push({ label: 'DIY discount', price: -PHONE_DYI_DISCOUNT });
+    lineItems.push({ label: 'Self-application discount', price: -PHONE_DYI_DISCOUNT });
   }
 
   return {
@@ -151,7 +151,7 @@ export function calculateControllerPricing(options: {
   }
 
   if (options.installOption === 'diy') {
-    lineItems.push({ label: 'DIY discount', price: -CONTROLLER_DYI_DISCOUNT });
+    lineItems.push({ label: 'Self-application discount', price: -CONTROLLER_DYI_DISCOUNT });
   }
 
   return {

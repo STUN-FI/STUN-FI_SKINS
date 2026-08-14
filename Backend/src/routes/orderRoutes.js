@@ -232,7 +232,7 @@ router.post('/', upload.any(), async (req, res) => {
         }
       }
       if (customText && customText.trim()) lineItems.push({ label: 'Custom name / monogram', price: NAME_PRINT });
-      if (selectedCount === 3 && !installRequested) lineItems.push({ label: 'DIY discount', price: -DIY_DISCOUNT });
+      if (selectedCount === 3 && !installRequested) lineItems.push({ label: 'Self-application discount', price: -DIY_DISCOUNT });
 
       const total = lineItems.reduce((s, it) => s + (it.price || 0), 0) * quantity;
 
