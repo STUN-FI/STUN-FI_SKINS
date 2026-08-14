@@ -38,7 +38,7 @@ export default function ApplicationGuideSection() {
   const [selectedVideo] = useState(VIDEOS[0]);
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-5 py-16 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-t-[2.5rem] border-t border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] px-5 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-16 text-center sm:mb-20">
