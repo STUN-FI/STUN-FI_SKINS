@@ -1,9 +1,21 @@
 {
   "version": 2,
+  "projectSettings": {
+    "sourceFilesOutsideRootDirectory": true
+  },
   "builds": [
     {
       "src": "Frontend/package.json",
-      "use": "@vercel/next"
+      "use": "@vercel/next",
+      "config": {
+        "zeroConfig": true
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "Frontend/$1"
     }
   ]
 }
