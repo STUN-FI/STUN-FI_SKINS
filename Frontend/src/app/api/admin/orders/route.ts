@@ -23,9 +23,11 @@ const normalizeOrder = (order: BackendOrder) => {
   };
 };
 
+import { getApiBaseUrl } from '@/lib/api';
+
 export async function GET(request: NextRequest) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
+    const apiUrl = getApiBaseUrl();
     const response = await fetch(apiUrl, { cache: 'no-store' });
     const data = await response.json();
 

@@ -29,8 +29,8 @@ const VIDEOS = [
   {
     id: 'main',
     title: 'Full Application Guide',
-    src: '/videos/application-guide.mp4',
-    poster: '/img/video-posters/application-guide.svg',
+    src: '/videos/application-video.mp4',
+    poster: '/img/video-posters/skillbridge-africa.svg',
   },
 ];
 

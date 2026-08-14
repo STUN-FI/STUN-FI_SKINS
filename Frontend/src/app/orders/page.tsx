@@ -5,9 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import ReceiptModal from '@/components/ReceiptModal';
-import type { Order, Status } from '@/lib/api';
+import { getApiBaseUrl, type Order, type Status } from '@/lib/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
+const API_BASE = getApiBaseUrl();
 
 type OrderStatus = Status;
 

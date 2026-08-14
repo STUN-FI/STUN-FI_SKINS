@@ -6,6 +6,8 @@ const VALID_STATUS = ['pending', 'confirmed', 'in_production', 'completed'] as c
 
 type ValidStatus = (typeof VALID_STATUS)[number];
 
+import { getApiBaseUrl } from '@/lib/api';
+
 export async function PATCH(request: NextRequest, { params }: { params: { orderId: string } }) {
   try {
     const body = await request.json();

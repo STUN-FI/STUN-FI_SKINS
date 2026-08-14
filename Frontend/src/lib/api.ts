@@ -1,4 +1,18 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
+export const getApiBaseUrl = () => {
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('NEXT_PUBLIC_API_URL is not configured for production. Set the deployed backend URL in Vercel environment variables.');
+  }
+
+  return 'http://localhost:5000/api/orders';
+};
+
+const API_URL = getApiBaseUrl();
 
 // Type definitions
 export type Status = 'pending' | 'confirmed' | 'in_production' | 'completed';
