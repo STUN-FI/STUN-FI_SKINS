@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import BrandedLogo from '../components/BrandedLogo';
 import WholesaleForm from '../components/WholesaleForm';
 import ClientBuilder, { type ReceiptData } from '../components/ClientBuilder';
+import ApplicationGuideSection from '../components/ApplicationGuideSection';
 import VideoShowcase from '../components/VideoShowcase';
 import ReceiptModal from '../components/ReceiptModal';
 import HelpModal from '../components/HelpModal';
@@ -700,6 +701,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                   onCatalogOpen={handleCatalogOpen}
                   catalogSelection={catalogSelection}
                 />
+                <ApplicationGuideSection />
                 <VideoShowcase />
               </>
             ) : (
