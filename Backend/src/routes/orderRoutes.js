@@ -1,9 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
-const { cloudinary, isCloudinaryConfigured } = require('../config/cloudinary');
+const { cloudinary } = require('../config/cloudinary');
 const Order = require('../models/Order');
 const mongoose = require('mongoose');
+const { deleteMediaByUrl, extractPublicIdFromUrl, getOptimizedUrl, listMediaFiles } = require('../utils/cloudinaryUtils');
+
+// File validation constants
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Pricing helpers (mirror frontend rules)
 const WHOLESALE_STANDARD_PER_SHEET = 2000;
@@ -66,21 +71,42 @@ router.post('/', upload.any(), async (req, res) => {
       storeAddress: body.storeAddress || body.store_address || payload.storeAddress || payload.store_address || '',
     };
 
-    // Handle file uploads to Cloudinary if present and configured
+    // Handle file uploads to Cloudinary (required)
     const uploadedUrls = [];
     if (req.files && req.files.length > 0) {
-      if (!isCloudinaryConfigured) {
-        for (const file of req.files) {
-          const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-          uploadedUrls.push(dataUri);
+      // Validate all files before uploading
+      for (const file of req.files) {
+        if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+          return res.status(400).json({
+            success: false,
+            error: `Invalid file type: ${file.originalname}. Allowed types: JPEG, PNG, WebP, GIF`,
+          });
         }
-      } else {
-        for (const file of req.files) {
+        if (file.buffer.length > MAX_FILE_SIZE) {
+          return res.status(400).json({
+            success: false,
+            error: `File too large: ${file.originalname}. Maximum size: 10MB`,
+          });
+        }
+      }
+
+      // Upload all files to Cloudinary
+      for (const file of req.files) {
+        try {
           const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
           const result = await cloudinary.uploader.upload(dataUri, {
             folder: 'stunfi-skins/designs',
+            resource_type: 'auto',
+            quality: 'auto',
+            fetch_format: 'auto',
           });
           uploadedUrls.push(result.secure_url || result.url);
+        } catch (uploadError) {
+          console.error('Cloudinary upload failed:', uploadError);
+          return res.status(500).json({
+            success: false,
+            error: `Failed to upload file: ${file.originalname}. ${uploadError.message}`,
+          });
         }
       }
     }
@@ -354,6 +380,133 @@ router.delete('/:orderId', async (req, res) => {
     return res.json({ success: true, message: 'Order deleted successfully', orderId });
   } catch (err) {
     console.error('Order delete error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// MEDIA MANAGEMENT ENDPOINTS
+// ============================================================================
+
+/**
+ * DELETE /media/:mediaId
+ * Delete a specific media file from Cloudinary by its public ID
+ */
+router.delete('/media/:mediaId', async (req, res) => {
+  try {
+    const { mediaId } = req.params;
+    
+    if (!mediaId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Media ID (public ID) is required',
+      });
+    }
+
+    // Decode the mediaId if it's URL-encoded
+    const decodedMediaId = decodeURIComponent(mediaId);
+
+    await cloudinary.uploader.destroy(decodedMediaId);
+
+    return res.json({
+      success: true,
+      message: 'Media deleted successfully from Cloudinary',
+      mediaId: decodedMediaId,
+    });
+  } catch (err) {
+    console.error('Media delete error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * DELETE /media/url/:encodedUrl
+ * Delete a media file by passing its Cloudinary URL (URL needs to be encoded)
+ */
+router.delete('/media/url/:encodedUrl', async (req, res) => {
+  try {
+    const { encodedUrl } = req.params;
+    const url = decodeURIComponent(encodedUrl);
+
+    const publicId = extractPublicIdFromUrl(url);
+    if (!publicId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Could not extract public ID from the provided URL',
+      });
+    }
+
+    await cloudinary.uploader.destroy(publicId);
+
+    return res.json({
+      success: true,
+      message: 'Media deleted successfully from Cloudinary',
+      publicId,
+    });
+  } catch (err) {
+    console.error('Media delete by URL error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /media/list
+ * List all media files in the stunfi-skins folder from Cloudinary
+ */
+router.get('/media/list', async (req, res) => {
+  try {
+    const mediaFiles = await listMediaFiles('stunfi-skins');
+
+    return res.json({
+      success: true,
+      count: mediaFiles.length,
+      media: mediaFiles.map(file => ({
+        publicId: file.public_id,
+        url: file.secure_url || file.url,
+        format: file.format,
+        width: file.width,
+        height: file.height,
+        bytes: file.bytes,
+        createdAt: file.created_at,
+      })),
+    });
+  } catch (err) {
+    console.error('Media list error', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /media/optimize
+ * Get an optimized URL for a media file with custom transformations
+ * Body: { url, width, height, quality, format, fit }
+ */
+router.post('/media/optimize', (req, res) => {
+  try {
+    const { url, width, height, quality, format, fit } = req.body;
+
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: 'URL is required',
+      });
+    }
+
+    const optimizedUrl = getOptimizedUrl(url, {
+      width: width ? parseInt(width) : undefined,
+      height: height ? parseInt(height) : undefined,
+      quality: quality || 'auto',
+      format: format || 'auto',
+      fit: fit || 'scale',
+    });
+
+    return res.json({
+      success: true,
+      originalUrl: url,
+      optimizedUrl,
+    });
+  } catch (err) {
+    console.error('Media optimize error', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
