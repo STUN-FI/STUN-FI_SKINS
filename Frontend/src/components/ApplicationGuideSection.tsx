@@ -29,7 +29,7 @@ const VIDEOS = [
   {
     id: 'main',
     title: 'Full Application Guide',
-    src: '/videos/aplication-video.mp4',
+    src: '/videos/application-video.mp4',
     poster: '/img/video-posters/application-guide.svg',
   },
 ];

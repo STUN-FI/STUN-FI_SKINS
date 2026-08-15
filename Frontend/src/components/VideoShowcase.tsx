@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef, useState } from 'react';
+
 const SHOWCASE_VIDEOS = [
   {
     title: 'Compilation Showcase',
@@ -24,6 +26,25 @@ const SHOWCASE_VIDEOS = [
 const badgeStyles = 'inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/90';
 
 export default function VideoShowcase() {
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const [playingVideos, setPlayingVideos] = useState<Record<string, boolean>>({});
+
+  const togglePlayback = async (index: number, title: string) => {
+    const video = videoRefs.current[index];
+    if (!video) {
+      return;
+    }
+
+    if (video.paused) {
+      await video.play();
+      setPlayingVideos((current) => ({ ...current, [title]: true }));
+      return;
+    }
+
+    video.pause();
+    setPlayingVideos((current) => ({ ...current, [title]: false }));
+  };
+
   return (
     <section className="sticky top-0 z-20 min-h-screen bg-slate-950 rounded-t-[2.5rem] border-t border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)]">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-5 py-10 sm:px-6 lg:px-8">
@@ -36,7 +57,7 @@ export default function VideoShowcase() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {SHOWCASE_VIDEOS.map((video) => (
+          {SHOWCASE_VIDEOS.map((video, index) => (
             <article key={video.title} className="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900 shadow-xl">
               <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3 text-sm text-slate-300">
                 <span className={badgeStyles}>{video.category}</span>
@@ -44,15 +65,28 @@ export default function VideoShowcase() {
               </div>
               <div className="relative overflow-hidden bg-black">
                 <video
+                  ref={(element) => {
+                    videoRefs.current[index] = element;
+                  }}
                   className="h-full w-full bg-black object-cover"
                   poster={video.poster}
-                  controls
+                  controls={false}
                   loop
                   muted
+                  autoPlay
                   playsInline
                   preload="metadata"
                   src={video.src}
+                  onClick={() => togglePlayback(index, video.title)}
                 />
+                <button
+                  type="button"
+                  onClick={() => togglePlayback(index, video.title)}
+                  className="absolute bottom-4 right-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-base text-white shadow-lg backdrop-blur-sm transition hover:bg-black/90"
+                  aria-label={playingVideos[video.title] ? 'Pause video' : 'Play video'}
+                >
+                  {playingVideos[video.title] ? '❚❚' : '▶'}
+                </button>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <h3 className="text-base font-semibold text-white">{video.title}</h3>
