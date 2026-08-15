@@ -623,8 +623,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Laptop Customization</p>
                 <p className="mt-2 text-base text-black/80">
-                  Select the surfaces you want wrapped and customize each. <button type="button" onClick={onHelpOpen} className="ml-2 inline-flex items-center gap-1 text-sm text-blue-600"><i className="bx bx-info-circle" /> Which parts are these?</button>
+                  Select one or more surfaces you want wrapped. For a full custom finish, you can choose all three: Top Lid, Keyboard Deck, and Bottom Base.
                 </p>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-200 text-[10px] font-bold text-amber-900">✓</span>
+                  Multi-select enabled: choose all 3 for full customization
+                </div>
+                <button type="button" onClick={onHelpOpen} className="mt-3 inline-flex items-center gap-1 text-sm text-blue-600">
+                  <i className="bx bx-info-circle" /> Which parts are these?
+                </button>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -641,6 +648,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                   />
                 </label>
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+                Choose any combination you want — for a full customization, select all three surfaces together.
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
