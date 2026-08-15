@@ -13,6 +13,7 @@ import {
   PhoneCoverage,
   formatCurrency,
 } from '../lib/pricing';
+import BrandedLogo from './BrandedLogo';
 import LaptopPreviewModal from './LaptopPreviewModal';
 
 const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
@@ -50,9 +51,9 @@ const ARTWORK_CATALOG = [
 ];
 
 const DEFAULT_LAPTOP_FINISHES: Record<LaptopSurface, FinishType> = {
-  'top-lid': 'standard',
-  'keyboard-deck': 'standard',
-  'bottom-base': 'standard',
+  'top-lid': 'shiny-stones',
+  'keyboard-deck': 'shiny-stones',
+  'bottom-base': 'shiny-stones',
 };
 
 const DEFAULT_LAPTOP_TEXTS: Record<LaptopSurface, string> = {
@@ -129,14 +130,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const [laptopInstallOption, setLaptopInstallOption] = useState<InstallationOption>('professional');
 
   const [phoneCoverage, setPhoneCoverage] = useState<PhoneCoverage>('back-panel');
-  const [phoneFinish, setPhoneFinish] = useState<FinishType>('standard');
+  const [phoneFinish, setPhoneFinish] = useState<FinishType>('shiny-stones');
   const [phoneArtworkCatalog, setPhoneArtworkCatalog] = useState('');
   const [phoneArtworkFile, setPhoneArtworkFile] = useState<File | null>(null);
   const [phoneCustomText, setPhoneCustomText] = useState('');
   const [phoneInstallOption, setPhoneInstallOption] = useState<InstallationOption>('professional');
 
   const [controllerSubtype, setControllerSubtype] = useState<ControllerSubtype>('ps5-dualsense');
-  const [controllerFinish, setControllerFinish] = useState<FinishType>('standard');
+  const [controllerFinish, setControllerFinish] = useState<FinishType>('shiny-stones');
   const [controllerArtworkCatalog, setControllerArtworkCatalog] = useState('');
   const [controllerArtworkFile, setControllerArtworkFile] = useState<File | null>(null);
   const [controllerGamerTag, setControllerGamerTag] = useState('');
@@ -803,8 +804,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             }}
                             className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                           >
-                            <option value="standard">Standard</option>
-                            <option value="shiny-stones">Shiny Stones (+₦500)</option>
+                            <option value="shiny-stones">Premium</option>
+                            <option value="standard">Standard (-₦500)</option>
                           </select>
                         </label>
                         <label className="space-y-2">
@@ -884,8 +885,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     }}
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                   >
-                    <option value="standard">Standard</option>
-                    <option value="shiny-stones">Shiny Stones (+₦500)</option>
+                    <option value="shiny-stones">Premium</option>
+                    <option value="standard">Standard (-₦500)</option>
                   </select>
                 </label>
                 <label className="space-y-2">
@@ -989,8 +990,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     }}
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                   >
-                    <option value="standard">Standard</option>
-                    <option value="shiny-stones">Shiny Stones (+₦500)</option>
+                    <option value="shiny-stones">Premium</option>
+                    <option value="standard">Standard (-₦500)</option>
                   </select>
                 </label>
                 <label className="space-y-2">
@@ -1156,6 +1157,17 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           surface={previewSurface}
           onClose={handlePreviewClose}
         />
+      ) : null}
+
+      {isSubmitting ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
+            <div className="animate-bounce rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
+              <BrandedLogo className="text-white" size="lg" />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Processing order</p>
+          </div>
+        </div>
       ) : null}
 
     </section>

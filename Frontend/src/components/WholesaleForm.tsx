@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import BrandedLogo from './BrandedLogo';
 import { submitOrder } from '../lib/api';
 import { getSheetPrice } from '../lib/pricing';
 
@@ -235,6 +236,17 @@ export default function WholesaleForm() {
           </button>
         </div>
       </div>
+
+      {isSubmitting ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
+            <div className="animate-bounce rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
+              <BrandedLogo className="text-white" size="lg" />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Processing order</p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

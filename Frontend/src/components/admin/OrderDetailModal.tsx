@@ -218,8 +218,14 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
   return (
     <>
       <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-0 z-[10010] flex items-center justify-center p-4 sm:p-6">
-        <div className="relative w-full max-w-4xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+      <div
+        className="fixed inset-0 z-[10010] flex items-center justify-center p-4 sm:p-6"
+        onClick={onClose}
+      >
+        <div
+          className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-white shadow-2xl"
+          onClick={(event) => event.stopPropagation()}
+        >
           <button
             type="button"
             onClick={onClose}

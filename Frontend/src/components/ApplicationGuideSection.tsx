@@ -82,7 +82,7 @@ export default function ApplicationGuideSection() {
               loop
               playsInline
               preload="metadata"
-              controls={false}
+              controls
               onClick={togglePlayback}
             >
               <source src={selectedVideo.src} type="video/mp4" />

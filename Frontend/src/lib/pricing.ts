@@ -84,7 +84,7 @@ export function calculateLaptopPricing(options: {
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
-      lineItems.push({ label: `${surfaceLabel} ${finish === 'shiny-stones' ? '(Shiny Stones)' : 'wrap'}`, price: surfacePrice });
+      lineItems.push({ label: `${surfaceLabel} ${finish === 'shiny-stones' ? '(Premium)' : 'wrap'}`, price: surfacePrice });
     });
   }
 
