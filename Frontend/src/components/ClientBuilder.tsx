@@ -228,7 +228,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     onPriceChange(pricingQuotePending ? 0 : pricing.total);
   }, [onPriceChange, pricingQuotePending, pricing.total]);
 
-  const canAdvanceToStep2 = clientName.trim() !== '' && phoneNumber.trim() !== '';
+  const normalizedPhone = phoneNumber.replace(/\D/g, '');
+  const hasValidPhoneNumber = normalizedPhone.length >= 10 && normalizedPhone.length <= 15;
+  const hasRequiredCustomerInfo = clientName.trim() !== '' && hasValidPhoneNumber;
+  const canAdvanceToStep2 = hasRequiredCustomerInfo;
   const canAdvanceToStep3 =
     category !== 'others' || (itemName.trim() !== '' && instructions.trim() !== '');
 
@@ -422,7 +425,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   };
 
   const handleSubmit = async () => {
+    const trimmedName = clientName.trim();
+    const trimmedPhone = phoneNumber.replace(/\D/g, '');
+
+    if (!trimmedName || trimmedPhone.length < 10 || trimmedPhone.length > 15) {
+      setSubmissionResult('Please enter a valid phone number before submitting your order.');
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmissionResult(null);
     const orderId = buildOrderId();
     const orderPayload = buildOrderPayload(orderId);
     const formData = new FormData();
@@ -557,6 +569,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 placeholder="Input your phone number"
                 className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
               />
+              {!hasValidPhoneNumber && phoneNumber.trim() !== '' ? (
+                <p className="text-xs text-red-600">Please enter a valid phone number with 10–15 digits.</p>
+              ) : null}
             </label>
           </div>
         </div>
@@ -1072,35 +1087,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasRequiredCustomerInfo}
                 className="rounded-3xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-black/40"
               >
-                {isSubmitting ? 'Generating receipt...' : 'Generate Receipt'}
+                {isSubmitting ? 'Placing order...' : 'Place Order'}
               </button>
-              {process.env.NODE_ENV !== 'production' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const devReceipt = {
-                      orderId: `DEV-${Math.floor(Math.random() * 10000)}`,
-                      clientName,
-                      deviceModel: category === 'laptop' ? laptopModel || 'Laptop' : category,
-                      date: new Date().toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }),
-                      category,
-                      lineItems: pricing.lineItems,
-                      totalPrice: pricingQuotePending ? 0 : pricing.total,
-                      surfacePreviews: category === 'laptop' ? laptopSelectedSurfaces.map((surface) => ({
-                        label: LAPTOP_SURFACES.find((item) => item.value === surface)?.label || surface,
-                        previewUrl: surfaceDesigns[surface]?.previewUrl || laptopArtworkCatalog[surface] || '',
-                      })) : [],
-                    };
-                    onReceiptOpen(devReceipt as any);
-                  }}
-                  className="rounded-3xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-black"
-                >
-                  Preview and Download
-                </button>
-              )}
             </div>
           </div>
           {submissionResult ? <p className="mt-4 text-sm text-black/70">{submissionResult}</p> : null}

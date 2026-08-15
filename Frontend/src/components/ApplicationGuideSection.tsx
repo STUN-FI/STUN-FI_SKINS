@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const STEPS = [
   {
@@ -36,6 +36,24 @@ const VIDEOS = [
 
 export default function ApplicationGuideSection() {
   const [selectedVideo] = useState(VIDEOS[0]);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const togglePlayback = async () => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    if (video.paused) {
+      await video.play();
+      setIsPlaying(true);
+      return;
+    }
+
+    video.pause();
+    setIsPlaying(false);
+  };
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-t-[2.5rem] border-t border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] px-5 py-16 sm:px-6 lg:px-8">
@@ -53,18 +71,32 @@ export default function ApplicationGuideSection() {
 
         {/* Video Container */}
         <div className="mb-16 overflow-hidden rounded-[2.5rem] border border-slate-700 bg-black shadow-2xl sm:mb-20">
-          <div className="aspect-video bg-black">
+          <div className="relative aspect-video bg-black">
             <video
+              ref={videoRef}
               key={selectedVideo.id}
-              className="h-full w-full object-cover"
+              className="h-full w-full cursor-pointer object-cover"
               poster={selectedVideo.poster}
-              controls
-              controlsList="nodownload"
+              muted
+              autoPlay
+              loop
+              playsInline
               preload="metadata"
+              controls={false}
+              onClick={togglePlayback}
             >
               <source src={selectedVideo.src} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
+
+            <button
+              type="button"
+              onClick={togglePlayback}
+              className="absolute bottom-4 right-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-black/70 text-lg text-white shadow-lg backdrop-blur-sm transition hover:bg-black/90"
+              aria-label={isPlaying ? 'Pause video' : 'Play video'}
+            >
+              {isPlaying ? '❚❚' : '▶'}
+            </button>
           </div>
         </div>
 

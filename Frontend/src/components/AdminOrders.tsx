@@ -126,7 +126,7 @@ const getCustomerName = (order: Order) => {
 };
 
 const getCustomerWhatsapp = (order: Order) => {
-  return order.customerInfo.whatsappNumber?.replace(/\s+/g, '') || order.whatsappNumber?.replace(/\s+/g, '') || '';
+  return order.customerInfo?.whatsappNumber?.replace(/\s+/g, '') || order.whatsappNumber?.replace(/\s+/g, '') || '';
 };
 
 const getDeviceModel = (order: Order) => {

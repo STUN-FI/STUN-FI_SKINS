@@ -51,9 +51,17 @@ router.post('/', upload.any(), async (req, res) => {
     const mode = (body.mode || payload.mode || 'individual').toString().toLowerCase();
 
     const orderId = body.orderId || payload.orderId || `STN-${Math.floor(1000 + Math.random() * 9000)}`;
-    const clientName = body.clientName || payload.clientName || '';
-    const whatsappNumber = body.whatsappNumber || payload.whatsappNumber || '';
+    const clientName = (body.clientName || payload.clientName || '').trim();
+    const whatsappNumber = (body.whatsappNumber || payload.whatsappNumber || '').trim();
     const deviceModel = body.deviceModel || payload.deviceModel || '';
+    const sanitizedPhone = whatsappNumber.replace(/\D/g, '');
+
+    if (!clientName || !whatsappNumber || sanitizedPhone.length < 10 || sanitizedPhone.length > 15) {
+      return res.status(400).json({
+        success: false,
+        error: 'Customer name and a valid phone number are required before submitting an order.',
+      });
+    }
     const category = body.category || payload.category || '';
     let surfaces = payload.surfaces || (body.surfaces ? JSON.parse(body.surfaces) : []) || [];
     const items = payload.items || (body.items ? JSON.parse(body.items) : []) || [];

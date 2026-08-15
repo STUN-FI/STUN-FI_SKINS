@@ -144,8 +144,8 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
     return isNaN(date.getTime()) ? order.createdAt : date.toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' });
   }, [order?.createdAt]);
 
-  const whatsappNumber = order?.customerInfo.whatsappNumber?.replace(/\D/g, '') || '';
-  const customerName = order ? order.customerInfo.contactName || order.customerInfo.storeName || 'Customer' : '';
+  const whatsappNumber = order?.customerInfo?.whatsappNumber?.replace(/\D/g, '') || order?.whatsappNumber?.replace(/\D/g, '') || '';
+  const customerName = order ? order.customerInfo?.contactName || order.customerInfo?.storeName || order.clientName || 'Customer' : '';
   const deviceModel = order
     ? order.mode === 'wholesale'
       ? 'Wholesale'

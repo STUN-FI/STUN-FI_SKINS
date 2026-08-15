@@ -106,17 +106,17 @@ export default function ReceiptModal({
 
         <div className="flex min-h-0 h-full flex-col overflow-hidden">
           <div className="overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
-            <div className="mb-6 flex flex-col gap-4 rounded-[1.75rem] border border-black/10 bg-[#f8fafc] p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Stun-Fi</p>
-                  <h1 className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
-                </div>
-                <span className="rounded-full bg-black px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">{orderId}</span>
-              </div>
-            </div>
-
             <div ref={receiptRef} className="space-y-6 rounded-[2rem] border border-black/10 bg-[#f9fafb] p-4 sm:p-5">
+              <div className="flex flex-col gap-4 rounded-[1.75rem] border border-black/10 bg-[#f8fafc] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Stun-Fi</p>
+                    <h1 className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
+                  </div>
+                  <span className="rounded-full bg-black px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">{orderId}</span>
+                </div>
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Client</p>

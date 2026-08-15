@@ -47,7 +47,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
           <h4 className="font-semibold">3-step order guide</h4>
           <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-black/70">
             <li>Select laptop model & upload artwork/text for desired parts.</li>
-            <li>Click &quot;Generate Receipt&quot; to preview pricing.</li>
+            <li>Click &quot;Place Order&quot; to preview pricing.</li>
             <li>Tap &quot;Share to WhatsApp&quot; on the receipt modal to submit order for production.</li>
           </ol>
         </div>
