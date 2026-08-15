@@ -144,6 +144,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<string | null>(null);
+  const [customerValidation, setCustomerValidation] = useState({ name: false, phone: false });
+  const [customerTouched, setCustomerTouched] = useState({ name: false, phone: false });
   const [hasStartedSelection, setHasStartedSelection] = useState(false);
   const [previewSurface, setPreviewSurface] = useState<LaptopSurface | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
@@ -424,12 +426,25 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     return payload;
   };
 
-  const handleSubmit = async () => {
-    const trimmedName = clientName.trim();
-    const trimmedPhone = phoneNumber.replace(/\D/g, '');
+  const getCustomerFieldErrors = (nameValue = clientName, phoneValue = phoneNumber) => {
+    const normalizedPhone = phoneValue.replace(/\D/g, '');
+    return {
+      name: !nameValue.trim(),
+      phone: normalizedPhone.length < 10 || normalizedPhone.length > 15,
+    };
+  };
 
-    if (!trimmedName || trimmedPhone.length < 10 || trimmedPhone.length > 15) {
-      setSubmissionResult('Please enter a valid phone number before submitting your order.');
+  const handleSubmit = async () => {
+    const errors = getCustomerFieldErrors();
+    setCustomerTouched({ name: true, phone: true });
+    setCustomerValidation(errors);
+
+    if (errors.name || errors.phone) {
+      setSubmissionResult(errors.name && errors.phone
+        ? 'Please enter your name and a valid phone number before submitting your order.'
+        : errors.name
+        ? 'Please enter your name before submitting your order.'
+        : 'Please enter a valid phone number before submitting your order.');
       return;
     }
 
@@ -551,11 +566,24 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 value={clientName}
                 onChange={(event) => {
                   markSelectionStarted();
-                  setClientName(event.target.value);
+                  const nextValue = event.target.value;
+                  setClientName(nextValue);
+                  if (customerTouched.name) {
+                    setCustomerValidation((current) => ({ ...current, name: !nextValue.trim() }));
+                  }
+                  if (submissionResult) {
+                    setSubmissionResult(null);
+                  }
+                }}
+                onBlur={() => {
+                  const errors = getCustomerFieldErrors();
+                  setCustomerTouched((current) => ({ ...current, name: true }));
+                  setCustomerValidation((current) => ({ ...current, name: errors.name }));
                 }}
                 placeholder="Input your name"
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${customerTouched.name && customerValidation.name ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'}`}
               />
+              {customerTouched.name && customerValidation.name ? <p className="text-xs text-red-600">Name is required.</p> : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-black">Phone Number</span>
@@ -564,12 +592,25 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 value={phoneNumber}
                 onChange={(event) => {
                   markSelectionStarted();
-                  setPhoneNumber(event.target.value);
+                  const nextValue = event.target.value;
+                  setPhoneNumber(nextValue);
+                  if (customerTouched.phone) {
+                    const nextDigits = nextValue.replace(/\D/g, '');
+                    setCustomerValidation((current) => ({ ...current, phone: nextDigits.length < 10 || nextDigits.length > 15 }));
+                  }
+                  if (submissionResult) {
+                    setSubmissionResult(null);
+                  }
+                }}
+                onBlur={() => {
+                  const errors = getCustomerFieldErrors();
+                  setCustomerTouched((current) => ({ ...current, phone: true }));
+                  setCustomerValidation((current) => ({ ...current, phone: errors.phone }));
                 }}
                 placeholder="Input your phone number"
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${customerTouched.phone && customerValidation.phone ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'}`}
               />
-              {!hasValidPhoneNumber && phoneNumber.trim() !== '' ? (
+              {customerTouched.phone && customerValidation.phone ? (
                 <p className="text-xs text-red-600">Please enter a valid phone number with 10–15 digits.</p>
               ) : null}
             </label>
@@ -1087,7 +1128,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !hasRequiredCustomerInfo}
+                disabled={isSubmitting}
                 className="rounded-3xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-black/40"
               >
                 {isSubmitting ? 'Placing order...' : 'Place Order'}
