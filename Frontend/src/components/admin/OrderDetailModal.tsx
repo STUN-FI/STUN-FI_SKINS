@@ -88,18 +88,21 @@ const normalizeSurfaceLabel = (surface?: string, index?: number) => {
 const getSurfaceDesigns = (order: Order) => {
   const designs = order.retailDetails?.surfaceDesigns ?? order.surfaces;
   const rawItems = Array.isArray(designs) ? designs : designs ? Object.values(designs) : [];
+
   return rawItems
     .filter((item): item is { surface?: string; name?: string; imageUrl?: string; customText?: string; monogramText?: string } =>
-      Boolean(item && typeof item === 'object' && typeof (item.imageUrl ?? item.imageUrl) === 'string' && (item.imageUrl ?? item.imageUrl)),
+      Boolean(item && typeof item === 'object'),
     )
     .map((item, index) => {
-      const imageUrl = (item as any).imageUrl || '';
+      const imageUrl = typeof (item as any).imageUrl === 'string' ? String((item as any).imageUrl) : '';
       const customText = (item as any).customText ?? (item as any).monogramText ?? '';
+      const surfaceName = item.surface ? String(item.surface) : (item as any).name ? String((item as any).name) : undefined;
+
       return {
-        surface: item.surface ? String(item.surface) : (item as any).name ? String((item as any).name) : undefined,
+        surface: surfaceName,
         imageUrl,
         customText: customText ? String(customText) : '',
-        label: normalizeSurfaceLabel(item.surface ? String(item.surface) : (item as any).name ? String((item as any).name) : undefined, index),
+        label: normalizeSurfaceLabel(surfaceName, index),
       };
     });
 };

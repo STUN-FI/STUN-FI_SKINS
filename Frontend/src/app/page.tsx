@@ -655,6 +655,40 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
+        <section className="mb-10">
+          <div className="mb-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Customization surfaces</p>
+            <h2 className="mt-2 text-2xl font-black text-black sm:text-3xl">Top Lid, Keyboard Deck &amp; Bottom Base</h2>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              { title: 'Top Lid', src: '/img/Toplid.jpg', description: 'Premium lid wrap for a bold front-facing finish.' },
+              { title: 'Keyboard Deck', src: '/img/Keyboard.jpg', description: 'Palmrest coverage for a sleek, tactile feel.' },
+              { title: 'Bottom Base', src: '/img/Bottom.jpg', description: 'Base protection with a clean, finished look.' },
+            ].map((surface) => (
+              <div
+                key={surface.title}
+                className="overflow-hidden rounded-[2rem] border border-black/10 bg-white/90 p-3 shadow-glow backdrop-blur"
+              >
+                <div className="relative h-72 overflow-hidden rounded-[1.5rem] bg-[#f7f7f5]">
+                  <Image
+                    src={surface.src}
+                    alt={surface.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+                <div className="mt-4 px-2 pb-2">
+                  <p className="text-lg font-black text-black">{surface.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-black/65">{surface.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

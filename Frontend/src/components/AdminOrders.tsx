@@ -82,17 +82,16 @@ const formatCurrency = (value?: number) => {
 const getArtworkItems = (order: Order) => {
   const designs = order.retailDetails?.surfaceDesigns ?? order.surfaces;
   const items = Array.isArray(designs) ? designs : designs ? Object.values(designs) : [];
+
   return items
-    .filter((item): item is { surface?: string; name?: string; imageUrl?: string } =>
-      Boolean(item && typeof item === 'object' && typeof item.imageUrl === 'string' && item.imageUrl),
-    )
+    .filter((item): item is { surface?: string; name?: string; imageUrl?: string } => Boolean(item && typeof item === 'object'))
     .map((item) => ({
       label: item.surface
         ? String(item.surface).replace(/-/g, ' ')
         : item.name
         ? String(item.name).replace(/-/g, ' ')
         : 'Artwork',
-      url: item.imageUrl,
+      url: typeof item.imageUrl === 'string' ? item.imageUrl : '',
     }));
 };
 

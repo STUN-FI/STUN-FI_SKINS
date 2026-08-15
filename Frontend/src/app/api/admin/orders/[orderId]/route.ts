@@ -35,3 +35,23 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unexpected error' }, { status: 500 });
   }
 }
+
+export async function DELETE(_request: NextRequest, { params }: { params: { orderId: string } }) {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/orders';
+    const response = await fetch(`${apiUrl}/${params.orderId}`, {
+      method: 'DELETE',
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return NextResponse.json({ error: data?.error || 'Unable to delete order' }, { status: response.status });
+    }
+
+    return NextResponse.json({ success: true, message: data.message || 'Order deleted successfully', orderId: params.orderId });
+  } catch (error) {
+    console.error('Admin DELETE order error', error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unexpected error' }, { status: 500 });
+  }
+}
