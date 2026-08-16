@@ -118,9 +118,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     'bottom-base': null,
   });
   const [laptopArtworkMode, setLaptopArtworkMode] = useState<Record<LaptopSurface, 'upload' | 'catalog'>>({
-    'top-lid': 'upload',
-    'keyboard-deck': 'upload',
-    'bottom-base': 'upload',
+    'top-lid': 'catalog',
+    'keyboard-deck': 'catalog',
+    'bottom-base': 'catalog',
   });
   const [surfaceDesigns, setSurfaceDesigns] = useState<Record<LaptopSurface, SurfaceDesign>>(DEFAULT_LAPTOP_DESIGNS);
   const uploadPreviewUrlsRef = useRef<Record<LaptopSurface, string>>({
