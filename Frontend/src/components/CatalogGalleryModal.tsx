@@ -18,14 +18,17 @@ type CatalogGalleryModalProps = {
 export default function CatalogGalleryModal({ isOpen, onClose, onSelectArtwork }: CatalogGalleryModalProps) {
   const [artworks, setArtworks] = useState<CatalogArtwork[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    fetch('/api/catalog-artworks')
+    setIsLoading(true);
+    fetch('/api/catalog-artworks?limit=24')
       .then((response) => response.json())
       .then((data) => setArtworks(data))
-      .catch(() => setArtworks([]));
+      .catch(() => setArtworks([]))
+      .finally(() => setIsLoading(false));
   }, [isOpen]);
 
   const categories = useMemo(() => {
@@ -56,16 +59,24 @@ export default function CatalogGalleryModal({ isOpen, onClose, onSelectArtwork }
         </div>
 
         <div className="mt-6">
-          <div className="masonry-grid">
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-              {filtered.map((art) => (
-                <div key={art.id} className="mb-4 break-inside-avoid rounded-lg overflow-hidden shadow-sm transform hover:scale-105 transition cursor-pointer" onClick={() => { onSelectArtwork(art.image); onClose(); }}>
-                  <img src={art.image} alt={art.title} className="w-full object-cover" />
-                  <div className="p-2 text-sm text-black/70">{art.title}</div>
-                </div>
+          {isLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="h-56 animate-pulse rounded-xl bg-gray-200" />
               ))}
             </div>
-          </div>
+          ) : (
+            <div className="masonry-grid">
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+                {filtered.map((art) => (
+                  <div key={art.id} className="mb-4 break-inside-avoid rounded-lg overflow-hidden shadow-sm transform hover:scale-105 transition cursor-pointer" onClick={() => { onSelectArtwork(art.image); onClose(); }}>
+                    <img src={art.image} alt={art.title} loading="lazy" decoding="async" className="w-full object-cover" />
+                    <div className="p-2 text-sm text-black/70">{art.title}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

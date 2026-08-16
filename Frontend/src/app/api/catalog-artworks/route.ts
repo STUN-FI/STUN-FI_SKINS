@@ -18,7 +18,8 @@ function toTitle(fileName: string) {
     .trim();
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
   const catalogueDir = path.join(process.cwd(), 'public', 'catalogue');
   const files = await fs.readdir(catalogueDir);
 
@@ -26,7 +27,10 @@ export async function GET() {
     .filter((file) => /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(file))
     .sort();
 
-  const artworks = imageFiles.map((file, index) => ({
+  const limitValue = Number(searchParams.get('limit'));
+  const safeLimit = Number.isFinite(limitValue) && limitValue > 0 ? Math.min(limitValue, imageFiles.length) : imageFiles.length;
+
+  const artworks = imageFiles.slice(0, safeLimit).map((file, index) => ({
     id: `${toSlug(file)}-${index + 1}`,
     category: 'Catalog',
     image: `/catalogue/${encodeURIComponent(file)}`,
