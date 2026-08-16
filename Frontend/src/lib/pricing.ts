@@ -21,10 +21,10 @@ export type ControllerSubtype =
   | 'switch-pro';
 export type OrderMode = 'individual' | 'wholesale';
 
-const LAPTOP_BASE_STANDARD = 3500;
-const LAPTOP_BASE_SHINY = 4000;
-const LAPTOP_FULL_STANDARD = 10000;
-const LAPTOP_FULL_SHINY = 11500;
+const LAPTOP_BASE_STANDARD = 3000;
+const LAPTOP_BASE_SHINY = 3500;
+const LAPTOP_FULL_STANDARD = 9000;
+const LAPTOP_FULL_SHINY = 10500;
 const LAPTOP_TEXT_FEES = [0, 700, 1400, 1500];
 const LAPTOP_DYI_DISCOUNT = 1500;
 
@@ -53,7 +53,7 @@ export function getSheetPrice(finish: FinishType, mode: OrderMode = 'individual'
   if (mode === 'wholesale') {
     return finish === 'standard' ? 1500 : 2000;
   }
-  return finish === 'standard' ? 3500 : 4000;
+  return finish === 'standard' ? 3000 : 3500;
 }
 
 export function calculateLaptopPricing(options: {

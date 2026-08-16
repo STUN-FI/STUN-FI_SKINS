@@ -65,17 +65,17 @@ const COVERAGE_OPTIONS: { value: Coverage; label: string }[] = [
 
 const FINISH_OPTIONS = [
   { value: 'shiny-stones', label: 'Premium' },
-  { value: 'standard', label: 'Standard (-₦500)' },
+  { value: 'standard', label: 'Standard (- ₦500)' },
 ] as const;
 
-const BASE_PER_SHEET = 3500;
+const BASE_PER_SHEET = 3000;
 const SHINY_EXTRA_PER_SHEET = 500;
-const FULL_LAPTOP_STANDARD = 10000;
-const FULL_LAPTOP_SHINY = 11500;
+const FULL_LAPTOP_STANDARD = 9000;
+const FULL_LAPTOP_SHINY = 10500;
 const NAME_PRINT = 1000;
 const DIY_DISCOUNT = 1500;
-const SINGLE_DEVICE_STANDARD = 3500;
-const SINGLE_DEVICE_SHINY = 4000;
+const SINGLE_DEVICE_STANDARD = 3000;
+const SINGLE_DEVICE_SHINY = 3500;
 
 const EMPTY_SURFACE_DESIGN: SurfaceDesign = {
   customText: '',
@@ -128,7 +128,7 @@ function getSingleDevicePricing(device: DeviceType, finish: FinishType, customTe
   const singlePrice = mode === 'wholesale' ? getSheetPrice(finish, mode) : finish === 'standard' ? SINGLE_DEVICE_STANDARD : SINGLE_DEVICE_SHINY;
   const lineItems: LineItem[] = [
     {
-      label: `${DEVICE_OPTIONS.find((item) => item.value === device)?.label ?? 'Device'} - ${finish === 'standard' ? 'Standard (-₦500)' : 'Premium'}`,
+      label: `${DEVICE_OPTIONS.find((item) => item.value === device)?.label ?? 'Device'} - ${finish === 'standard' ? 'Standard (- ₦500)' : 'Premium'}`,
       price: singlePrice,
     },
   ];
@@ -194,7 +194,7 @@ export default function HomePage() {
   const receiptTitle = form.mode === 'wholesale' ? 'STUN-FI SKINS WHOLESALE RECEIPT' : 'STUN-FI SKINS RECEIPT';
 
   const getReceiptLines = () => {
-    const finishLabel = form.finish === 'standard' ? 'Standard (-₦500)' : 'Premium';
+    const finishLabel = form.finish === 'standard' ? 'Standard (- ₦500)' : 'Premium';
     const coverageSummary =
       form.device === 'laptop'
         ? form.coverage.length > 0
@@ -499,7 +499,7 @@ export default function HomePage() {
 ${orderRefLine}
 Store Name: ${form.storeName || 'N/A'}
 Mode: Wholesale
-Finish: ${form.finish === 'standard' ? 'Standard (-₦500)' : 'Premium'}
+Finish: ${form.finish === 'standard' ? 'Standard (- ₦500)' : 'Premium'}
 Stock details: ${stockDetails}
 Quantity ordered: ${wholesaleSummary.totalPaidSheets} sheets
 Total received: ${wholesaleSummary.totalReceived} sheets

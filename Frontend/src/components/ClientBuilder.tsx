@@ -152,6 +152,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const [hasStartedSelection, setHasStartedSelection] = useState(false);
   const [previewSurface, setPreviewSurface] = useState<LaptopSurface | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
+  const [laptopTextToggle, setLaptopTextToggle] = useState<Record<LaptopSurface, boolean>>({
+    'top-lid': false,
+    'keyboard-deck': false,
+    'bottom-base': false,
+  });
+  const [phoneTextToggle, setPhoneTextToggle] = useState(false);
+  const [controllerTagToggle, setControllerTagToggle] = useState(false);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -809,7 +816,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           }}
                           className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
                         >
-                          <i className="bx bx-palette mr-2" /> Pick Catalog Art
+                          <i className="bx bx-palette mr-2" /> Choose Existing Design
                         </button>
                       </div>
 
@@ -855,7 +862,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 onClick={() => onCatalogOpen(surface)}
                                 className="rounded-2xl border px-4 py-3 text-sm bg-white"
                               >
-                                <i className="bx bx-palette mr-2" /> Browse Design Gallery
+                                <i className="bx bx-palette mr-2" /> Choose Existing Design
                               </button>
                               {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
                                 <div className="flex items-center gap-2">
@@ -880,22 +887,47 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                           >
                             <option value="shiny-stones">Premium</option>
-                            <option value="standard">Standard (-₦500)</option>
+                            <option value="standard">Standard (- ₦500)</option>
                           </select>
                         </label>
-                        <label className="space-y-2">
-                          <span className="text-sm text-black/70">Custom text (optional)</span>
-                          <input
-                            type="text"
-                            value={laptopTexts[surface]}
-                            onChange={(event) => {
-                              markSelectionStarted();
-                              setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
-                            }}
-                            placeholder="Enter text for this surface"
-                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                          />
-                        </label>
+                        <div className="space-y-2">
+                          {!laptopTextToggle[surface] ? (
+                            <button
+                              type="button"
+                              onClick={() => setLaptopTextToggle((current) => ({ ...current, [surface]: true }))}
+                              className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                            >
+                              <i className="bx bx-plus mr-2" />Add custom text?
+                            </button>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-black/70">Custom text</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
+                                    setLaptopTexts((current) => ({ ...current, [surface]: '' }));
+                                  }}
+                                  className="text-sm text-red-600 hover:text-red-700"
+                                >
+                                  <i className="bx bx-x" />Remove
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={laptopTexts[surface]}
+                                onChange={(event) => {
+                                  markSelectionStarted();
+                                  setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
+                                }}
+                                placeholder="Enter text for this surface"
+                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                                autoFocus
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -919,7 +951,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (-₦1,500 if all 3 surfaces selected)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦1,500 if all 3 surfaces selected)'}</div>
                     </button>
                   ))}
                 </div>
@@ -961,7 +993,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                   >
                     <option value="shiny-stones">Premium</option>
-                    <option value="standard">Standard (-₦500)</option>
+                    <option value="standard">Standard (- ₦500)</option>
                   </select>
                 </label>
                 <label className="space-y-2">
@@ -995,19 +1027,44 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   ))}
                 </select>
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-black/70">Custom text (optional)</span>
-                <input
-                  type="text"
-                  value={phoneCustomText}
-                  onChange={(event) => {
-                    markSelectionStarted();
-                    setPhoneCustomText(event.target.value);
-                  }}
-                  placeholder="Enter custom text"
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                />
-              </label>
+              <div className="space-y-2">
+                {!phoneTextToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => setPhoneTextToggle(true)}
+                    className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                  >
+                    <i className="bx bx-plus mr-2" />Add custom text?
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-black/70">Custom text</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhoneTextToggle(false);
+                          setPhoneCustomText('');
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        <i className="bx bx-x" />Remove
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={phoneCustomText}
+                      onChange={(event) => {
+                        markSelectionStarted();
+                        setPhoneCustomText(event.target.value);
+                      }}
+                      placeholder="Enter custom text"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                      autoFocus
+                    />
+                  </div>
+                )}
+              </div>
               <div className="space-y-3 rounded-3xl border border-black/10 bg-white p-5">
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Installation</div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1025,7 +1082,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (-₦500)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦500)'}</div>
                     </button>
                   ))}
                 </div>
@@ -1066,7 +1123,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
                   >
                     <option value="shiny-stones">Premium</option>
-                    <option value="standard">Standard (-₦500)</option>
+                    <option value="standard">Standard (- ₦500)</option>
                   </select>
                 </label>
                 <label className="space-y-2">
@@ -1100,19 +1157,44 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   ))}
                 </select>
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-black/70">GamerTag / Custom text</span>
-                <input
-                  type="text"
-                  value={controllerGamerTag}
-                  onChange={(event) => {
-                    markSelectionStarted();
-                    setControllerGamerTag(event.target.value);
-                  }}
-                  placeholder="Enter gamer tag"
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                />
-              </label>
+              <div className="space-y-2">
+                {!controllerTagToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => setControllerTagToggle(true)}
+                    className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                  >
+                    <i className="bx bx-plus mr-2" />Add gamer tag?
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-black/70">Gamer tag / Custom text</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setControllerTagToggle(false);
+                          setControllerGamerTag('');
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        <i className="bx bx-x" />Remove
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={controllerGamerTag}
+                      onChange={(event) => {
+                        markSelectionStarted();
+                        setControllerGamerTag(event.target.value);
+                      }}
+                      placeholder="Enter gamer tag"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                      autoFocus
+                    />
+                  </div>
+                )}
+              </div>
               <div className="space-y-3 rounded-3xl border border-black/10 bg-white p-5">
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Installation</div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1130,7 +1212,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (-₦500)'}</div>
+                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦500)'}</div>
                     </button>
                   ))}
                 </div>
