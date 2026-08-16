@@ -1121,11 +1121,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 )}
                               </div>
                             </div>
-
-                            {/* Preview Button */}
-                            <button type="button" onClick={() => setPreviewSurface(surface)} className="w-full text-sm text-blue-600 font-semibold py-2 hover:text-blue-700">
-                              <i className="bx bx-show mr-1" /> Preview this surface
-                            </button>
                           </div>
                         )}
                       </div>
