@@ -1473,12 +1473,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               <div className="text-sm text-black/60">Final total</div>
               <div
                 className={`text-2xl font-black text-black transition-all duration-300 ${
-                  priceNotification ? 'scale-110' : 'scale-100'
+                  priceNotification ? 'scale-110 animate-glow' : 'scale-100'
                 }`}
                 style={
                   priceNotification
                     ? {
-                        boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                        boxShadow: '0 0 0 3px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.2)',
                         borderRadius: '8px',
                         padding: '4px 8px',
                       }
