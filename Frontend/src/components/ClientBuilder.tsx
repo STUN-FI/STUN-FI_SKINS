@@ -159,8 +159,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   });
   const [phoneTextToggle, setPhoneTextToggle] = useState(false);
   const [controllerTagToggle, setControllerTagToggle] = useState(false);
+  const [priceNotification, setPriceNotification] = useState(false);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
+  const previousPriceRef = useRef<number | null>(null);
 
   const markSelectionStarted = () => setHasStartedSelection(true);
 
@@ -237,6 +239,38 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   );
 
   const pricingQuotePending = 'quotePending' in pricing && pricing.quotePending;
+
+  // Price change notification with sound and animation
+  useEffect(() => {
+    if (pricingQuotePending || !hasStartedSelection) {
+      previousPriceRef.current = pricing.total;
+      return;
+    }
+
+    if (previousPriceRef.current !== null && previousPriceRef.current !== pricing.total) {
+      // Play notification sound
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      // Soft "ding" sound
+      oscillator.frequency.value = 800;
+      gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+
+      // Trigger animation
+      setPriceNotification(true);
+      setTimeout(() => setPriceNotification(false), 600);
+    }
+
+    previousPriceRef.current = pricing.total;
+  }, [pricing.total, pricingQuotePending, hasStartedSelection]);
 
   useEffect(() => {
     if (!onPriceChange) {
@@ -1324,7 +1358,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-sm text-black/60">Final total</div>
-              <div className="text-2xl font-black text-black">{pricingQuotePending ? 'Custom Quote' : formatCurrency(pricing.total)}</div>
+              <div
+                className={`text-2xl font-black text-black transition-all duration-300 ${
+                  priceNotification ? 'scale-110' : 'scale-100'
+                }`}
+                style={
+                  priceNotification
+                    ? {
+                        boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                        borderRadius: '8px',
+                        padding: '4px 8px',
+                      }
+                    : {}
+                }
+              >
+                {pricingQuotePending ? 'Custom Quote' : formatCurrency(pricing.total)}
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <button
