@@ -30,7 +30,6 @@ const VIDEOS = [
     id: 'main',
     title: 'Full Application Guide',
     src: '/videos/application_process.mp4',
-    poster: '/img/video-posters/application-guide.svg',
   },
 ];
 
@@ -75,17 +74,16 @@ export default function ApplicationGuideSection() {
             <video
               ref={videoRef}
               key={selectedVideo.id}
-              className="h-full w-full cursor-pointer object-cover"
-              poster={selectedVideo.poster}
+              className="h-full w-full bg-black object-cover"
               muted
               autoPlay
               loop
               playsInline
               preload="metadata"
-              controls
+              controls={false}
+              src={selectedVideo.src}
               onClick={togglePlayback}
             >
-              <source src={selectedVideo.src} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
