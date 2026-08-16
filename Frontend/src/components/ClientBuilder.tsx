@@ -187,10 +187,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   }, [catalogSelection]);
 
   const laptopsArtworkLabel = (surface: LaptopSurface) =>
-    laptopArtworkFiles[surface]?.name || laptopArtworkCatalog[surface] || 'Choose image';
+    laptopArtworkFiles[surface]?.name || laptopArtworkCatalog[surface] || 'Choose artwork';
 
-  const phoneArtworkLabel = phoneArtworkFile?.name || phoneArtworkCatalog || 'Choose image';
-  const controllerArtworkLabel = controllerArtworkFile?.name || controllerArtworkCatalog || 'Choose image';
+  const phoneArtworkLabel = phoneArtworkFile?.name || phoneArtworkCatalog || 'Choose artwork';
+  const controllerArtworkLabel = controllerArtworkFile?.name || controllerArtworkCatalog || 'Choose artwork';
 
   const pricing = useMemo(
     () =>
@@ -857,7 +857,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       <div className="mt-4">
                         {laptopArtworkMode[surface] === 'upload' ? (
                           <label className="space-y-2">
-                            <span className="text-sm text-black/70">Upload your artwork</span>
+                            <span className="text-sm text-black/70">Upload own image</span>
+
                             <input
                               type="file"
                               accept="image/*"
@@ -1116,7 +1117,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Image upload</span>
+                  <span className="text-sm text-black/70">Upload own image</span>
 
                   <input
                     type="file"
@@ -1295,7 +1296,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Image upload</span>
+                  <span className="text-sm text-black/70">Upload own image</span>
                   <input
                     type="file"
                     accept="image/*"
