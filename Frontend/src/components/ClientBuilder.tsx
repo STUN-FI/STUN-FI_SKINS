@@ -108,7 +108,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const [instructions, setInstructions] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
-  const [laptopSelectedSurfaces, setLaptopSelectedSurfaces] = useState<LaptopSurface[]>(['top-lid']);
+  const [laptopSelectedSurfaces, setLaptopSelectedSurfaces] = useState<LaptopSurface[]>(['top-lid', 'keyboard-deck', 'bottom-base']);
   const [laptopFinishes, setLaptopFinishes] = useState<Record<LaptopSurface, FinishType>>(DEFAULT_LAPTOP_FINISHES);
   const [laptopTexts, setLaptopTexts] = useState<Record<LaptopSurface, string>>(DEFAULT_LAPTOP_TEXTS);
   const [laptopArtworkCatalog, setLaptopArtworkCatalog] = useState<Record<LaptopSurface, string>>(DEFAULT_LAPTOP_CATALOG);
