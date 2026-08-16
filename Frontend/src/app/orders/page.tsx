@@ -174,9 +174,10 @@ export default function OrdersPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 backdrop-blur"
+            className="mb-6 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 backdrop-blur"
           >
-            ⚠ {error}
+            <i className="bx bx-error-circle text-base" />
+            <span>{error}</span>
           </motion.div>
         )}
 

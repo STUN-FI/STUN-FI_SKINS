@@ -55,7 +55,7 @@ export default function ApplicationGuideSection() {
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-t-[2.5rem] border-t border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] px-5 py-16 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-[2.5rem] border border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] px-5 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-16 text-center sm:mb-20">
@@ -93,7 +93,7 @@ export default function ApplicationGuideSection() {
               className="absolute bottom-4 right-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-black/70 text-lg text-white shadow-lg backdrop-blur-sm transition hover:bg-black/90"
               aria-label={isPlaying ? 'Pause video' : 'Play video'}
             >
-              {isPlaying ? '❚❚' : '▶'}
+              <i className={`bx ${isPlaying ? 'bx-pause-circle' : 'bx-play-circle'} text-xl`} />
             </button>
           </div>
         </div>
@@ -132,8 +132,8 @@ export default function ApplicationGuideSection() {
         <div className="mt-16 rounded-[2rem] border border-slate-700 bg-gradient-to-r from-slate-800/50 to-slate-900/50 p-8 backdrop-blur-sm sm:mt-20 sm:p-10">
           <div className="flex gap-4 sm:gap-6">
             <div className="flex-shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-white">
-                💡
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-white">
+                <i className="bx bx-bulb text-lg" />
               </div>
             </div>
             <div>

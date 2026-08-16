@@ -46,7 +46,7 @@ export default function VideoShowcase() {
   };
 
   return (
-    <section className="sticky top-0 z-20 min-h-screen bg-slate-950 rounded-t-[2.5rem] border-t border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)]">
+    <section className="sticky top-0 z-20 min-h-screen bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-[0_-20px_50px_rgba(0,0,0,0.9)]">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-5 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 max-w-3xl text-white">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-300">See Stun-Fi Skins in Action</p>
@@ -85,7 +85,7 @@ export default function VideoShowcase() {
                   className="absolute bottom-4 right-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-base text-white shadow-lg backdrop-blur-sm transition hover:bg-black/90"
                   aria-label={playingVideos[video.title] ? 'Pause video' : 'Play video'}
                 >
-                  {playingVideos[video.title] ? '❚❚' : '▶'}
+                  <i className={`bx ${playingVideos[video.title] ? 'bx-pause-circle' : 'bx-play-circle'} text-lg`} />
                 </button>
               </div>
               <div className="px-4 py-4 sm:px-5">
