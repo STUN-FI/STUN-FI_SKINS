@@ -330,6 +330,50 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
   const buildOrderId = () => `STN-${Math.floor(1000 + Math.random() * 9000)}`;
 
+  const resetBuilderForm = () => {
+    setCurrentStep(1);
+    setClientName('');
+    setPhoneNumber('');
+    setLaptopModel('');
+    setCategory('laptop');
+    setItemName('');
+    setInstructions('');
+    setPhotoFile(null);
+    setLaptopSelectedSurfaces(['top-lid']);
+    setLaptopFinishes(DEFAULT_LAPTOP_FINISHES);
+    setLaptopTexts(DEFAULT_LAPTOP_TEXTS);
+    setLaptopArtworkCatalog(DEFAULT_LAPTOP_CATALOG);
+    setLaptopArtworkFiles({
+      'top-lid': null,
+      'keyboard-deck': null,
+      'bottom-base': null,
+    });
+    setLaptopArtworkMode({
+      'top-lid': 'catalog',
+      'keyboard-deck': 'catalog',
+      'bottom-base': 'catalog',
+    });
+    setSurfaceDesigns(DEFAULT_LAPTOP_DESIGNS);
+    setLaptopInstallOption('professional');
+    setPhoneCoverage('back-panel');
+    setPhoneFinish('shiny-stones');
+    setPhoneArtworkCatalog('');
+    setPhoneArtworkFile(null);
+    setPhoneCustomText('');
+    setPhoneInstallOption('professional');
+    setControllerSubtype('ps5-dualsense');
+    setControllerFinish('shiny-stones');
+    setControllerArtworkCatalog('');
+    setControllerArtworkFile(null);
+    setControllerGamerTag('');
+    setControllerInstallOption('professional');
+    setCustomerValidation({ name: false, phone: false });
+    setCustomerTouched({ name: false, phone: false });
+    setHasStartedSelection(false);
+    setPreviewSurface(null);
+    setPreviewImageUrl('');
+  };
+
   const getDeviceModelLabel = () => {
     if (category === 'laptop') {
       return laptopModel || 'Laptop';
@@ -517,6 +561,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       }
 
       const finalOrderId = result.orderId || orderId;
+      resetBuilderForm();
       setSubmissionResult(`Order submitted successfully as #${finalOrderId}.`);
       setSubmissionType('success');
 
@@ -562,9 +607,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           </div>
           <Link
             href="/orders"
-            className="inline-flex items-center justify-center rounded-2xl border border-black/20 bg-black/5 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/30 hover:bg-black/10"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-black px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black/20 sm:px-5"
           >
-            Order History
+            <i className="bx bx-history text-base" />
+            <span>View Order History</span>
           </Link>
         </div>
 
