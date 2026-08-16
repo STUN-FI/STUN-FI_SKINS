@@ -840,7 +840,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           }}
                           className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
                         >
-                          <i className="bx bx-upload mr-2" /> Upload Own Artwork
+                          <i className="bx bx-upload mr-2" /> Upload Own Image
                         </button>
                         <button
                           type="button"
