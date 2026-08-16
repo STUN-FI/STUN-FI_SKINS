@@ -919,14 +919,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 markSelectionStarted();
                                 setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
                               }}
-                              className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                              className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                                 laptopFinishes[surface] === 'shiny-stones'
-                                  ? 'border-black bg-black text-white shadow-md'
-                                  : 'border-black/20 bg-white text-black hover:border-black'
+                                  ? 'border-black bg-black text-white shadow-lg scale-105'
+                                  : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                               }`}
                             >
-                              <div className="text-lg mb-1">✨</div>
-                              <div className="text-sm">Premium</div>
+                              <div className="flex items-center justify-center mb-2">
+                                <i className="bx bxs-star text-lg" />
+                              </div>
+                              <div className="text-xs mb-1 opacity-75">PREMIUM</div>
+                              <div className="text-sm font-black">Quality</div>
+                              {laptopFinishes[surface] === 'shiny-stones' && (
+                                <div className="absolute top-2 right-2">
+                                  <i className="bx bx-check text-xl" />
+                                </div>
+                              )}
                             </button>
                             <button
                               type="button"
@@ -934,14 +942,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 markSelectionStarted();
                                 setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
                               }}
-                              className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                              className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                                 laptopFinishes[surface] === 'standard'
-                                  ? 'border-black bg-black text-white shadow-md'
-                                  : 'border-black/20 bg-white text-black hover:border-black'
+                                  ? 'border-black bg-black text-white shadow-lg scale-105'
+                                  : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                               }`}
                             >
-                              <div className="text-lg mb-1">💎</div>
-                              <div className="text-sm">(- ₦500)</div>
+                              <div className="flex items-center justify-center mb-2">
+                                <i className="bx bx-layer text-lg" />
+                              </div>
+                              <div className="text-xs mb-1 opacity-75">STANDARD</div>
+                              <div className="text-sm font-black">(- ₦500)</div>
+                              {laptopFinishes[surface] === 'standard' && (
+                                <div className="absolute top-2 right-2">
+                                  <i className="bx bx-check text-xl" />
+                                </div>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -1057,14 +1073,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setPhoneFinish('shiny-stones');
                       }}
-                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                         phoneFinish === 'shiny-stones'
-                          ? 'border-black bg-black text-white shadow-md'
-                          : 'border-black/20 bg-white text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                       }`}
                     >
-                      <div className="text-lg mb-1">✨</div>
-                      <div className="text-sm">Premium</div>
+                      <div className="flex items-center justify-center mb-2">
+                        <i className="bx bxs-star text-lg" />
+                      </div>
+                      <div className="text-xs mb-1 opacity-75">PREMIUM</div>
+                      <div className="text-sm font-black">Quality</div>
+                      {phoneFinish === 'shiny-stones' && (
+                        <div className="absolute top-2 right-2">
+                          <i className="bx bx-check text-xl" />
+                        </div>
+                      )}
                     </button>
                     <button
                       type="button"
@@ -1072,14 +1096,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setPhoneFinish('standard');
                       }}
-                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                         phoneFinish === 'standard'
-                          ? 'border-black bg-black text-white shadow-md'
-                          : 'border-black/20 bg-white text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                       }`}
                     >
-                      <div className="text-lg mb-1">💎</div>
-                      <div className="text-sm">(- ₦500)</div>
+                      <div className="flex items-center justify-center mb-2">
+                        <i className="bx bx-layer text-lg" />
+                      </div>
+                      <div className="text-xs mb-1 opacity-75">STANDARD</div>
+                      <div className="text-sm font-black">(- ₦500)</div>
+                      {phoneFinish === 'standard' && (
+                        <div className="absolute top-2 right-2">
+                          <i className="bx bx-check text-xl" />
+                        </div>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1220,14 +1252,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setControllerFinish('shiny-stones');
                       }}
-                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                         controllerFinish === 'shiny-stones'
-                          ? 'border-black bg-black text-white shadow-md'
-                          : 'border-black/20 bg-white text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                       }`}
                     >
-                      <div className="text-lg mb-1">✨</div>
-                      <div className="text-sm">Premium</div>
+                      <div className="flex items-center justify-center mb-2">
+                        <i className="bx bxs-star text-lg" />
+                      </div>
+                      <div className="text-xs mb-1 opacity-75">PREMIUM</div>
+                      <div className="text-sm font-black">Quality</div>
+                      {controllerFinish === 'shiny-stones' && (
+                        <div className="absolute top-2 right-2">
+                          <i className="bx bx-check text-xl" />
+                        </div>
+                      )}
                     </button>
                     <button
                       type="button"
@@ -1235,14 +1275,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setControllerFinish('standard');
                       }}
-                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
                         controllerFinish === 'standard'
-                          ? 'border-black bg-black text-white shadow-md'
-                          : 'border-black/20 bg-white text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                       }`}
                     >
-                      <div className="text-lg mb-1">💎</div>
-                      <div className="text-sm">(- ₦500)</div>
+                      <div className="flex items-center justify-center mb-2">
+                        <i className="bx bx-layer text-lg" />
+                      </div>
+                      <div className="text-xs mb-1 opacity-75">STANDARD</div>
+                      <div className="text-sm font-black">(- ₦500)</div>
+                      {controllerFinish === 'standard' && (
+                        <div className="absolute top-2 right-2">
+                          <i className="bx bx-check text-xl" />
+                        </div>
+                      )}
                     </button>
                   </div>
                 </div>
