@@ -596,7 +596,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
 
   return (
     <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 py-10 text-black md:px-8">
-      <div className="mx-auto max-w-6xl">
+      <div className="w-full mx-auto max-w-6xl">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
