@@ -146,6 +146,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<string | null>(null);
+  const [submissionType, setSubmissionType] = useState<'success' | 'error' | null>(null);
   const [customerValidation, setCustomerValidation] = useState({ name: false, phone: false });
   const [customerTouched, setCustomerTouched] = useState({ name: false, phone: false });
   const [hasStartedSelection, setHasStartedSelection] = useState(false);
@@ -462,16 +463,19 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
     if (errors.name || errors.phone) {
       scrollToFirstInvalidCustomerField(errors);
-      setSubmissionResult(errors.name && errors.phone
+      const errorMsg = errors.name && errors.phone
         ? 'Please enter your name and a valid phone number before submitting your order.'
         : errors.name
         ? 'Please enter your name before submitting your order.'
-        : 'Please enter a valid phone number before submitting your order.');
+        : 'Please enter a valid phone number before submitting your order.';
+      setSubmissionResult(errorMsg);
+      setSubmissionType('error');
       return;
     }
 
     setIsSubmitting(true);
     setSubmissionResult(null);
+    setSubmissionType(null);
     const orderId = buildOrderId();
     const orderPayload = buildOrderPayload(orderId);
     const formData = new FormData();
@@ -514,6 +518,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
       const finalOrderId = result.orderId || orderId;
       setSubmissionResult(`Order submitted successfully as #${finalOrderId}.`);
+      setSubmissionType('success');
 
       onReceiptOpen({
         orderId: finalOrderId,
@@ -541,6 +546,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     } catch (error) {
       console.error('Order submission failed:', error);
       setSubmissionResult('Unable to send your order right now. Please try again or contact support.');
+      setSubmissionType('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -1170,7 +1176,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </button>
             </div>
           </div>
-          {submissionResult ? <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{submissionResult}</p> : null}
+          {submissionResult ? (
+            <p className={`mt-4 rounded-2xl border px-3 py-2 text-sm font-medium ${
+              submissionType === 'success'
+                ? 'border-green-200 bg-green-50 text-green-700'
+                : 'border-red-200 bg-red-50 text-red-700'
+            }`}>{submissionResult}</p>
+          ) : null}
         </div>
       </div>
 
