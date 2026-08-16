@@ -93,6 +93,17 @@ export default function OrdersPage() {
   return (
     <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 py-10 text-black md:px-8">
       <div className="mx-auto max-w-6xl">
+        {isLoading ? (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
+              <div className="animate-bounce rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-lg font-black text-white">S</div>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Searching orders</p>
+            </div>
+          </div>
+        ) : null}
+
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
