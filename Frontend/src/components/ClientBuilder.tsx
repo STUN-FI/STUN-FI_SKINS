@@ -157,6 +157,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     'keyboard-deck': false,
     'bottom-base': false,
   });
+  const [expandedLaptopSurface, setExpandedLaptopSurface] = useState<LaptopSurface | null>('top-lid');
+  const [laptopCopiedSettings, setLaptopCopiedSettings] = useState(false);
+  const [showCopyPrompt, setShowCopyPrompt] = useState(false);
   const [phoneTextToggle, setPhoneTextToggle] = useState(false);
   const [controllerTagToggle, setControllerTagToggle] = useState(false);
   const [priceNotification, setPriceNotification] = useState(false);
@@ -541,6 +544,55 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     }
   };
 
+  const handleCopyLaptopSettings = () => {
+    // Copy Surface 1 settings to Surface 2 and 3
+    const surface1 = 'top-lid';
+    
+    // Copy artwork settings
+    setLaptopArtworkMode((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopArtworkMode[surface1],
+      'bottom-base': laptopArtworkMode[surface1],
+    }));
+    
+    // Copy artwork files/catalog
+    setLaptopArtworkFiles((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopArtworkFiles[surface1],
+      'bottom-base': laptopArtworkFiles[surface1],
+    }));
+    
+    setLaptopArtworkCatalog((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopArtworkCatalog[surface1],
+      'bottom-base': laptopArtworkCatalog[surface1],
+    }));
+    
+    // Copy finishes
+    setLaptopFinishes((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopFinishes[surface1],
+      'bottom-base': laptopFinishes[surface1],
+    }));
+    
+    // Copy text settings
+    setLaptopTextToggle((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopTextToggle[surface1],
+      'bottom-base': laptopTextToggle[surface1],
+    }));
+    
+    setLaptopTexts((curr) => ({
+      ...curr,
+      'keyboard-deck': laptopTexts[surface1],
+      'bottom-base': laptopTexts[surface1],
+    }));
+    
+    setLaptopCopiedSettings(true);
+    setShowCopyPrompt(false);
+    // Keep surface 1 expanded, don't auto-collapse other surfaces
+  };
+
   const handleSubmit = async () => {
     const errors = getCustomerFieldErrors();
     setCustomerTouched({ name: true, phone: true });
@@ -823,187 +875,263 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               {laptopSelectedSurfaces.length === 0 ? (
                 <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">Select at least one laptop surface to continue.</div>
               ) : (
-                laptopSelectedSurfaces.map((surface) => (
-                  <div key={surface} className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-black">{LAPTOP_SURFACES.find((item) => item.value === surface)?.label}</p>
-                      <button type="button" onClick={() => setPreviewSurface(surface)} className="text-sm text-black/60">Preview</button>
-                    </div>
-
-                    <div className="mt-4">
-                      <div className="inline-flex rounded-full bg-[#efefef] p-1">
+                <div className="space-y-3">
+                  {laptopSelectedSurfaces.map((surface, index) => {
+                    const isExpanded = expandedLaptopSurface === surface;
+                    const isSurface1 = surface === 'top-lid';
+                    const surfaceLabel = LAPTOP_SURFACES.find((item) => item.value === surface)?.label;
+                    const hasCatalogArt = laptopArtworkCatalog[surface]?.trim().length > 0;
+                    const hasCustomText = laptopTextToggle[surface];
+                    
+                    return (
+                      <div key={surface}>
+                        {/* Accordion Header */}
                         <button
                           type="button"
-                          onClick={() => {
-                            setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
-                            setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
-                          }}
-                          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
+                          onClick={() => setExpandedLaptopSurface(isExpanded ? null : surface)}
+                          className="w-full rounded-3xl border border-black/10 bg-white p-5 transition hover:border-black/30"
                         >
-                          <i className="bx bx-upload mr-2" /> Upload Own Image
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
-                            setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
-                          }}
-                          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
-                        >
-                          <i className="bx bx-palette mr-2" /> Choose Existing Design
-                        </button>
-                      </div>
-
-                      <div className="mt-4">
-                        {laptopArtworkMode[surface] === 'upload' ? (
-                          <label className="space-y-2">
-                            <span className="text-sm text-black/70">Upload own image</span>
-
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(event) => handleArtworkFileChange(`laptop-${surface}`, event.target.files?.[0] ?? null)}
-                              className="hidden"
-                              id={`laptop-artwork-${surface}`}
-                            />
-                            <div className="flex items-center gap-3">
-                              <label htmlFor={`laptop-artwork-${surface}`} className="inline-flex flex-1 cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
-                                <span>{laptopsArtworkLabel(surface)}</span>
-                                <span className="text-black/60">Browse</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const file = laptopArtworkFiles[surface];
-                                  if (file) {
-                                    setPreviewSurface(surface);
-                                    setPreviewImageUrl(URL.createObjectURL(file));
-                                  }
-                                }}
-                                disabled={!laptopArtworkFiles[surface]}
-                                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-black transition hover:border-black disabled:cursor-not-allowed disabled:border-black/10 disabled:text-black/30"
-                                title="Preview artwork"
-                              >
-                                <i className="bx bx-show text-xl" />
-                              </button>
-                            </div>
-                          </label>
-                        ) : (
-                          <div className="space-y-2">
-                            <span className="text-sm text-black/70">Catalog art</span>
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                onClick={() => onCatalogOpen(surface)}
-                                className="rounded-2xl border px-4 py-3 text-sm bg-white"
-                              >
-                                <i className="bx bx-palette mr-2" /> Choose Existing Design
-                              </button>
-                              {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
-                                <div className="flex items-center gap-2">
-                                  <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
-                                  <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="text-sm text-red-600">Remove</button>
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <span className="text-sm text-black/70">Surface finish</span>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                markSelectionStarted();
-                                setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
-                              }}
-                              className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
-                                laptopFinishes[surface] === 'shiny-stones'
-                                  ? 'border-black bg-black text-white shadow-lg scale-105'
-                                  : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
-                              }`}
-                            >
-                              <div className="flex items-center justify-center mb-2">
-                                <i className="bx bxs-star text-lg" />
-                              </div>
-                              <div className="text-xs mb-1 opacity-75">PREMIUM</div>
-                              <div className="text-sm font-black">Quality</div>
-                              {laptopFinishes[surface] === 'shiny-stones' && (
-                                <div className="absolute top-2 right-2">
-                                  <i className="bx bx-check text-xl" />
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 text-left">
+                              <span className="text-lg font-semibold text-black">{surfaceLabel}</span>
+                              {!isExpanded && laptopCopiedSettings && !isSurface1 && (
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Copied</span>
+                              )}
+                              {!isExpanded && (
+                                <div className="text-xs text-black/60 flex gap-2">
+                                  {laptopFinishes[surface] === 'shiny-stones' ? (
+                                    <span>Premium</span>
+                                  ) : (
+                                    <span>Standard</span>
+                                  )}
+                                  {hasCatalogArt && <span>•</span>}
+                                  {hasCatalogArt && <span>Catalog Art</span>}
+                                  {hasCustomText && <span>•</span>}
+                                  {hasCustomText && <span>Custom Text</span>}
                                 </div>
                               )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                markSelectionStarted();
-                                setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
-                              }}
-                              className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
-                                laptopFinishes[surface] === 'standard'
-                                  ? 'border-black bg-black text-white shadow-lg scale-105'
-                                  : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
-                              }`}
-                            >
-                              <div className="flex items-center justify-center mb-2">
-                                <i className="bx bx-layer text-lg" />
-                              </div>
-                              <div className="text-xs mb-1 opacity-75">STANDARD</div>
-                              <div className="text-sm font-black">(- ₦500)</div>
-                              {laptopFinishes[surface] === 'standard' && (
-                                <div className="absolute top-2 right-2">
-                                  <i className="bx bx-check text-xl" />
-                                </div>
-                              )}
-                            </button>
+                            </div>
+                            <i className={`bx bx-chevron-down transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          {!laptopTextToggle[surface] ? (
-                            <button
-                              type="button"
-                              onClick={() => setLaptopTextToggle((current) => ({ ...current, [surface]: true }))}
-                              className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
-                            >
-                              <i className="bx bx-plus mr-2" />Add custom text?
-                            </button>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-black/70">Custom text</span>
+                        </button>
+
+                        {/* Accordion Content */}
+                        {isExpanded && (
+                          <div className="rounded-b-3xl border border-t-0 border-black/10 bg-[#f7f7f5] p-5 space-y-4">
+                            {/* Copy Settings Prompt - Show after Surface 1 is set up */}
+                            {isSurface1 && laptopFinishes[surface] && !laptopCopiedSettings && index === 0 && (
+                              <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-4 mb-4">
+                                <div className="flex items-start gap-3">
+                                  <i className="bx bx-bulb text-blue-600 text-xl mt-1 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <p className="text-sm font-semibold text-blue-900">Apply to all surfaces?</p>
+                                    <p className="text-xs text-blue-800 mt-1">Use the same design for Keyboard Deck and Bottom Base</p>
+                                    <div className="flex gap-2 mt-3">
+                                      <button
+                                        type="button"
+                                        onClick={handleCopyLaptopSettings}
+                                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition"
+                                      >
+                                        Copy Settings
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowCopyPrompt(false)}
+                                        className="text-xs bg-blue-200 text-blue-900 px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-300 transition"
+                                      >
+                                        Customize Each
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Artwork Selection */}
+                            <div>
+                              <div className="inline-flex rounded-full bg-[#efefef] p-1 mb-4">
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
-                                    setLaptopTexts((current) => ({ ...current, [surface]: '' }));
+                                    setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
+                                    setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
                                   }}
-                                  className="text-sm text-red-600 hover:text-red-700"
+                                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
                                 >
-                                  <i className="bx bx-x" />Remove
+                                  <i className="bx bx-upload mr-2" /> Upload Own Image
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
+                                    setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
+                                  }}
+                                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
+                                >
+                                  <i className="bx bx-palette mr-2" /> Choose Existing Design
                                 </button>
                               </div>
-                              <input
-                                type="text"
-                                value={laptopTexts[surface]}
-                                onChange={(event) => {
-                                  markSelectionStarted();
-                                  setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
-                                }}
-                                placeholder="Enter text for this surface"
-                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                                autoFocus
-                              />
+
+                              <div className="mt-4">
+                                {laptopArtworkMode[surface] === 'upload' ? (
+                                  <label className="space-y-2">
+                                    <span className="text-sm text-black/70">Upload own image</span>
+
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(event) => handleArtworkFileChange(`laptop-${surface}`, event.target.files?.[0] ?? null)}
+                                      className="hidden"
+                                      id={`laptop-artwork-${surface}`}
+                                    />
+                                    <div className="flex items-center gap-3">
+                                      <label htmlFor={`laptop-artwork-${surface}`} className="inline-flex flex-1 cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                                        <span>{laptopsArtworkLabel(surface)}</span>
+                                        <span className="text-black/60">Browse</span>
+                                      </label>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const file = laptopArtworkFiles[surface];
+                                          if (file) {
+                                            setPreviewSurface(surface);
+                                            setPreviewImageUrl(URL.createObjectURL(file));
+                                          }
+                                        }}
+                                        disabled={!laptopArtworkFiles[surface]}
+                                        className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-black transition hover:border-black disabled:cursor-not-allowed disabled:border-black/10 disabled:text-black/30"
+                                        title="Preview artwork"
+                                      >
+                                        <i className="bx bx-show text-xl" />
+                                      </button>
+                                    </div>
+                                  </label>
+                                ) : (
+                                  <div className="space-y-2">
+                                    <span className="text-sm text-black/70">Catalog art</span>
+                                    <div className="flex items-center gap-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => onCatalogOpen(surface)}
+                                        className="rounded-2xl border px-4 py-3 text-sm bg-white"
+                                      >
+                                        <i className="bx bx-palette mr-2" /> Choose Existing Design
+                                      </button>
+                                      {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
+                                        <div className="flex items-center gap-2">
+                                          <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
+                                          <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="text-sm text-red-600">Remove</button>
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
+
+                            {/* Finish & Text Options */}
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div className="space-y-2">
+                                <span className="text-sm text-black/70">Surface finish</span>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      markSelectionStarted();
+                                      setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
+                                    }}
+                                    className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                                      laptopFinishes[surface] === 'shiny-stones'
+                                        ? 'border-black bg-black text-white shadow-lg scale-105'
+                                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-center mb-2">
+                                      <i className="bx bxs-star text-lg" />
+                                    </div>
+                                    <div className="text-xs mb-1 opacity-75">PREMIUM</div>
+                                    <div className="text-sm font-black">Quality</div>
+                                    {laptopFinishes[surface] === 'shiny-stones' && (
+                                      <div className="absolute top-2 right-2">
+                                        <i className="bx bx-check text-xl" />
+                                      </div>
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      markSelectionStarted();
+                                      setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
+                                    }}
+                                    className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                                      laptopFinishes[surface] === 'standard'
+                                        ? 'border-black bg-black text-white shadow-lg scale-105'
+                                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-center mb-2">
+                                      <i className="bx bx-layer text-lg" />
+                                    </div>
+                                    <div className="text-xs mb-1 opacity-75">STANDARD</div>
+                                    <div className="text-sm font-black">(- ₦500)</div>
+                                    {laptopFinishes[surface] === 'standard' && (
+                                      <div className="absolute top-2 right-2">
+                                        <i className="bx bx-check text-xl" />
+                                      </div>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                {!laptopTextToggle[surface] ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setLaptopTextToggle((current) => ({ ...current, [surface]: true }))}
+                                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                                  >
+                                    <i className="bx bx-plus mr-2" />Add custom text?
+                                  </button>
+                                ) : (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm text-black/70">Custom text</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
+                                          setLaptopTexts((current) => ({ ...current, [surface]: '' }));
+                                        }}
+                                        className="text-sm text-red-600 hover:text-red-700"
+                                      >
+                                        <i className="bx bx-x" />Remove
+                                      </button>
+                                    </div>
+                                    <input
+                                      type="text"
+                                      value={laptopTexts[surface]}
+                                      onChange={(event) => {
+                                        markSelectionStarted();
+                                        setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
+                                      }}
+                                      placeholder="Enter text for this surface"
+                                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                                      autoFocus
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Preview Button */}
+                            <button type="button" onClick={() => setPreviewSurface(surface)} className="w-full text-sm text-blue-600 font-semibold py-2 hover:text-blue-700">
+                              <i className="bx bx-show mr-1" /> Preview this surface
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))
+                    );
+                  })}
+                </div>
               )}
 
               <div className="space-y-4 rounded-3xl border-2 border-black/10 bg-white p-6">
