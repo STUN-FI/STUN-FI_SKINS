@@ -80,7 +80,8 @@ router.post('/', upload.any(), async (req, res) => {
     };
 
     // Handle file uploads to Cloudinary (required)
-    const uploadedUrls = [];
+    // Map field names to uploaded URLs to preserve file-to-surface mapping
+    const uploadedUrlsByField = {};
     if (req.files && req.files.length > 0) {
       // Validate all files before uploading
       for (const file of req.files) {
@@ -108,7 +109,8 @@ router.post('/', upload.any(), async (req, res) => {
             quality: 'auto',
             fetch_format: 'auto',
           });
-          uploadedUrls.push(result.secure_url || result.url);
+          // Store URL with field name as key (e.g., 'artwork_top-lid' -> URL)
+          uploadedUrlsByField[file.fieldname] = result.secure_url || result.url;
         } catch (uploadError) {
           console.error('Cloudinary upload failed:', uploadError);
           return res.status(500).json({
@@ -119,14 +121,46 @@ router.post('/', upload.any(), async (req, res) => {
       }
     }
 
-    if (uploadedUrls.length > 0 && Array.isArray(surfaces)) {
-      surfaces = surfaces.map((surface, index) => ({
-        ...surface,
-        imageUrl:
-          surface?.imageUrl && typeof surface.imageUrl === 'string' && !surface.imageUrl.startsWith('blob:')
-            ? surface.imageUrl
-            : uploadedUrls[index] || '',
-      }));
+    // Map uploaded URLs to surfaces using field names
+    if (Object.keys(uploadedUrlsByField).length > 0 && Array.isArray(surfaces)) {
+      // Build a map of surface name/value to uploaded URL
+      const surfaceUrlMap = new Map();
+      
+      // Map field names to surfaces
+      Object.entries(uploadedUrlsByField).forEach(([fieldName, url]) => {
+        // fieldName format: 'artwork_top-lid' -> extract 'top-lid'
+        const surfaceKey = fieldName.replace('artwork_', '');
+        surfaceUrlMap.set(surfaceKey, url);
+      });
+      
+      // Assign URLs to surfaces by matching the surface value
+      surfaces = surfaces.map((surface) => {
+        let surfaceUrl = '';
+        
+        // Try to match by looking up common surface keys
+        const surfaceNameLower = surface.name.toLowerCase().replace(/\s+/g, '-');
+        if (surfaceUrlMap.has(surfaceNameLower)) {
+          surfaceUrl = surfaceUrlMap.get(surfaceNameLower);
+        } else if (surfaceUrlMap.has(surface.name)) {
+          surfaceUrl = surfaceUrlMap.get(surface.name);
+        } else {
+          // Fallback: check if any field matches this surface roughly
+          for (const [key, url] of surfaceUrlMap.entries()) {
+            if (key.includes(surfaceNameLower) || surfaceNameLower.includes(key)) {
+              surfaceUrl = url;
+              break;
+            }
+          }
+        }
+        
+        return {
+          ...surface,
+          imageUrl: surfaceUrl || 
+            (surface?.imageUrl && typeof surface.imageUrl === 'string' && !surface.imageUrl.startsWith('blob:')
+              ? surface.imageUrl
+              : ''),
+        };
+      });
     }
 
     const orderDoc = {
