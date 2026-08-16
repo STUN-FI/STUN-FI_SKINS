@@ -95,9 +95,10 @@ type ClientBuilderProps = {
   onHelpOpen: () => void;
   onCatalogOpen: (surface: LaptopSurface) => void;
   catalogSelection: { surface: LaptopSurface; imageUrl: string } | null;
+  onSubmittingChange?: (isSubmitting: boolean) => void;
 };
 
-export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen, onCatalogOpen, catalogSelection }: ClientBuilderProps) {
+export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange }: ClientBuilderProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -150,8 +151,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const [hasStartedSelection, setHasStartedSelection] = useState(false);
   const [previewSurface, setPreviewSurface] = useState<LaptopSurface | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const phoneInputRef = useRef<HTMLInputElement | null>(null);
 
   const markSelectionStarted = () => setHasStartedSelection(true);
+
+  useEffect(() => {
+    onSubmittingChange?.(isSubmitting);
+  }, [isSubmitting, onSubmittingChange]);
 
   useEffect(() => {
     if (!catalogSelection) return;
@@ -435,12 +442,26 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     };
   };
 
+  const scrollToFirstInvalidCustomerField = (errors: ReturnType<typeof getCustomerFieldErrors>) => {
+    if (errors.name) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (errors.phone) {
+      phoneInputRef.current?.focus();
+      phoneInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleSubmit = async () => {
     const errors = getCustomerFieldErrors();
     setCustomerTouched({ name: true, phone: true });
     setCustomerValidation(errors);
 
     if (errors.name || errors.phone) {
+      scrollToFirstInvalidCustomerField(errors);
       setSubmissionResult(errors.name && errors.phone
         ? 'Please enter your name and a valid phone number before submitting your order.'
         : errors.name
@@ -563,6 +584,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
             <label className="space-y-2">
               <span className="text-sm font-semibold text-black">Name</span>
               <input
+                ref={nameInputRef}
                 type="text"
                 value={clientName}
                 onChange={(event) => {
@@ -589,6 +611,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
             <label className="space-y-2">
               <span className="text-sm font-semibold text-black">Phone Number</span>
               <input
+                ref={phoneInputRef}
                 type="tel"
                 value={phoneNumber}
                 onChange={(event) => {
@@ -1147,7 +1170,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </button>
             </div>
           </div>
-          {submissionResult ? <p className="mt-4 text-sm text-black/70">{submissionResult}</p> : null}
+          {submissionResult ? <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{submissionResult}</p> : null}
         </div>
       </div>
 
@@ -1157,17 +1180,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           surface={previewSurface}
           onClose={handlePreviewClose}
         />
-      ) : null}
-
-      {isSubmitting ? (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
-            <div className="animate-bounce rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
-              <BrandedLogo className="text-white" size="lg" />
-            </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Processing order</p>
-          </div>
-        </div>
       ) : null}
 
     </section>

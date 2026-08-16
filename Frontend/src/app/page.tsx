@@ -404,6 +404,7 @@ export default function HomePage() {
   const [builderPrice, setBuilderPrice] = useState<number | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [globalBuilderSubmitting, setGlobalBuilderSubmitting] = useState(false);
 
   const handleReceiptOpen = (receipt: ReceiptData) => {
     setReceiptData(receipt);
@@ -734,6 +735,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                   onHelpOpen={handleHelpOpen}
                   onCatalogOpen={handleCatalogOpen}
                   catalogSelection={catalogSelection}
+                  onSubmittingChange={setGlobalBuilderSubmitting}
                 />
                 <ApplicationGuideSection />
                 <VideoShowcase />
@@ -842,6 +844,38 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 </a>
               </div>
               <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Follow us</p>
+                <div className="mt-3 flex items-center gap-3">
+                  <a
+                    href="https://www.tiktok.com/@stunfihub?_r=1&_t=ZS-98vB2MbyYWS"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="TikTok"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black transition hover:border-black hover:bg-black hover:text-white"
+                  >
+                    <i className="bx bxl-tiktok text-xl" />
+                  </a>
+                  <a
+                    href="https://www.instagram.com/stunfihub?igsh=MWdwanc4cGJsZzFibw==&igsi=MWdwanc4cGJsZzFibw=="
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Instagram"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black transition hover:border-black hover:bg-black hover:text-white"
+                  >
+                    <i className="bx bxl-instagram-alt text-xl" />
+                  </a>
+                  <a
+                    href="https://x.com/Favor_2da_wrld"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="X"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black transition hover:border-black hover:bg-black hover:text-white"
+                  >
+                    <i className="bx bxl-twitter text-xl" />
+                  </a>
+                </div>
+              </div>
+              <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Location</p>
                 <p className="mt-2 text-sm text-black/70">Enugu State, Nigeria</p>
               </div>
@@ -854,6 +888,17 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
       </div>
 
       <FloatingPricingButton price={form.mode === 'wholesale' ? orderTotal : builderPrice} />
+
+      {globalBuilderSubmitting ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
+            <div className="animate-bounce rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
+              <BrandedLogo className="text-white" size="lg" />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Processing order</p>
+          </div>
+        </div>
+      ) : null}
 
       {receiptData && (
         <ReceiptModal
