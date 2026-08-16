@@ -910,20 +910,41 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       </div>
 
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <label className="space-y-2">
+                        <div className="space-y-2">
                           <span className="text-sm text-black/70">Surface finish</span>
-                          <select
-                            value={laptopFinishes[surface]}
-                            onChange={(event) => {
-                              markSelectionStarted();
-                              setLaptopFinishes((current) => ({ ...current, [surface]: event.target.value as FinishType }));
-                            }}
-                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                          >
-                            <option value="shiny-stones">Premium</option>
-                            <option value="standard">Standard (- ₦500)</option>
-                          </select>
-                        </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                markSelectionStarted();
+                                setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
+                              }}
+                              className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                                laptopFinishes[surface] === 'shiny-stones'
+                                  ? 'border-black bg-black text-white shadow-md'
+                                  : 'border-black/20 bg-white text-black hover:border-black'
+                              }`}
+                            >
+                              <div className="text-lg mb-1">✨</div>
+                              <div className="text-sm">Premium</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                markSelectionStarted();
+                                setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
+                              }}
+                              className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                                laptopFinishes[surface] === 'standard'
+                                  ? 'border-black bg-black text-white shadow-md'
+                                  : 'border-black/20 bg-white text-black hover:border-black'
+                              }`}
+                            >
+                              <div className="text-lg mb-1">💎</div>
+                              <div className="text-sm">(- ₦500)</div>
+                            </button>
+                          </div>
+                        </div>
                         <div className="space-y-2">
                           {!laptopTextToggle[surface] ? (
                             <button
@@ -1027,22 +1048,44 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 ))}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
+                <div className="space-y-2">
                   <span className="text-sm text-black/70">Surface finish</span>
-                  <select
-                    value={phoneFinish}
-                    onChange={(event) => {
-                      markSelectionStarted();
-                      setPhoneFinish(event.target.value as FinishType);
-                    }}
-                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                  >
-                    <option value="shiny-stones">Premium</option>
-                    <option value="standard">Standard (- ₦500)</option>
-                  </select>
-                </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markSelectionStarted();
+                        setPhoneFinish('shiny-stones');
+                      }}
+                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                        phoneFinish === 'shiny-stones'
+                          ? 'border-black bg-black text-white shadow-md'
+                          : 'border-black/20 bg-white text-black hover:border-black'
+                      }`}
+                    >
+                      <div className="text-lg mb-1">✨</div>
+                      <div className="text-sm">Premium</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markSelectionStarted();
+                        setPhoneFinish('standard');
+                      }}
+                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                        phoneFinish === 'standard'
+                          ? 'border-black bg-black text-white shadow-md'
+                          : 'border-black/20 bg-white text-black hover:border-black'
+                      }`}
+                    >
+                      <div className="text-lg mb-1">💎</div>
+                      <div className="text-sm">(- ₦500)</div>
+                    </button>
+                  </div>
+                </div>
                 <label className="space-y-2">
                   <span className="text-sm text-black/70">Artwork upload</span>
+
                   <input
                     type="file"
                     accept="image/*"
@@ -1168,20 +1211,41 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 </select>
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
+                <div className="space-y-2">
                   <span className="text-sm text-black/70">Surface finish</span>
-                  <select
-                    value={controllerFinish}
-                    onChange={(event) => {
-                      markSelectionStarted();
-                      setControllerFinish(event.target.value as FinishType);
-                    }}
-                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                  >
-                    <option value="shiny-stones">Premium</option>
-                    <option value="standard">Standard (- ₦500)</option>
-                  </select>
-                </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markSelectionStarted();
+                        setControllerFinish('shiny-stones');
+                      }}
+                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                        controllerFinish === 'shiny-stones'
+                          ? 'border-black bg-black text-white shadow-md'
+                          : 'border-black/20 bg-white text-black hover:border-black'
+                      }`}
+                    >
+                      <div className="text-lg mb-1">✨</div>
+                      <div className="text-sm">Premium</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markSelectionStarted();
+                        setControllerFinish('standard');
+                      }}
+                      className={`rounded-2xl border-2 px-3 py-3 text-center font-semibold transition-all duration-200 ${
+                        controllerFinish === 'standard'
+                          ? 'border-black bg-black text-white shadow-md'
+                          : 'border-black/20 bg-white text-black hover:border-black'
+                      }`}
+                    >
+                      <div className="text-lg mb-1">💎</div>
+                      <div className="text-sm">(- ₦500)</div>
+                    </button>
+                  </div>
+                </div>
                 <label className="space-y-2">
                   <span className="text-sm text-black/70">Artwork upload</span>
                   <input
