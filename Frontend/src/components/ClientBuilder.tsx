@@ -934,9 +934,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 ))
               )}
 
-              <div className="space-y-3 rounded-3xl border border-black/10 bg-white p-5">
+              <div className="space-y-4 rounded-3xl border-2 border-black/10 bg-white p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Installation</p>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {(['professional', 'diy'] as InstallationOption[]).map((option) => (
                     <button
                       key={option}
@@ -945,13 +945,24 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setLaptopInstallOption(option);
                       }}
-                      className={`rounded-3xl border px-4 py-4 text-left transition ${
+                      className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
                         laptopInstallOption === option
-                          ? 'border-black bg-black text-white'
-                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md hover:scale-102'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦1,500 if all 3 surfaces selected)'}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
+                        <div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
+                          <div className={`text-xs mt-1 ${laptopInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦1,500 if all 3 surfaces)'}</div>
+                        </div>
+                      </div>
+                      {laptopInstallOption === option && (
+                        <div className="absolute top-3 right-3 text-white">
+                          <i className="bx bx-check text-2xl" />
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -1065,9 +1076,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 )}
               </div>
-              <div className="space-y-3 rounded-3xl border border-black/10 bg-white p-5">
+              <div className="space-y-4 rounded-3xl border-2 border-black/10 bg-white p-6">
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Installation</div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {(['professional', 'diy'] as InstallationOption[]).map((option) => (
                     <button
                       key={option}
@@ -1076,13 +1087,24 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setPhoneInstallOption(option);
                       }}
-                      className={`rounded-3xl border px-4 py-4 text-left transition ${
+                      className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
                         phoneInstallOption === option
-                          ? 'border-black bg-black text-white'
-                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md hover:scale-102'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦500)'}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
+                        <div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
+                          <div className={`text-xs mt-1 ${phoneInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦500)'}</div>
+                        </div>
+                      </div>
+                      {phoneInstallOption === option && (
+                        <div className="absolute top-3 right-3 text-white">
+                          <i className="bx bx-check text-2xl" />
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -1195,9 +1217,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 )}
               </div>
-              <div className="space-y-3 rounded-3xl border border-black/10 bg-white p-5">
+              <div className="space-y-4 rounded-3xl border-2 border-black/10 bg-white p-6">
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Installation</div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {(['professional', 'diy'] as InstallationOption[]).map((option) => (
                     <button
                       key={option}
@@ -1206,13 +1228,24 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setControllerInstallOption(option);
                       }}
-                      className={`rounded-3xl border px-4 py-4 text-left transition ${
+                      className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
                         controllerInstallOption === option
-                          ? 'border-black bg-black text-white'
-                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                          ? 'border-black bg-black text-white shadow-lg scale-105'
+                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md hover:scale-102'
                       }`}
                     >
-                      <div className="font-semibold">{option === 'professional' ? 'Professional Installation' : 'Self-application (- ₦500)'}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
+                        <div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
+                          <div className={`text-xs mt-1 ${controllerInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦500)'}</div>
+                        </div>
+                      </div>
+                      {controllerInstallOption === option && (
+                        <div className="absolute top-3 right-3 text-white">
+                          <i className="bx bx-check text-2xl" />
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
