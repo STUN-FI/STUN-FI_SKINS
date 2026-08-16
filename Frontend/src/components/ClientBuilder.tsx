@@ -187,10 +187,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   }, [catalogSelection]);
 
   const laptopsArtworkLabel = (surface: LaptopSurface) =>
-    laptopArtworkFiles[surface]?.name || laptopArtworkCatalog[surface] || 'Choose artwork';
+    laptopArtworkFiles[surface]?.name || laptopArtworkCatalog[surface] || 'Choose image';
 
-  const phoneArtworkLabel = phoneArtworkFile?.name || phoneArtworkCatalog || 'Choose artwork';
-  const controllerArtworkLabel = controllerArtworkFile?.name || controllerArtworkCatalog || 'Choose artwork';
+  const phoneArtworkLabel = phoneArtworkFile?.name || phoneArtworkCatalog || 'Choose image';
+  const controllerArtworkLabel = controllerArtworkFile?.name || controllerArtworkCatalog || 'Choose image';
 
   const pricing = useMemo(
     () =>
@@ -1116,7 +1116,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Artwork upload</span>
+                  <span className="text-sm text-black/70">Image upload</span>
 
                   <input
                     type="file"
@@ -1295,7 +1295,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Artwork upload</span>
+                  <span className="text-sm text-black/70">Image upload</span>
                   <input
                     type="file"
                     accept="image/*"
