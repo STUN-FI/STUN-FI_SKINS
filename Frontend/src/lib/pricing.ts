@@ -21,12 +21,95 @@ export type ControllerSubtype =
   | 'switch-pro';
 export type OrderMode = 'individual' | 'wholesale';
 
-const LAPTOP_BASE_STANDARD = 3000;
-const LAPTOP_BASE_SHINY = 3500;
-const LAPTOP_FULL_STANDARD = 9000;
-const LAPTOP_FULL_SHINY = 10500;
-const LAPTOP_TEXT_FEES = [0, 700, 1400, 1500];
-const LAPTOP_DYI_DISCOUNT = 1500;
+// Laptop pricing constants
+const LAPTOP_STANDARD_PRICE = 3000;
+const LAPTOP_PREMIUM_PRICE = 3500;
+const LAPTOP_TEXT_FEE_PER_SURFACE = 400;
+const LAPTOP_TEXT_FEE_3_SURFACES = 1000;
+const LAPTOP_MATCHING_QUALITY_DISCOUNT = 500; // Applied when all surfaces are the same quality (standard or premium)
+const LAPTOP_DIY_DISCOUNT = 500; // Additional discount for DIY installation
+
+export interface SurfaceCustomization {
+  selected: boolean;
+  quality: 'standard' | 'premium';
+}
+
+export interface LaptopPricingOptions {
+  surfaces: {
+    'top-lid': SurfaceCustomization;
+    'keyboard-deck': SurfaceCustomization;
+    'bottom-base': SurfaceCustomization;
+  };
+  customTextSurfaceCount: number;
+  installationType: 'diy' | 'pro';
+}
+
+export interface PriceBreakdown {
+  surfaceItems: { name: string; quality: string; price: number }[];
+  surfacesSubtotal: number;
+  customTextFee: number;
+  qualityAdjustment: number;
+  installationAdjustment: number;
+  finalTotal: number;
+}
+
+export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakdown {
+  const surfaceNames: Record<string, string> = {
+    'top-lid': 'Top Lid',
+    'keyboard-deck': 'Keyboard Deck',
+    'bottom-base': 'Bottom Base',
+  };
+
+  const selectedKeys = Object.keys(options.surfaces).filter(
+    (key) => options.surfaces[key as keyof typeof options.surfaces].selected
+  ) as Array<'top-lid' | 'keyboard-deck' | 'bottom-base'>;
+
+  const surfaceItems = selectedKeys.map((key) => {
+    const surface = options.surfaces[key];
+    const price = surface.quality === 'standard' ? LAPTOP_STANDARD_PRICE : LAPTOP_PREMIUM_PRICE;
+    return {
+      name: surfaceNames[key] || key,
+      quality: surface.quality === 'standard' ? 'Standard' : 'Premium',
+      price,
+    };
+  });
+
+  const surfacesSubtotal = surfaceItems.reduce((sum, item) => sum + item.price, 0);
+
+  let customTextFee = 0;
+  if (options.customTextSurfaceCount > 0) {
+    customTextFee = options.customTextSurfaceCount === 3 
+      ? LAPTOP_TEXT_FEE_3_SURFACES 
+      : options.customTextSurfaceCount * LAPTOP_TEXT_FEE_PER_SURFACE;
+  }
+
+  // Check if all selected surfaces have the same quality
+  const allSelectedQualities = selectedKeys.map((key) => options.surfaces[key].quality);
+  const allSameQuality = allSelectedQualities.length > 0 && allSelectedQualities.every((q) => q === allSelectedQualities[0]);
+
+  // Apply same-quality discount (when all surfaces are the same quality, standard or premium)
+  let qualityAdjustment = 0;
+  if (allSameQuality) {
+    qualityAdjustment = -LAPTOP_MATCHING_QUALITY_DISCOUNT;
+  }
+
+  // Apply DIY discount (additional discount, only if all surfaces have the same quality)
+  let installationAdjustment = 0;
+  if (allSameQuality && options.installationType === 'diy') {
+    installationAdjustment = -LAPTOP_DIY_DISCOUNT;
+  }
+
+  const finalTotal = Math.max(0, surfacesSubtotal + customTextFee + qualityAdjustment + installationAdjustment);
+
+  return {
+    surfaceItems,
+    surfacesSubtotal,
+    customTextFee,
+    qualityAdjustment,
+    installationAdjustment,
+    finalTotal,
+  };
+}
 
 const PHONE_BASE = 2000;
 const PHONE_FULL_BODY_UPGRADE = 1000;
@@ -54,53 +137,6 @@ export function getSheetPrice(finish: FinishType, mode: OrderMode = 'individual'
     return finish === 'standard' ? 1500 : 2000;
   }
   return finish === 'standard' ? 3000 : 3500;
-}
-
-export function calculateLaptopPricing(options: {
-  selectedSurfaces: LaptopSurface[];
-  finishes: Record<LaptopSurface, FinishType>;
-  customTexts: Record<LaptopSurface, string>;
-  installOption: InstallationOption;
-}) {
-  const lineItems: Array<{ label: string; price: number }> = [];
-  const selectedCount = options.selectedSurfaces.length;
-  const allSelected = selectedCount === 3;
-
-  if (selectedCount === 0) {
-    return { lineItems, total: 0 };
-  }
-
-  const textFields = options.selectedSurfaces.filter((surface) => options.customTexts[surface]?.trim()).length;
-
-  if (allSelected) {
-    const anyShiny = options.selectedSurfaces.some((surface) => options.finishes[surface] === 'shiny-stones');
-    const packagePrice = anyShiny ? LAPTOP_FULL_SHINY : LAPTOP_FULL_STANDARD;
-    lineItems.push({ label: 'Full laptop package', price: packagePrice });
-  } else {
-    options.selectedSurfaces.forEach((surface) => {
-      const finish = options.finishes[surface];
-      const surfacePrice = finish === 'shiny-stones' ? LAPTOP_BASE_SHINY : LAPTOP_BASE_STANDARD;
-      const surfaceLabel = surface
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' ');
-      lineItems.push({ label: `${surfaceLabel} ${finish === 'shiny-stones' ? '(Premium)' : 'wrap'}`, price: surfacePrice });
-    });
-  }
-
-  if (textFields > 0) {
-    const textFee = LAPTOP_TEXT_FEES[Math.min(textFields, LAPTOP_TEXT_FEES.length - 1)];
-    lineItems.push({ label: `Text customization (${textFields} field${textFields > 1 ? 's' : ''})`, price: textFee });
-  }
-
-  if (allSelected && options.installOption === 'diy') {
-    lineItems.push({ label: 'Self-application', price: -LAPTOP_DYI_DISCOUNT });
-  }
-
-  return {
-    lineItems,
-    total: lineItems.reduce((sum, item) => sum + item.price, 0),
-  };
 }
 
 export function calculatePhonePricing(options: {
@@ -197,7 +233,70 @@ export function calculateClientOrderPricing(options: {
   };
 }): PricingResult {
   if (options.category === 'laptop') {
-    return calculateLaptopPricing(options.laptop);
+    // Convert old format to new LaptopPricingOptions format
+    const selectedSurfaces = options.laptop.selectedSurfaces;
+    const customTextSurfaceCount = selectedSurfaces.filter(
+      (surface) => options.laptop.customTexts[surface]?.trim().length > 0
+    ).length;
+
+    const laptopOptions: LaptopPricingOptions = {
+      surfaces: {
+        'top-lid': {
+          selected: selectedSurfaces.includes('top-lid'),
+          quality: options.laptop.finishes['top-lid'] === 'shiny-stones' ? 'premium' : 'standard',
+        },
+        'keyboard-deck': {
+          selected: selectedSurfaces.includes('keyboard-deck'),
+          quality: options.laptop.finishes['keyboard-deck'] === 'shiny-stones' ? 'premium' : 'standard',
+        },
+        'bottom-base': {
+          selected: selectedSurfaces.includes('bottom-base'),
+          quality: options.laptop.finishes['bottom-base'] === 'shiny-stones' ? 'premium' : 'standard',
+        },
+      },
+      customTextSurfaceCount,
+      installationType: options.laptop.installOption === 'diy' ? 'diy' : 'pro',
+    };
+
+    const breakdown = calculateLaptopPrice(laptopOptions);
+    const lineItems: Array<{ label: string; price: number }> = [];
+
+    // Add surface items to line items
+    breakdown.surfaceItems.forEach((item) => {
+      lineItems.push({
+        label: `${item.name} - ${item.quality}`,
+        price: item.price,
+      });
+    });
+
+    // Add custom text fee if applicable
+    if (breakdown.customTextFee > 0) {
+      lineItems.push({
+        label: 'Custom text overlay',
+        price: breakdown.customTextFee,
+      });
+    }
+
+    // Add quality adjustment if applicable (matching quality discount)
+    if (breakdown.qualityAdjustment !== 0) {
+      lineItems.push({
+        label: 'Matching quality discount',
+        price: breakdown.qualityAdjustment,
+      });
+    }
+
+    // Add installation adjustment if applicable
+    if (breakdown.installationAdjustment !== 0) {
+      lineItems.push({
+        label: breakdown.installationAdjustment < 0 ? 'Self-application discount' : 'Professional installation',
+        price: breakdown.installationAdjustment,
+      });
+    }
+
+    return {
+      lineItems,
+      total: breakdown.finalTotal,
+    };
   }
 
   if (options.category === 'phone') {

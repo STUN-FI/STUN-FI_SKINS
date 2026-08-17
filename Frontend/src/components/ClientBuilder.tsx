@@ -51,9 +51,9 @@ const ARTWORK_CATALOG = [
 ];
 
 const DEFAULT_LAPTOP_FINISHES: Record<LaptopSurface, FinishType> = {
-  'top-lid': 'shiny-stones',
-  'keyboard-deck': 'shiny-stones',
-  'bottom-base': 'shiny-stones',
+  'top-lid': 'standard',
+  'keyboard-deck': 'standard',
+  'bottom-base': 'standard',
 };
 
 const DEFAULT_LAPTOP_TEXTS: Record<LaptopSurface, string> = {
@@ -383,9 +383,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     setItemName('');
     setInstructions('');
     setPhotoFile(null);
-    setLaptopSelectedSurfaces(['top-lid']);
+    setLaptopSelectedSurfaces(['top-lid', 'keyboard-deck', 'bottom-base']);
     setLaptopFinishes(DEFAULT_LAPTOP_FINISHES);
     setLaptopTexts(DEFAULT_LAPTOP_TEXTS);
+    setLaptopTextToggle({
+      'top-lid': false,
+      'keyboard-deck': false,
+      'bottom-base': false,
+    });
     setLaptopArtworkCatalog(DEFAULT_LAPTOP_CATALOG);
     setLaptopArtworkFiles({
       'top-lid': null,
@@ -399,6 +404,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     });
     setSurfaceDesigns(DEFAULT_LAPTOP_DESIGNS);
     setLaptopInstallOption('professional');
+    setExpandedLaptopSurface('top-lid');
+    setLaptopCopiedSettings(false);
+    setShowCopyPrompt(false);
     setPhoneCoverage('back-panel');
     setPhoneFinish('shiny-stones');
     setPhoneArtworkCatalog('');
@@ -691,7 +699,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   };
 
   return (
-    <section id="builder" className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
+    <section id="builder" className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-4 sm:p-6 shadow-glow backdrop-blur overflow-x-auto">
       <div className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -926,20 +934,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                   <div className="flex-1">
                                     <p className="text-sm font-semibold text-blue-900">Apply to all surfaces?</p>
                                     <p className="text-xs text-blue-800 mt-1">Use the same design for Keyboard Deck and Bottom Base</p>
-                                    <div className="flex gap-2 mt-3">
+                                    <div className="mt-3">
                                       <button
                                         type="button"
                                         onClick={handleCopyLaptopSettings}
                                         className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition"
                                       >
                                         Copy Settings
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => setShowCopyPrompt(false)}
-                                        className="text-xs bg-blue-200 text-blue-900 px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-300 transition"
-                                      >
-                                        Customize Each
                                       </button>
                                     </div>
                                   </div>
@@ -1050,7 +1051,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       <i className="bx bxs-star text-lg" />
                                     </div>
                                     <div className="text-xs mb-1 opacity-75">PREMIUM</div>
-                                    <div className="text-sm font-black">Quality</div>
+                                    <div className="text-sm font-black">+ ₦500</div>
                                     {laptopFinishes[surface] === 'shiny-stones' && (
                                       <div className="absolute top-2 right-2">
                                         <i className="bx bx-check text-xl" />
@@ -1073,7 +1074,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       <i className="bx bx-layer text-lg" />
                                     </div>
                                     <div className="text-xs mb-1 opacity-75">STANDARD</div>
-                                    <div className="text-sm font-black">(- ₦500)</div>
+                                    <div className="text-sm font-black">Base</div>
                                     {laptopFinishes[surface] === 'standard' && (
                                       <div className="absolute top-2 right-2">
                                         <i className="bx bx-check text-xl" />
@@ -1149,8 +1150,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       <div className="flex items-center gap-3">
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
-                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
-                          <div className={`text-xs mt-1 ${laptopInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦1,500 if all 3 surfaces)'}</div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Fitting' : 'Self-application'}</div>
+                          <div className={`text-xs mt-1 ${laptopInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
                       {laptopInstallOption === option && (
@@ -1330,7 +1331,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
                           <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
-                          <div className={`text-xs mt-1 ${phoneInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦500)'}</div>
+                          <div className={`text-xs mt-1 ${phoneInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
                       {phoneInstallOption === option && (
@@ -1508,7 +1509,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
                           <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
-                          <div className={`text-xs mt-1 ${controllerInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'We apply it' : '(- ₦500)'}</div>
+                          <div className={`text-xs mt-1 ${controllerInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
                       {controllerInstallOption === option && (
@@ -1577,37 +1578,49 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Order Summary</p>
-              <p className="mt-2 text-base text-black/80">Review your line items before generating your receipt.</p>
+              <p className="mt-2 text-base text-black/80">Here&apos;s exactly how your price breaks down.</p>
             </div>
             <div className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
               {pricingQuotePending ? 'Pending Quote' : formatCurrency(pricing.total)}
             </div>
           </div>
-          <div className="mt-6 space-y-3">
-            {pricing.lineItems.map((item, index) => (
-              <div key={`${item.label}-${index}`} className="flex items-center justify-between rounded-3xl border border-black/10 bg-white px-4 py-3">
-                <span className="text-sm text-black/80">{item.label}</span>
-                <span className="text-sm font-semibold text-black">{item.price >= 0 ? formatCurrency(item.price) : `- ${formatCurrency(Math.abs(item.price))}`}</span>
-              </div>
-            ))}
+          <div className="mt-6 space-y-2">
+            {pricing.lineItems.length === 0 ? (
+              <div className="text-sm text-black/60 py-4">No items selected yet</div>
+            ) : (
+              <>
+                {pricing.lineItems.map((item, index) => {
+                  const isAdjustment = item.price < 0;
+                  const isLast = index === pricing.lineItems.length - 1;
+                  return (
+                    <div
+                      key={`${item.label}-${index}`}
+                      className={`flex items-center justify-between rounded-2xl border px-4 py-3 transition ${
+                        isAdjustment
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-black/10 bg-white hover:border-black/20'
+                      } ${isLast ? 'border-t-2 border-black/20 mt-3 pt-4' : ''}`}
+                    >
+                      <span className={`text-sm ${isAdjustment ? 'text-green-700 font-medium' : 'text-black/80'}`}>
+                        {item.label}
+                      </span>
+                      <span
+                        className={`text-sm font-semibold ${
+                          isAdjustment ? 'text-green-700' : 'text-black'
+                        }`}
+                      >
+                        {item.price >= 0 ? formatCurrency(item.price) : `- ${formatCurrency(Math.abs(item.price))}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-sm text-black/60">Final total</div>
-              <div
-                className={`text-2xl font-black text-black transition-all duration-300 ${
-                  priceNotification ? 'scale-110 animate-glow' : 'scale-100'
-                }`}
-                style={
-                  priceNotification
-                    ? {
-                        boxShadow: '0 0 0 3px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.2)',
-                        borderRadius: '8px',
-                        padding: '4px 8px',
-                      }
-                    : {}
-                }
-              >
+              <div className="text-2xl font-black text-black">
                 {pricingQuotePending ? 'Custom Quote' : formatCurrency(pricing.total)}
               </div>
             </div>
@@ -1618,7 +1631,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 disabled={isSubmitting}
                 className="rounded-3xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-black/40"
               >
-                {isSubmitting ? 'Placing order...' : 'Place Order'}
+                {isSubmitting ? 'Booking order...' : 'Book Order'}
               </button>
             </div>
           </div>

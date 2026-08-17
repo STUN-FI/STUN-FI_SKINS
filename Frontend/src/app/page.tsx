@@ -632,12 +632,6 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 >
                   Customize Now
                 </a>
-                <a
-                  href="#wholesale"
-                  className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-6 py-3 text-sm font-semibold text-black transition hover:border-black sm:w-auto"
-                >
-                  Wholesale Info
-                </a>
               </div>
             </div>
             <div className="rounded-[2rem] border border-black/10 bg-black/95 p-6 text-white shadow-xl">
@@ -696,28 +690,30 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Order experience</p>
               <div className="mt-2 text-lg sm:text-xl font-black text-black">Select the right flow for your order</div>
             </div>
-            <div className="flex flex-wrap gap-3 justify-start md:justify-end">
+            <div className="w-full flex flex-col sm:inline-flex gap-1.5 sm:gap-2 rounded-full border-2 border-black/10 bg-[#f7f7f5] p-1">
               {(['individual', 'wholesale'] as OrderMode[]).map((modeOption) => (
                 <button
                   key={modeOption}
                   type="button"
                   onClick={() => setForm((current) => ({ ...current, mode: modeOption }))}
-                  className={`rounded-3xl px-5 py-3 text-sm font-semibold transition ${
+                  className={`flex-1 sm:flex-initial rounded-full px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap ${
                     form.mode === modeOption
-                      ? 'bg-black text-white'
-                      : 'border border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                      ? 'bg-black text-white shadow-md'
+                      : 'text-black hover:bg-white/50'
                   }`}
                 >
                   {modeOption === 'individual' ? (
-                    <span className="inline-flex items-center gap-2">
-                      <i className="bx bx-mobile text-xl" />
-                      <span>Individual Device Builder</span>
-                    </span>
+                    <>
+                      <i className="bx bx-mobile text-sm sm:text-lg flex-shrink-0" />
+                      <span className="hidden sm:inline">Individual Purchase</span>
+                      <span className="sm:hidden">Individual</span>
+                    </>
                   ) : (
-                    <span className="inline-flex items-center gap-2">
-                      <i className="bx bx-store text-xl" />
-                      <span>Store Partner / Bulk Wholesale</span>
-                    </span>
+                    <>
+                      <i className="bx bx-store text-sm sm:text-lg flex-shrink-0" />
+                      <span className="hidden sm:inline">Store Partner / Bulk Wholesale</span>
+                      <span className="sm:hidden">Wholesale</span>
+                    </>
                   )}
                 </button>
               ))}
