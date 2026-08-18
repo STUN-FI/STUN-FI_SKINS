@@ -83,17 +83,19 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
       : options.customTextSurfaceCount * LAPTOP_TEXT_FEE_PER_SURFACE;
   }
 
-  // Check if all selected surfaces have the same quality
+  // A matching-quality discount only applies to a full 3-surface laptop set.
+  // Single-surface or 2-surface selections should not receive the same-quality deduction.
   const allSelectedQualities = selectedKeys.map((key) => options.surfaces[key].quality);
-  const allSameQuality = allSelectedQualities.length > 0 && allSelectedQualities.every((q) => q === allSelectedQualities[0]);
+  const allThreeSelected = selectedKeys.length === 3;
+  const allSameQuality = allThreeSelected && allSelectedQualities.length > 0 && allSelectedQualities.every((q) => q === allSelectedQualities[0]);
 
-  // Apply same-quality discount (when all surfaces are the same quality, standard or premium)
+  // Apply same-quality discount only when all three selected surfaces match.
   let qualityAdjustment = 0;
   if (allSameQuality) {
     qualityAdjustment = -LAPTOP_MATCHING_QUALITY_DISCOUNT;
   }
 
-  // Apply DIY discount (additional discount, only if all surfaces have the same quality)
+  // Apply DIY discount only for the full 3-surface matching-quality case.
   let installationAdjustment = 0;
   if (allSameQuality && options.installationType === 'diy') {
     installationAdjustment = -LAPTOP_DIY_DISCOUNT;

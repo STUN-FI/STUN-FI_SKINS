@@ -35,6 +35,92 @@ function getSheetPrice(finish, mode = 'individual') {
   return finish === 'standard' ? BASE_PER_SHEET : BASE_PER_SHEET + SHINY_EXTRA_PER_SHEET;
 }
 
+function normalizeSurfaceKey(value = '') {
+  return String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/[_\s]+/g, '-')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function getSurfaceAliases(surface = {}) {
+  const names = [surface.name, surface.surface, surface.label, surface.slug, surface.key];
+  const normalized = new Set();
+
+  for (const value of names) {
+    if (!value) continue;
+    const key = normalizeSurfaceKey(value);
+    if (key) normalized.add(key);
+
+    const aliases = [
+      key,
+      key.replace(/-artwork$/, ''),
+      key.replace(/-photo$/, ''),
+      key.replace(/-reference$/, ''),
+      key.replace(/-design$/, ''),
+      key.replace(/-surface$/, ''),
+      key.replace(/-wrap$/, ''),
+      key.replace(/^reference-/, ''),
+      key.replace(/^artwork-/, ''),
+      key.replace(/^photo-/, ''),
+      key.replace(/^design-/, ''),
+      key.replace(/^(?:reference|artwork|photo|design)-?/, ''),
+    ];
+
+    aliases.forEach((alias) => {
+      if (alias) normalized.add(alias);
+    });
+  }
+
+  return [...normalized];
+}
+
+function resolveUploadedSurfaceUrls(surfaces, uploadedUrlsByField = {}) {
+  if (!Array.isArray(surfaces) || Object.keys(uploadedUrlsByField).length === 0) {
+    return surfaces;
+  }
+
+  const surfaceUrlMap = new Map();
+
+  Object.entries(uploadedUrlsByField).forEach(([fieldName, url]) => {
+    const candidates = [
+      normalizeSurfaceKey(fieldName),
+      normalizeSurfaceKey(fieldName.replace(/^artwork_/, '')),
+      normalizeSurfaceKey(fieldName.replace(/^reference_/, '')),
+      normalizeSurfaceKey(fieldName.replace(/^artwork-/, '')),
+      normalizeSurfaceKey(fieldName.replace(/^reference-/, '')),
+      normalizeSurfaceKey(fieldName.replace(/^artwork/, '').replace(/^reference/, '')),
+    ];
+
+    candidates.forEach((candidate) => {
+      if (candidate) surfaceUrlMap.set(candidate, url);
+    });
+  });
+
+  return surfaces.map((surface) => {
+    const aliases = getSurfaceAliases(surface);
+    const match = aliases.find((alias) => surfaceUrlMap.has(alias));
+    const matchedUrl = match ? surfaceUrlMap.get(match) : '';
+
+    if (matchedUrl) {
+      return {
+        ...surface,
+        imageUrl: matchedUrl,
+      };
+    }
+
+    return {
+      ...surface,
+      imageUrl:
+        surface?.imageUrl && typeof surface.imageUrl === 'string' && !surface.imageUrl.startsWith('blob:')
+          ? surface.imageUrl
+          : '',
+    };
+  });
+}
+
 router.post('/', upload.any(), async (req, res) => {
   try {
     // Accept both multipart/form-data and JSON bodies
@@ -80,7 +166,6 @@ router.post('/', upload.any(), async (req, res) => {
     };
 
     // Handle file uploads to Cloudinary (required)
-    // Map field names to uploaded URLs to preserve file-to-surface mapping
     const uploadedUrlsByField = {};
     if (req.files && req.files.length > 0) {
       // Validate all files before uploading
@@ -99,7 +184,7 @@ router.post('/', upload.any(), async (req, res) => {
         }
       }
 
-      // Upload all files to Cloudinary
+      // Upload all files to Cloudinary and preserve the original field name so the correct surface gets the image
       for (const file of req.files) {
         try {
           const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
@@ -109,7 +194,6 @@ router.post('/', upload.any(), async (req, res) => {
             quality: 'auto',
             fetch_format: 'auto',
           });
-          // Store URL with field name as key (e.g., 'artwork_top-lid' -> URL)
           uploadedUrlsByField[file.fieldname] = result.secure_url || result.url;
         } catch (uploadError) {
           console.error('Cloudinary upload failed:', uploadError);
@@ -121,46 +205,8 @@ router.post('/', upload.any(), async (req, res) => {
       }
     }
 
-    // Map uploaded URLs to surfaces using field names
     if (Object.keys(uploadedUrlsByField).length > 0 && Array.isArray(surfaces)) {
-      // Build a map of surface name/value to uploaded URL
-      const surfaceUrlMap = new Map();
-      
-      // Map field names to surfaces
-      Object.entries(uploadedUrlsByField).forEach(([fieldName, url]) => {
-        // fieldName format: 'artwork_top-lid' -> extract 'top-lid'
-        const surfaceKey = fieldName.replace('artwork_', '');
-        surfaceUrlMap.set(surfaceKey, url);
-      });
-      
-      // Assign URLs to surfaces by matching the surface value
-      surfaces = surfaces.map((surface) => {
-        let surfaceUrl = '';
-        
-        // Try to match by looking up common surface keys
-        const surfaceNameLower = surface.name.toLowerCase().replace(/\s+/g, '-');
-        if (surfaceUrlMap.has(surfaceNameLower)) {
-          surfaceUrl = surfaceUrlMap.get(surfaceNameLower);
-        } else if (surfaceUrlMap.has(surface.name)) {
-          surfaceUrl = surfaceUrlMap.get(surface.name);
-        } else {
-          // Fallback: check if any field matches this surface roughly
-          for (const [key, url] of surfaceUrlMap.entries()) {
-            if (key.includes(surfaceNameLower) || surfaceNameLower.includes(key)) {
-              surfaceUrl = url;
-              break;
-            }
-          }
-        }
-        
-        return {
-          ...surface,
-          imageUrl: surfaceUrl || 
-            (surface?.imageUrl && typeof surface.imageUrl === 'string' && !surface.imageUrl.startsWith('blob:')
-              ? surface.imageUrl
-              : ''),
-        };
-      });
+      surfaces = resolveUploadedSurfaceUrls(surfaces, uploadedUrlsByField);
     }
 
     const orderDoc = {
@@ -252,13 +298,11 @@ router.post('/', upload.any(), async (req, res) => {
         }));
       }
 
-      if (uploadedUrls.length > 0) {
-        if (surfaceDesigns && surfaceDesigns.length > 0) {
-          for (let i = 0; i < uploadedUrls.length; i++) {
-            surfaceDesigns[i] = { ...(surfaceDesigns[i] || {}), imageUrl: uploadedUrls[i] };
-          }
+      if (Object.keys(uploadedUrlsByField).length > 0) {
+        if (Array.isArray(surfaceDesigns) && surfaceDesigns.length > 0) {
+          surfaceDesigns = resolveUploadedSurfaceUrls(surfaceDesigns, uploadedUrlsByField);
         } else {
-          surfaceDesigns = uploadedUrls.map((u, idx) => ({ surface: `upload-${idx + 1}`, customText: '', imageUrl: u }));
+          surfaceDesigns = Object.values(uploadedUrlsByField).map((u, idx) => ({ surface: `upload-${idx + 1}`, customText: '', imageUrl: u }));
         }
       }
 
