@@ -80,10 +80,21 @@ const formatCurrency = (value?: number) => {
 };
 
 const getArtworkItems = (order: Order) => {
-  const designs = order.retailDetails?.surfaceDesigns ?? order.surfaces;
-  const items = Array.isArray(designs) ? designs : designs ? Object.values(designs) : [];
+  const surfaceList = Array.isArray(order.surfaces) ? order.surfaces : [];
+  const retailList = order.retailDetails?.surfaceDesigns
+    ? Array.isArray(order.retailDetails.surfaceDesigns)
+      ? order.retailDetails.surfaceDesigns
+      : Object.values(order.retailDetails.surfaceDesigns)
+    : [];
 
-  return items
+  const preferred =
+    surfaceList.some((item) => typeof item?.imageUrl === 'string' && item.imageUrl.trim().length > 0)
+      ? surfaceList
+      : retailList.length > 0
+      ? retailList
+      : surfaceList;
+
+  return preferred
     .filter((item): item is { surface?: string; name?: string; imageUrl?: string } => Boolean(item && typeof item === 'object'))
     .map((item) => ({
       label: item.surface

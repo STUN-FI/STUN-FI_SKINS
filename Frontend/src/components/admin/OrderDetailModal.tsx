@@ -86,10 +86,21 @@ const normalizeSurfaceLabel = (surface?: string, index?: number) => {
 };
 
 const getSurfaceDesigns = (order: Order) => {
-  const designs = order.retailDetails?.surfaceDesigns ?? order.surfaces;
-  const rawItems = Array.isArray(designs) ? designs : designs ? Object.values(designs) : [];
+  const surfaces = Array.isArray(order.surfaces) ? order.surfaces : [];
+  const retailDesigns = order.retailDetails?.surfaceDesigns
+    ? Array.isArray(order.retailDetails.surfaceDesigns)
+      ? order.retailDetails.surfaceDesigns
+      : Object.values(order.retailDetails.surfaceDesigns)
+    : [];
 
-  return rawItems
+  const preferred =
+    surfaces.some((item) => typeof item?.imageUrl === 'string' && item.imageUrl.trim().length > 0)
+      ? surfaces
+      : retailDesigns.length > 0
+      ? retailDesigns
+      : surfaces;
+
+  return preferred
     .filter((item): item is { surface?: string; name?: string; imageUrl?: string; customText?: string; monogramText?: string } =>
       Boolean(item && typeof item === 'object'),
     )
