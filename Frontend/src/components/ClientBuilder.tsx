@@ -915,7 +915,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 <div className="space-y-3">
                   {laptopSelectedSurfaces.map((surface, index) => {
                     const isExpanded = expandedLaptopSurface === surface;
-                    const isSurface1 = surface === 'top-lid';
                     const surfaceLabel = LAPTOP_SURFACES.find((item) => item.value === surface)?.label;
                     const hasCatalogArt = laptopArtworkCatalog[surface]?.trim().length > 0;
                     const hasCustomText = laptopTextToggle[surface];
@@ -931,7 +930,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1 text-left">
                               <span className="text-lg font-semibold text-black">{surfaceLabel}</span>
-                              {!isExpanded && laptopCopiedSettings && !isSurface1 && (
+                              {!isExpanded && laptopCopiedSettings && surface !== laptopSelectedSurfaces[0] && (
                                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Copied</span>
                               )}
                               {!isExpanded && (
@@ -955,8 +954,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         {/* Accordion Content */}
                         {isExpanded && (
                           <div className="rounded-b-3xl border border-t-0 border-black/10 bg-[#f7f7f5] p-5 space-y-4">
-                            {/* Copy Settings Prompt - Show after Surface 1 is set up */}
-                            {isSurface1 && laptopFinishes[surface] && !laptopCopiedSettings && index === 0 && (
+                            {/* Copy Settings Prompt - Show on first selected surface */}
+                            {surface === laptopSelectedSurfaces[0] && laptopFinishes[surface] && !laptopCopiedSettings && (
                               <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-4 mb-4">
                                 <div className="flex items-start gap-3">
                                   <i className="bx bx-bulb text-blue-600 text-xl mt-1 flex-shrink-0" />
