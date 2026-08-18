@@ -555,47 +555,61 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const handleCopyLaptopSettings = () => {
     // Copy Surface 1 settings to Surface 2 and 3
     const surface1 = 'top-lid';
-    
+    const sourcePreviewUrl =
+      uploadPreviewUrlsRef.current[surface1] ||
+      surfaceDesigns[surface1]?.previewUrl ||
+      laptopArtworkCatalog[surface1] ||
+      '';
+
     // Copy artwork settings
     setLaptopArtworkMode((curr) => ({
       ...curr,
       'keyboard-deck': laptopArtworkMode[surface1],
       'bottom-base': laptopArtworkMode[surface1],
     }));
-    
+
     // Copy artwork files/catalog
     setLaptopArtworkFiles((curr) => ({
       ...curr,
       'keyboard-deck': laptopArtworkFiles[surface1],
       'bottom-base': laptopArtworkFiles[surface1],
     }));
-    
+
     setLaptopArtworkCatalog((curr) => ({
       ...curr,
       'keyboard-deck': laptopArtworkCatalog[surface1],
       'bottom-base': laptopArtworkCatalog[surface1],
     }));
-    
+
+    setSurfaceDesigns((curr) => ({
+      ...curr,
+      'keyboard-deck': { previewUrl: sourcePreviewUrl },
+      'bottom-base': { previewUrl: sourcePreviewUrl },
+    }));
+
+    uploadPreviewUrlsRef.current['keyboard-deck'] = sourcePreviewUrl.startsWith('blob:') ? sourcePreviewUrl : '';
+    uploadPreviewUrlsRef.current['bottom-base'] = sourcePreviewUrl.startsWith('blob:') ? sourcePreviewUrl : '';
+
     // Copy finishes
     setLaptopFinishes((curr) => ({
       ...curr,
       'keyboard-deck': laptopFinishes[surface1],
       'bottom-base': laptopFinishes[surface1],
     }));
-    
+
     // Copy text settings
     setLaptopTextToggle((curr) => ({
       ...curr,
       'keyboard-deck': laptopTextToggle[surface1],
       'bottom-base': laptopTextToggle[surface1],
     }));
-    
+
     setLaptopTexts((curr) => ({
       ...curr,
       'keyboard-deck': laptopTexts[surface1],
       'bottom-base': laptopTexts[surface1],
     }));
-    
+
     setLaptopCopiedSettings(true);
     setShowCopyPrompt(false);
     // Keep surface 1 expanded, don't auto-collapse other surfaces
