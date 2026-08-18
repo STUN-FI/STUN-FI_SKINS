@@ -95,9 +95,9 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
     qualityAdjustment = -LAPTOP_MATCHING_QUALITY_DISCOUNT;
   }
 
-  // Apply DIY discount only for the full 3-surface matching-quality case.
+  // Apply DIY discount whenever user selects DIY installation, regardless of surface quality matching.
   let installationAdjustment = 0;
-  if (allSameQuality && options.installationType === 'diy') {
+  if (options.installationType === 'diy') {
     installationAdjustment = -LAPTOP_DIY_DISCOUNT;
   }
 
