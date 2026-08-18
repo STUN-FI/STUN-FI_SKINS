@@ -175,6 +175,15 @@ export default function ReceiptModal({
                     </div>
                   ))}
                 </div>
+
+                <div className="my-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
+                  <i className="bx bx-info-circle text-amber-600 text-xl flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-900">Production Timeline</p>
+                    <p className="text-xs text-amber-800 mt-1">Orders enter production immediately after initial deposit confirmation.</p>
+                  </div>
+                </div>
+
                 <div className="mt-4 flex items-center justify-between border-t border-black/10 pt-4 text-base font-semibold text-black">
                   <span>Total</span>
                   <span>{formatCurrency(totalPrice)}</span>
