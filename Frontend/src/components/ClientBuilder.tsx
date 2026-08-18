@@ -169,6 +169,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
   const markSelectionStarted = () => setHasStartedSelection(true);
 
+  // Auto-open accordion for the first selected surface
+  useEffect(() => {
+    if (laptopSelectedSurfaces.length > 0) {
+      const firstSurface = laptopSelectedSurfaces[0];
+      setExpandedLaptopSurface(firstSurface);
+    }
+  }, [laptopSelectedSurfaces]);
+
   useEffect(() => {
     onSubmittingChange?.(isSubmitting);
   }, [isSubmitting, onSubmittingChange]);
