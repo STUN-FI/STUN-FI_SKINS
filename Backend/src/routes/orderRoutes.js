@@ -290,8 +290,8 @@ router.post('/', upload.any(), async (req, res) => {
               : payload.laptop.customTexts?.find?.((item) => item.surface === surface)?.text || '' || '',
           imageUrl: '',
         }));
-      } else if (Array.isArray(payload.surfaces) && payload.surfaces.length > 0) {
-        surfaceDesigns = payload.surfaces.map((surface) => ({
+      } else if (Array.isArray(surfaces) && surfaces.length > 0) {
+        surfaceDesigns = surfaces.map((surface) => ({
           surface: surface.name || surface.surface,
           customText: surface.monogramText || surface.customText || '',
           imageUrl: surface.imageUrl || '',
