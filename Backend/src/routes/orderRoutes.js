@@ -167,6 +167,18 @@ router.post('/', upload.any(), async (req, res) => {
 
     // Handle file uploads to Cloudinary (required)
     const uploadedUrlsByField = {};
+
+    if (req.body && typeof req.body === 'object') {
+      for (const [fieldName, value] of Object.entries(req.body)) {
+        const trimmed = typeof value === 'string' ? value.trim() : '';
+        const isArtworkField = fieldName.startsWith('artwork_') || fieldName.startsWith('reference_') || fieldName.startsWith('photo_') || fieldName.startsWith('design_');
+
+        if (isArtworkField && trimmed && /^(https?:\/\/|data:)/i.test(trimmed)) {
+          uploadedUrlsByField[fieldName] = trimmed;
+        }
+      }
+    }
+
     if (req.files && req.files.length > 0) {
       // Validate all files before uploading
       for (const file of req.files) {

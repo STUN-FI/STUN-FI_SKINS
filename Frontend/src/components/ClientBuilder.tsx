@@ -446,7 +446,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     if (category === 'laptop') {
       return laptopSelectedSurfaces.map((surface) => ({
         name: LAPTOP_SURFACES.find((item) => item.value === surface)?.label || surface,
-        imageUrl: '',
+        imageUrl: laptopArtworkCatalog[surface] || surfaceDesigns[surface]?.previewUrl || '',
         monogramText: laptopTexts[surface] || '',
       }));
     }
@@ -455,7 +455,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       return [
         {
           name: PHONE_COVERAGE_OPTIONS.find((item) => item.value === phoneCoverage)?.label || 'Phone Artwork',
-          imageUrl: '',
+          imageUrl: phoneArtworkCatalog || '',
           monogramText: phoneCustomText || '',
         },
       ];
@@ -465,7 +465,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       return [
         {
           name: CONTROLLER_SUBTYPES.find((item) => item.value === controllerSubtype)?.label || 'Controller Artwork',
-          imageUrl: '',
+          imageUrl: controllerArtworkCatalog || '',
           monogramText: controllerGamerTag || '',
         },
       ];
@@ -637,18 +637,33 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     if (category === 'laptop') {
       laptopSelectedSurfaces.forEach((surface) => {
         const file = laptopArtworkFiles[surface];
+        const catalogUrl = laptopArtworkCatalog[surface]?.trim();
+
         if (file) {
           formData.append(`artwork_${surface}`, file);
+          return;
+        }
+
+        if (catalogUrl) {
+          formData.append(`artwork_${surface}`, catalogUrl);
         }
       });
     }
 
-    if (category === 'phone' && phoneArtworkFile) {
-      formData.append('artwork_phone', phoneArtworkFile);
+    if (category === 'phone') {
+      if (phoneArtworkFile) {
+        formData.append('artwork_phone', phoneArtworkFile);
+      } else if (phoneArtworkCatalog.trim()) {
+        formData.append('artwork_phone', phoneArtworkCatalog.trim());
+      }
     }
 
-    if (category === 'controller' && controllerArtworkFile) {
-      formData.append('artwork_controller', controllerArtworkFile);
+    if (category === 'controller') {
+      if (controllerArtworkFile) {
+        formData.append('artwork_controller', controllerArtworkFile);
+      } else if (controllerArtworkCatalog.trim()) {
+        formData.append('artwork_controller', controllerArtworkCatalog.trim());
+      }
     }
 
     if (category === 'others' && photoFile) {

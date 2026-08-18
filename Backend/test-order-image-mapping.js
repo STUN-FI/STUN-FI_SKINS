@@ -106,11 +106,37 @@ const uploadedUrlsByField = {
 const resolved = resolveUploadedSurfaceUrls(surfaces, uploadedUrlsByField);
 const resolvedDesigns = resolveUploadedSurfaceUrls(surfaceDesigns, uploadedUrlsByField);
 
+const catalogArtworkUrls = {
+  'top-lid': 'https://cdn.example.com/catalog-top.jpg',
+  phone: 'https://cdn.example.com/catalog-phone.jpg',
+};
+
+function collectCatalogArtworkUrls(rawUrls = {}) {
+  const output = {};
+  Object.entries(rawUrls).forEach(([key, value]) => {
+    if (!value || typeof value !== 'string' || !value.trim()) return;
+    const cleanedKey = String(key).trim();
+    const fieldName = cleanedKey.startsWith('artwork_') || cleanedKey.startsWith('reference_') ? cleanedKey : `artwork_${cleanedKey}`;
+    output[fieldName] = value.trim();
+  });
+  return output;
+}
+
+const catalogResolved = resolveUploadedSurfaceUrls(
+  [
+    { name: 'Top Lid', imageUrl: '', monogramText: '' },
+    { name: 'Phone Artwork', imageUrl: '', monogramText: '' },
+  ],
+  collectCatalogArtworkUrls(catalogArtworkUrls),
+);
+
 assert.equal(resolved[0].imageUrl, 'https://cdn.example.com/top.jpg');
 assert.equal(resolved[1].imageUrl, 'https://cdn.example.com/phone.jpg');
 assert.equal(resolved[2].imageUrl, 'https://cdn.example.com/photo.jpg');
 assert.equal(resolvedDesigns[0].imageUrl, 'https://cdn.example.com/top.jpg');
 assert.equal(resolvedDesigns[1].imageUrl, 'https://cdn.example.com/keyboard.jpg');
 assert.equal(resolvedDesigns[2].imageUrl, 'https://cdn.example.com/bottom.jpg');
+assert.equal(catalogResolved[0].imageUrl, 'https://cdn.example.com/catalog-top.jpg');
+assert.equal(catalogResolved[1].imageUrl, 'https://cdn.example.com/catalog-phone.jpg');
 
 console.log('order image mapping regression check passed');
