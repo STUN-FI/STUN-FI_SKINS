@@ -34,7 +34,7 @@ export default function LaptopPreviewModal({ imageUrl, surface, onClose }: Lapto
           className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900"
           aria-label="Close preview"
         >
-          ×
+          <i className="bx bx-x" />
         </button>
 
         <div className="px-6 pb-6 pt-12 text-center">

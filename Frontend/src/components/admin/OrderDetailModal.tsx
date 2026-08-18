@@ -243,7 +243,7 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
             className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-slate-800"
             aria-label="Close order details"
           >
-            ×
+            <i className="bx bx-x" />
           </button>
 
           <div className="space-y-6 p-6 sm:p-8">

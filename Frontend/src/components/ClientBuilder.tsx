@@ -840,7 +840,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   Select one or more surfaces you want wrapped. For a full custom finish, you can choose all three: Top Lid, Keyboard Deck, and Bottom Base.
                 </p>
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800">
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-200 text-[10px] font-bold text-amber-900">✓</span>
+                  <i className="bx bx-check text-[16px]" />
                   Multi-select enabled: choose all 3 for full customization
                 </div>
                 <button type="button" onClick={onHelpOpen} className="mt-3 inline-flex items-center gap-1 text-sm text-blue-600">
@@ -908,7 +908,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         </div>
                         {selected ? (
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black bg-black/5 text-black/80">
-                            ✓
+                            <i className="bx bx-check text-[18px]" />
                           </span>
                         ) : null}
                       </div>

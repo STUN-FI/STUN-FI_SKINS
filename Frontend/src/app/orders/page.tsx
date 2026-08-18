@@ -176,7 +176,7 @@ export default function OrdersPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 backdrop-blur"
           >
-            ⚠ {error}
+            <i className="bx bx-error-circle" /> {error}
           </motion.div>
         )}
 

@@ -101,7 +101,7 @@ export default function ReceiptModal({
           className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 sm:right-4 sm:top-4"
           aria-label="Close receipt"
         >
-          ×
+          <i className="bx bx-x" />
         </button>
 
         <div className="flex min-h-0 h-full flex-col overflow-hidden">
