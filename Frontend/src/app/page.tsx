@@ -739,9 +739,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </a>
             <nav className="hidden items-center gap-7 text-sm font-semibold text-black/65 lg:flex" aria-label="Primary navigation">
               <a className="transition hover:text-black" href="/customize">Customize</a>
-              <a className="transition hover:text-black" href="#surfaces">Surfaces</a>
+              <a className="transition hover:text-black" href="#surfaces">Gallery</a>
               <a className="transition hover:text-black" href="#how-it-works">How it works</a>
-              <a className="transition hover:text-black" href="#showcase">Showcase</a>
+              <a className="transition hover:text-black" href="#surfaces">Showcase</a>
               <a className="transition hover:text-black" href="/customize">Wholesale</a>
             </nav>
             <div className="flex items-center gap-2">
@@ -751,9 +751,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 </summary>
                 <nav className="absolute right-0 top-14 z-30 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl" aria-label="Mobile navigation">
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Customize</a>
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Surfaces</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Gallery</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#how-it-works">How it works</a>
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#showcase">Showcase</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Showcase</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Wholesale</a>
                   <a className="mt-1 block rounded-xl bg-black px-4 py-3 text-center text-sm font-bold text-white hover:bg-neutral-800" href="/customize">Design Your Skin</a>
                 </nav>
