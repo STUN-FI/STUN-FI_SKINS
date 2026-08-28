@@ -170,22 +170,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
   const markSelectionStarted = () => setHasStartedSelection(true);
 
+  const laptopSyncSourceSurface = laptopSelectedSurfaces[0] ?? null;
+  const laptopSyncSourceLabel = laptopSyncSourceSurface
+    ? LAPTOP_SURFACES.find((item) => item.value === laptopSyncSourceSurface)?.label ?? 'Top Lid'
+    : 'Top Lid';
+
   // Auto-open accordion for the first selected surface
   useEffect(() => {
     if (laptopSelectedSurfaces.length > 0) {
       const firstSurface = laptopSelectedSurfaces[0];
       setExpandedLaptopSurface(firstSurface);
     }
-    // Disable sync if only one surface remains
-    if (laptopSelectedSurfaces.length <= 1) {
+    // Disable sync if only one surface remains or there is no active source surface
+    if (laptopSelectedSurfaces.length <= 1 || !laptopSyncSourceSurface) {
       setSyncLaptopSurfaces(false);
     }
-  }, [laptopSelectedSurfaces]);
+  }, [laptopSelectedSurfaces, laptopSyncSourceSurface]);
 
-  // Sync Top Lid changes to other surfaces when sync is enabled
+  // Sync the first selected surface's changes to the other surfaces when sync is enabled
   useEffect(() => {
-    if (syncLaptopSurfaces && laptopSelectedSurfaces.length > 1) {
-      syncTopLidToOtherSurfaces();
+    if (syncLaptopSurfaces && laptopSyncSourceSurface && laptopSelectedSurfaces.length > 1) {
+      syncSelectedSurfaceToOtherSurfaces(laptopSyncSourceSurface);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -224,9 +229,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const phoneArtworkLabel = phoneArtworkFile?.name || phoneArtworkCatalog || 'Choose artwork';
   const controllerArtworkLabel = controllerArtworkFile?.name || controllerArtworkCatalog || 'Choose artwork';
 
-  // Break sync when a non-top-lid surface is edited
-  const handleBreakSync = () => {
-    if (syncLaptopSurfaces) {
+  // Break sync when a non-source surface is edited
+  const handleBreakSync = (editedSurface?: LaptopSurface) => {
+    if (syncLaptopSurfaces && (!editedSurface || editedSurface !== laptopSyncSourceSurface)) {
       setSyncLaptopSurfaces(false);
     }
   };
@@ -591,66 +596,63 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     }
   };
 
-  const syncTopLidToOtherSurfaces = () => {
-    const surface1 = 'top-lid';
+  const syncSelectedSurfaceToOtherSurfaces = (sourceSurface: LaptopSurface) => {
     const sourcePreviewUrl =
-      uploadPreviewUrlsRef.current[surface1] ||
-      surfaceDesigns[surface1]?.previewUrl ||
-      laptopArtworkCatalog[surface1] ||
+      uploadPreviewUrlsRef.current[sourceSurface] ||
+      surfaceDesigns[sourceSurface]?.previewUrl ||
+      laptopArtworkCatalog[sourceSurface] ||
       '';
+
+    const otherSurfaces = laptopSelectedSurfaces.filter((surface) => surface !== sourceSurface);
 
     // Copy artwork settings
     setLaptopArtworkMode((curr) => ({
       ...curr,
-      'keyboard-deck': laptopArtworkMode[surface1],
-      'bottom-base': laptopArtworkMode[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopArtworkMode[sourceSurface]])),
     }));
 
     // Copy artwork files/catalog
     setLaptopArtworkFiles((curr) => ({
       ...curr,
-      'keyboard-deck': laptopArtworkFiles[surface1],
-      'bottom-base': laptopArtworkFiles[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopArtworkFiles[sourceSurface]])),
     }));
 
     setLaptopArtworkCatalog((curr) => ({
       ...curr,
-      'keyboard-deck': laptopArtworkCatalog[surface1],
-      'bottom-base': laptopArtworkCatalog[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopArtworkCatalog[sourceSurface]])),
     }));
 
     setSurfaceDesigns((curr) => ({
       ...curr,
-      'keyboard-deck': { previewUrl: sourcePreviewUrl },
-      'bottom-base': { previewUrl: sourcePreviewUrl },
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, { previewUrl: sourcePreviewUrl }])),
     }));
 
-    uploadPreviewUrlsRef.current['keyboard-deck'] = sourcePreviewUrl.startsWith('blob:') ? sourcePreviewUrl : '';
-    uploadPreviewUrlsRef.current['bottom-base'] = sourcePreviewUrl.startsWith('blob:') ? sourcePreviewUrl : '';
+    otherSurfaces.forEach((surface) => {
+      uploadPreviewUrlsRef.current[surface] = sourcePreviewUrl.startsWith('blob:') ? sourcePreviewUrl : '';
+    });
 
     // Copy finishes
     setLaptopFinishes((curr) => ({
       ...curr,
-      'keyboard-deck': laptopFinishes[surface1],
-      'bottom-base': laptopFinishes[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopFinishes[sourceSurface]])),
     }));
 
     // Copy text settings
     setLaptopTextToggle((curr) => ({
       ...curr,
-      'keyboard-deck': laptopTextToggle[surface1],
-      'bottom-base': laptopTextToggle[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopTextToggle[sourceSurface]])),
     }));
 
     setLaptopTexts((curr) => ({
       ...curr,
-      'keyboard-deck': laptopTexts[surface1],
-      'bottom-base': laptopTexts[surface1],
+      ...Object.fromEntries(otherSurfaces.map((surface) => [surface, laptopTexts[sourceSurface]])),
     }));
   };
 
   const handleCopyLaptopSettings = () => {
-    syncTopLidToOtherSurfaces();
+    if (laptopSyncSourceSurface) {
+      syncSelectedSurfaceToOtherSurfaces(laptopSyncSourceSurface);
+    }
     setLaptopCopiedSettings(true);
     setShowCopyPrompt(false);
   };
@@ -963,26 +965,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">Select at least one laptop surface to continue.</div>
               ) : (
                 <>
-                  {laptopSelectedSurfaces.length > 1 && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3">
-                      <input
-                        type="checkbox"
-                        id="sync-surfaces"
-                        checked={syncLaptopSurfaces}
-                        onChange={(e) => {
-                          setSyncLaptopSurfaces(e.target.checked);
-                          if (e.target.checked) {
-                            syncTopLidToOtherSurfaces();
-                          }
-                        }}
-                        className="w-4 h-4 cursor-pointer"
-                      />
-                      <label htmlFor="sync-surfaces" className="flex-1 cursor-pointer text-sm font-medium text-black">
-                        Keep all selected surfaces in sync with Top Lid
-                        <div className="text-xs text-black/55 mt-0.5">Changes to Top Lid will update the other selected surfaces</div>
-                      </label>
-                    </div>
-                  )}
                   <div className="space-y-3">
                   {laptopSelectedSurfaces.map((surface, index) => {
                     const isExpanded = expandedLaptopSurface === surface;
@@ -1026,10 +1008,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         {isExpanded && (
                           <div className="rounded-b-3xl border border-t-0 border-black/10 bg-[#f7f7f5] p-5 space-y-4">
                             {/* Sync indicator for synced surfaces */}
-                            {syncLaptopSurfaces && surface !== 'top-lid' && (
+                            {syncLaptopSurfaces && laptopSyncSourceSurface && surface !== laptopSyncSourceSurface && (
                               <div className="rounded-2xl border border-[#66cccc] bg-[#e6fffe] px-4 py-3">
                                 <p className="text-xs font-semibold text-[#2f7777]">
-                                  Synced to Top Lid · Changes here will break the sync
+                                  Synced to {laptopSyncSourceLabel} · Changes here will break the sync
                                 </p>
                               </div>
                             )}
@@ -1126,9 +1108,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     type="button"
                                     onClick={() => {
                                       markSelectionStarted();
-                                      if (surface !== 'top-lid') {
-                                        handleBreakSync();
-                                      }
+                                      handleBreakSync(surface);
                                       setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
                                     }}
                                     className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
@@ -1151,9 +1131,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     type="button"
                                     onClick={() => {
                                       markSelectionStarted();
-                                      if (surface !== 'top-lid') {
-                                        handleBreakSync();
-                                      }
+                                      handleBreakSync(surface);
                                       setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
                                     }}
                                     className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
@@ -1179,9 +1157,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      if (surface !== 'top-lid') {
-                                        handleBreakSync();
-                                      }
+                                      handleBreakSync(surface);
                                       setLaptopTextToggle((current) => ({ ...current, [surface]: true }));
                                     }}
                                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
@@ -1195,9 +1171,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          if (surface !== 'top-lid') {
-                                            handleBreakSync();
-                                          }
+                                          handleBreakSync(surface);
                                           setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
                                           setLaptopTexts((current) => ({ ...current, [surface]: '' }));
                                         }}
@@ -1211,9 +1185,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       value={laptopTexts[surface]}
                                       onChange={(event) => {
                                         markSelectionStarted();
-                                        if (surface !== 'top-lid') {
-                                          handleBreakSync();
-                                        }
+                                        handleBreakSync(surface);
                                         setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
                                       }}
                                       placeholder="Enter text for this surface"
@@ -1224,23 +1196,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 )}
                               </div>
                             </div>
+
+                            {surface === laptopSelectedSurfaces[0] && laptopSelectedSurfaces.length > 1 && (
+                              <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  id={`sync-surfaces-${surface}`}
+                                  checked={syncLaptopSurfaces}
+                                  onChange={(e) => {
+                                    setSyncLaptopSurfaces(e.target.checked);
+                                    if (e.target.checked) {
+                                      syncSelectedSurfaceToOtherSurfaces(surface);
+                                    }
+                                  }}
+                                  className="h-4 w-4 cursor-pointer"
+                                />
+                                <label htmlFor={`sync-surfaces-${surface}`} className="flex-1 cursor-pointer text-sm font-medium text-black">
+                                  Sync this design to the other selected surfaces
+                                  <div className="mt-0.5 text-xs text-black/55">Changes to {laptopSyncSourceLabel} will update the other selected surfaces</div>
+                                </label>
+                              </div>
+                            )}
                           </div>
                         )}
-                        {isExpanded && surface === laptopSelectedSurfaces[0] && laptopSelectedSurfaces.length > 1 && laptopFinishes[surface] && !laptopCopiedSettings ? (
-                          <div className="flex flex-col gap-3 rounded-b-3xl border border-t-0 border-[#b8e5e5] bg-[#f1fbfb] p-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                              <p className="text-sm font-bold text-black">Use this design on all surfaces?</p>
-                              <p className="mt-1 text-xs text-black/60">Copy the first surface&apos;s artwork, finish, and text.</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={handleCopyLaptopSettings}
-                              className="min-h-11 rounded-full bg-black px-4 py-2 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]"
-                            >
-                              Apply to all
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
                     );
                   })}

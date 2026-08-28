@@ -796,7 +796,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="landing-hero-media relative min-h-[24rem] bg-[#d9ddda] sm:min-h-[30rem] lg:min-h-[36rem]"
             >
-              <Image src="/img/Toplid.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
+              <Image src="/img/ggg.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
               <div className="absolute bottom-5 left-5 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black backdrop-blur sm:bottom-7 sm:left-7">
                 Precision fit / premium finish
               </div>
@@ -818,7 +818,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
 
           <div className="grid auto-rows-[10rem] grid-cols-2 gap-3 sm:auto-rows-[12rem] sm:gap-4 lg:grid-cols-4">
             <figure className="group relative col-span-2 row-span-2 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
-              <Image src="/img/Toplid.jpg" alt="Custom skin applied to a laptop lid" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 50vw, 50vw" />
+              <Image src="/img/uuuu.jpg" alt="Custom skin applied to a laptop lid" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 50vw, 50vw" />
               <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-5 pt-14 text-white sm:p-6 sm:pt-16">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#66cccc]">STUN-FI / CUSTOM</span>
                 <strong className="mt-2 block text-xl font-black">Laptop transformation</strong>
@@ -833,7 +833,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               </figcaption>
             </figure>
             <figure className="group relative col-span-1 row-span-1 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
-              <Image src="/img/Stripes.jpg" alt="Striped custom skin design" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 25vw, 25vw" />
+              <Image src="/img/jjj.jpg" alt="Striped custom skin design" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 25vw, 25vw" />
               <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-10 text-white">
                 <strong className="block text-sm font-black">Signature stripes</strong>
               </figcaption>
