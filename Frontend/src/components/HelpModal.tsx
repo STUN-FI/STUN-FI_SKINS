@@ -35,7 +35,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
       <div className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-lg sm:p-6" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
         <div className="flex items-start justify-between">
           <h3 id="help-modal-title" className="text-lg font-bold">Which laptop parts are these?</h3>
-          <button ref={closeButtonRef} type="button" onClick={onClose} className="ml-4 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-black/5 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#66cccc]">Close</button>
+          <button ref={closeButtonRef} type="button" onClick={onClose} className="ml-4 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-black/5 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]">Close</button>
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-3">

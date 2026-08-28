@@ -1066,7 +1066,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     }}
                                     className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                                       laptopFinishes[surface] === 'shiny-stones'
-                                        ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                                        ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                                         : 'border-black/15 bg-white text-black hover:border-black/45'
                                     }`}
                                   >
@@ -1075,7 +1075,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                                     </div>
                                     {laptopFinishes[surface] === 'shiny-stones' && (
-                                      <div className="absolute right-3 top-3 text-[#319999]">
+                                      <div className="absolute right-3 top-3 text-[#2f7777]">
                                         <i className="bx bx-check text-lg" aria-hidden="true" />
                                       </div>
                                     )}
@@ -1088,7 +1088,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     }}
                                     className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                                       laptopFinishes[surface] === 'standard'
-                                        ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                                        ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                                         : 'border-black/15 bg-white text-black hover:border-black/45'
                                     }`}
                                   >
@@ -1097,7 +1097,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                                     </div>
                                     {laptopFinishes[surface] === 'standard' && (
-                                      <div className="absolute right-3 top-3 text-[#319999]">
+                                      <div className="absolute right-3 top-3 text-[#2f7777]">
                                         <i className="bx bx-check text-lg" aria-hidden="true" />
                                       </div>
                                     )}
@@ -1154,7 +1154,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             <button
                               type="button"
                               onClick={handleCopyLaptopSettings}
-                              className="min-h-11 rounded-full bg-black px-4 py-2 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
+                              className="min-h-11 rounded-full bg-black px-4 py-2 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]"
                             >
                               Apply to all
                             </button>
@@ -1236,7 +1236,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       }}
                       className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         phoneFinish === 'shiny-stones'
-                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                           : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
@@ -1245,7 +1245,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                       </div>
                       {phoneFinish === 'shiny-stones' && (
-                        <div className="absolute right-3 top-3 text-[#319999]">
+                        <div className="absolute right-3 top-3 text-[#2f7777]">
                           <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
@@ -1258,7 +1258,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       }}
                       className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         phoneFinish === 'standard'
-                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                           : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
@@ -1267,7 +1267,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                       </div>
                       {phoneFinish === 'standard' && (
-                        <div className="absolute right-3 top-3 text-[#319999]">
+                        <div className="absolute right-3 top-3 text-[#2f7777]">
                           <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
@@ -1413,7 +1413,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       }}
                       className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         controllerFinish === 'shiny-stones'
-                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                           : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
@@ -1422,7 +1422,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                       </div>
                       {controllerFinish === 'shiny-stones' && (
-                        <div className="absolute right-3 top-3 text-[#319999]">
+                        <div className="absolute right-3 top-3 text-[#2f7777]">
                           <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
@@ -1435,7 +1435,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       }}
                       className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         controllerFinish === 'standard'
-                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
                           : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
@@ -1444,7 +1444,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                       </div>
                       {controllerFinish === 'standard' && (
-                        <div className="absolute right-3 top-3 text-[#319999]">
+                        <div className="absolute right-3 top-3 text-[#2f7777]">
                           <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
@@ -1608,7 +1608,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
         <div id="price-section" className="builder-summary rounded-3xl border border-black/10 bg-[#fafafa] p-5 sm:p-6">
           <div className="flex flex-col gap-4 border-b border-black/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#319999]">Your skin</p>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Your skin</p>
               <h3 className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">Order summary</h3>
               <p className="mt-2 text-sm text-black/60">A clear breakdown before you book.</p>
             </div>
@@ -1662,7 +1662,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="min-h-12 rounded-full bg-black px-6 py-4 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#66cccc] disabled:cursor-not-allowed disabled:bg-black/40"
+                className="min-h-12 rounded-full bg-black px-6 py-4 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] disabled:cursor-not-allowed disabled:bg-black/40"
               >
                 {isSubmitting ? 'Booking order...' : 'Book Order'}
               </button>

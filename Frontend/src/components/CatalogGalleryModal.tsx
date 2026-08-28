@@ -38,7 +38,7 @@ export default function CatalogGalleryModal({ isOpen, onClose, onSelectArtwork }
     document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
 
-    fetch('/api/catalog-artworks?limit=24')
+    fetch('/api/catalog-artworks')
       .then((response) => {
         if (!response.ok) throw new Error('Unable to load designs');
         return response.json();
@@ -78,20 +78,21 @@ export default function CatalogGalleryModal({ isOpen, onClose, onSelectArtwork }
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/55 p-3 sm:p-6" role="presentation">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <div className="catalog-dialog relative my-3 max-h-[calc(100dvh-1.5rem)] w-full max-w-6xl overflow-y-auto rounded-[1.5rem] bg-white p-5 shadow-2xl sm:my-8 sm:max-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8" role="dialog" aria-modal="true" aria-labelledby="catalog-gallery-title">
-        <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-5">
+        <button ref={closeButtonRef} type="button" onClick={onClose} className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black shadow-sm transition hover:border-black focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] sm:right-6 sm:top-6" aria-label="Close design gallery">
+          <i className="bx bx-x text-xl" aria-hidden="true" />
+        </button>
+
+        <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-5 pr-14 sm:pr-16">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#319999]">Choose your artwork</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#2f7777]">Choose your artwork</p>
             <h3 id="catalog-gallery-title" className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Design Gallery</h3>
             <p className="mt-2 max-w-xl text-sm leading-6 text-black/60">Select a design to apply to the surface you are customizing.</p>
           </div>
-          <button ref={closeButtonRef} type="button" onClick={onClose} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/10 text-black transition hover:border-black focus:outline-none focus:ring-2 focus:ring-[#66cccc]" aria-label="Close design gallery">
-            <i className="bx bx-x text-xl" aria-hidden="true" />
-          </button>
         </div>
 
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1" aria-label="Filter designs by category">
           {categories.map((cat) => (
-            <button key={cat} type="button" onClick={() => setActiveCategory(cat)} aria-pressed={activeCategory === cat} className={`min-h-11 shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#66cccc] ${activeCategory === cat ? 'bg-black text-white' : 'bg-[#f1f2ef] text-black/65 hover:bg-black/10'}`}>
+            <button key={cat} type="button" onClick={() => setActiveCategory(cat)} aria-pressed={activeCategory === cat} className={`min-h-11 shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] ${activeCategory === cat ? 'bg-black text-white' : 'bg-[#f1f2ef] text-black/65 hover:bg-black/10'}`}>
               {cat}
             </button>
           ))}
@@ -123,7 +124,7 @@ export default function CatalogGalleryModal({ isOpen, onClose, onSelectArtwork }
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
                 {filtered.map((art) => (
-                  <button key={art.id} type="button" onClick={() => { onSelectArtwork(art.image); onClose(); }} className="catalog-artwork-card group overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:-translate-y-0.5 hover:border-black/35 focus:outline-none focus:ring-2 focus:ring-[#66cccc]" aria-label={`Select ${art.title}`}>
+                  <button key={art.id} type="button" onClick={() => { onSelectArtwork(art.image); onClose(); }} className="catalog-artwork-card group overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:-translate-y-0.5 hover:border-black/35 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]" aria-label={`Select ${art.title}`}>
                     <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f2ef]">
                       <img src={art.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                       <span className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-black opacity-0 shadow-sm transition group-hover:opacity-100" aria-hidden="true">

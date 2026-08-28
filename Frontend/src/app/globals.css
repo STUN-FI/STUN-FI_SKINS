@@ -64,7 +64,7 @@ video {
 
 .finish-swatch-shiny {
   border: 1px solid rgba(49, 153, 153, 0.35);
-  background: radial-gradient(circle at 35% 30%, #ffffff 0 8%, transparent 9%), radial-gradient(circle at 70% 65%, #ffffff 0 7%, transparent 8%), #66cccc;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0 8%, transparent 9%), radial-gradient(circle at 70% 65%, #ffffff 0 7%, transparent 8%), #2f8f8f;
   color: #0b5555;
   box-shadow: 0 0 18px rgba(102, 204, 204, 0.35);
 }
@@ -102,14 +102,14 @@ video {
 
 .builder-progress-step.is-active,
 .builder-progress-step.is-active span {
-  color: #319999;
+  color: #2f7777;
 }
 
 #builder input:focus-visible,
 #builder select:focus-visible,
 #builder textarea:focus-visible,
 #builder button:focus-visible {
-  outline: 2px solid #66cccc;
+  outline: 2px solid #2f8f8f;
   outline-offset: 2px;
 }
 
@@ -167,7 +167,7 @@ video {
 
 .landing-nav a:focus-visible,
 .landing-hero a:focus-visible {
-  outline: 2px solid #66cccc;
+  outline: 2px solid #2f8f8f;
   outline-offset: 4px;
 }
 

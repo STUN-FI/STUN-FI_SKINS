@@ -55,7 +55,7 @@ export default function LaptopPreviewModal({ imageUrl, surface, onClose }: Lapto
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
+          className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]"
           aria-label="Close preview"
         >
           <i className="bx bx-x" />

@@ -29,7 +29,7 @@ export default function FloatingPricingButton({ price }: FloatingPricingButtonPr
       type="button"
       onClick={scrollToPricing}
       aria-label={price !== null ? `View current price ${formatCurrency(price)}` : 'View order summary'}
-      className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-40 min-h-12 rounded-full bg-black px-4 py-3 text-sm font-semibold text-white shadow-2xl shadow-black/20 transition hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#66cccc] sm:bottom-6 sm:left-auto sm:right-6 sm:min-h-0 sm:max-w-[calc(100vw-2rem)] ${
+      className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-40 min-h-12 rounded-full bg-black px-4 py-3 text-sm font-semibold text-white shadow-2xl shadow-black/20 transition hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] sm:bottom-6 sm:left-auto sm:right-6 sm:min-h-0 sm:max-w-[calc(100vw-2rem)] ${
         isAnimating ? 'animate-price-pulse' : ''
       }`}
     >

@@ -617,7 +617,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </nav>
             <div className="flex items-center gap-2">
               <details className="relative lg:hidden">
-                <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-black/15 text-black focus:outline-none focus:ring-2 focus:ring-[#66cccc]" aria-label="Open navigation menu">
+                <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-black/15 text-black focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]" aria-label="Open navigation menu">
                   <i className="bx bx-menu text-xl" aria-hidden="true" />
                 </summary>
                 <nav className="absolute right-0 top-14 z-30 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl" aria-label="Mobile navigation">
@@ -639,13 +639,13 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         <section id="top" className="landing-hero mb-10 overflow-hidden rounded-[2rem] bg-black text-white sm:rounded-[2.5rem]">
           <div className="grid lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
             <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12 xl:p-16">
-              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#66cccc]">Custom device wraps</p>
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#2f7777]">Custom device wraps</p>
               <h1 className="max-w-xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-5xl xl:text-7xl">Your device. Your design.</h1>
               <p className="mt-6 max-w-md text-base leading-7 text-white/65 sm:text-lg">
                 Premium custom skins precisely fitted to your laptop, phone, or controller.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a href="#builder" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#66cccc] px-6 text-sm font-bold text-black transition hover:bg-[#8de0e0]">
+                <a href="#builder" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#2f8f8f] px-6 text-sm font-bold text-white transition hover:bg-[#58adad]">
                   Design Your Skin
                 </a>
                 <a href="#surfaces" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50">
@@ -656,11 +656,11 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 <span>Laptops</span>
                 <span>Phones</span>
                 <span>Controllers</span>
-                <span className="text-[#66cccc]">Custom artwork</span>
+                <span className="text-[#2f7777]">Custom artwork</span>
               </div>
             </div>
             <div className="landing-hero-media relative min-h-[23rem] bg-[#d9ddda] sm:min-h-[30rem] lg:min-h-[34rem]">
-              <Image src="/img/Stripes.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
+              <Image src="/img/table.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
               <div className="absolute bottom-5 left-5 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black backdrop-blur sm:bottom-7 sm:left-7">
                 Precision fit / premium finish
               </div>
@@ -716,7 +716,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 ['04', 'Professional fitting', 'Get a clean, bubble-free finish with on-site installation.'],
               ].map(([number, title, description]) => (
                 <div key={number} className="border-t border-black/15 pt-4">
-                  <span className="text-xs font-bold tracking-[0.2em] text-[#319999]">{number}</span>
+                  <span className="text-xs font-bold tracking-[0.2em] text-[#2f7777]">{number}</span>
                   <h3 className="mt-3 text-lg font-black">{title}</h3>
                   <p className="mt-2 max-w-xs text-sm leading-6 text-black/62">{description}</p>
                 </div>
@@ -740,7 +740,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 <p className="mt-2 text-sm text-black/60">Clean, understated, everyday.</p>
               </div>
               <div className="finish-shine flex flex-col justify-end bg-black p-6 text-white sm:p-8">
-                <div className="h-20 w-20 rounded-full border border-white/25 bg-[#66cccc] shadow-[0_0_34px_rgba(102,204,204,0.55)]" aria-hidden="true" />
+                <div className="h-20 w-20 rounded-full border border-white/25 bg-[#2f8f8f] shadow-[0_0_34px_rgba(47,143,143,0.55)]" aria-hidden="true" />
                 <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em]">Shiny Stones</p>
                 <p className="mt-2 text-sm text-white/60">Light-catching, unmistakably yours.</p>
               </div>
@@ -751,7 +751,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         <section id="customization" className="mb-10 scroll-mt-6">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="relative min-h-[20rem] overflow-hidden rounded-[2rem] bg-black sm:min-h-[28rem] sm:rounded-[2.5rem]">
-              <Image src="/img/Keyboard.jpg" alt="STUN-FI skin applied across a laptop keyboard area" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
+              <Image src="/img/Stripes.jpg" alt="STUN-FI skin applied across a laptop keyboard area" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
               <div className="absolute bottom-5 left-5 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black">Preview before you order</div>
             </div>
             <div className="lg:pl-6">
@@ -770,10 +770,10 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         <section id="how-it-works" className="mb-10 rounded-[2rem] bg-black px-7 py-10 text-white scroll-mt-6 sm:rounded-[2.5rem] sm:px-10 sm:py-14">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#66cccc]">How it works</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#58adad]">How it works</p>
               <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Four steps from idea to device.</h2>
             </div>
-            <a href="#builder" className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#66cccc] px-5 text-sm font-bold text-black transition hover:bg-[#8de0e0]">Start building</a>
+            <a href="#builder" className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#2f8f8f] px-5 text-sm font-bold text-white transition hover:bg-[#58adad]">Start building</a>
           </div>
           <div className="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -783,7 +783,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               ['04', 'Confirm and get it fitted'],
             ].map(([number, title]) => (
               <div key={number}>
-                <span className="text-sm font-bold text-[#66cccc]">{number}</span>
+                <span className="text-sm font-bold text-[#58adad]">{number}</span>
                 <h3 className="mt-4 max-w-[12rem] text-lg font-black leading-snug">{title}</h3>
               </div>
             ))}
@@ -793,7 +793,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         <section id="order-mode" className="mb-10 scroll-mt-6 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#319999]">Order type</p>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Order type</p>
               <div className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">How are you ordering?</div>
             </div>
             <div className="grid w-full gap-2 md:max-w-xl md:grid-cols-2">
@@ -803,20 +803,20 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                   type="button"
                   onClick={() => setForm((current) => ({ ...current, mode: modeOption }))}
                   aria-pressed={form.mode === modeOption}
-                  className={`relative min-h-[4.75rem] rounded-2xl border-2 px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#66cccc] ${
+                  className={`relative min-h-[4.75rem] rounded-2xl border-2 px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] ${
                     form.mode === modeOption
                       ? 'border-black bg-black text-white shadow-md'
                       : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/35'
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    <i className={`bx ${modeOption === 'individual' ? 'bx-mobile' : 'bx-store'} text-xl ${form.mode === modeOption ? 'text-[#66cccc]' : 'text-black/55'}`} aria-hidden="true" />
+                    <i className={`bx ${modeOption === 'individual' ? 'bx-mobile' : 'bx-store'} text-xl ${form.mode === modeOption ? 'text-[#2f8f8f]' : 'text-black/55'}`} aria-hidden="true" />
                     <span>
                       <span className="block text-sm font-black">{modeOption === 'individual' ? 'Personal' : 'Wholesale'}</span>
                       <span className={`mt-1 block text-xs ${form.mode === modeOption ? 'text-white/65' : 'text-black/55'}`}>{modeOption === 'individual' ? 'One device for yourself' : 'Bulk orders for your store'}</span>
                     </span>
                   </span>
-                  {form.mode === modeOption ? <i className="bx bx-check absolute right-3 top-3 text-lg text-[#66cccc]" aria-hidden="true" /> : null}
+                  {form.mode === modeOption ? <i className="bx bx-check absolute right-3 top-3 text-lg text-[#2f8f8f]" aria-hidden="true" /> : null}
                 </button>
               ))}
             </div>
@@ -894,7 +894,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           )}
         </div>
 
-        <section className="mt-12 overflow-hidden rounded-[2rem] bg-[#66cccc] px-7 py-10 text-black sm:rounded-[2.5rem] sm:px-10 sm:py-14">
+        <section className="mt-12 overflow-hidden rounded-[2rem] bg-[#2f8f8f] px-7 py-10 text-white sm:rounded-[2.5rem] sm:px-10 sm:py-14">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-black/60">Make the next move</p>
@@ -1027,7 +1027,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <button
                 type="button"
                 onClick={() => setShowOrderModal(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-black focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-black focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]"
                 aria-label="Close order modal"
               >
                 <i className="bx bx-x text-lg" />
