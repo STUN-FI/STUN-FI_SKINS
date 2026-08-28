@@ -961,27 +961,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
               {laptopSelectedSurfaces.length === 0 ? (
                 <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">Select at least one laptop surface to continue.</div>
-              ) : laptopSelectedSurfaces.length > 1 ? (
-                <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3">
-                  <input
-                    type="checkbox"
-                    id="sync-surfaces"
-                    checked={syncLaptopSurfaces}
-                    onChange={(e) => {
-                      setSyncLaptopSurfaces(e.target.checked);
-                      if (e.target.checked) {
-                        syncTopLidToOtherSurfaces();
-                      }
-                    }}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                  <label htmlFor="sync-surfaces" className="flex-1 cursor-pointer text-sm font-medium text-black">
-                    Keep all selected surfaces in sync with Top Lid
-                    <div className="text-xs text-black/55 mt-0.5">Changes to Top Lid will update the other selected surfaces</div>
-                  </label>
-                </div>
               ) : (
-                <div className="space-y-3">
+                <>
+                  {laptopSelectedSurfaces.length > 1 && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3">
+                      <input
+                        type="checkbox"
+                        id="sync-surfaces"
+                        checked={syncLaptopSurfaces}
+                        onChange={(e) => {
+                          setSyncLaptopSurfaces(e.target.checked);
+                          if (e.target.checked) {
+                            syncTopLidToOtherSurfaces();
+                          }
+                        }}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="sync-surfaces" className="flex-1 cursor-pointer text-sm font-medium text-black">
+                        Keep all selected surfaces in sync with Top Lid
+                        <div className="text-xs text-black/55 mt-0.5">Changes to Top Lid will update the other selected surfaces</div>
+                      </label>
+                    </div>
+                  )}
+                  <div className="space-y-3">
                   {laptopSelectedSurfaces.map((surface, index) => {
                     const isExpanded = expandedLaptopSurface === surface;
                     const surfaceLabel = LAPTOP_SURFACES.find((item) => item.value === surface)?.label;
@@ -1242,7 +1244,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                </>
               )}
 
               <div className="space-y-4 rounded-3xl border-2 border-black/10 bg-white p-6">
