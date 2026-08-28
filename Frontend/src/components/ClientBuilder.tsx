@@ -777,13 +777,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Your device / Your design</p>
             <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-black">Customize your skin</h2>
           </div>
-          <Link
-            href="/orders"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2.5 text-sm font-bold text-black transition hover:border-black focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] sm:px-5"
-          >
-            <i className="bx bx-history text-base" />
-            <span>View Order History</span>
-          </Link>
         </div>
 
         <div className="builder-progress" aria-label="Customization steps">
@@ -1017,7 +1010,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             )}
                             {/* Artwork Selection */}
                             <div>
-                              <div className="builder-artwork-mode flex w-full flex-wrap rounded-2xl bg-[#efefef] p-1 mb-4 sm:inline-flex sm:w-auto sm:rounded-full">
+                              <div className="mb-3 flex items-center justify-between gap-2">
+                                <span className="text-sm font-semibold text-black/70">Artwork source</span>
+                              </div>
+                              <div className="builder-artwork-mode flex w-full flex-wrap gap-1 rounded-2xl bg-[#efefef] p-1.5 mb-4 sm:w-auto sm:rounded-full">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1025,9 +1021,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
                                     setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
                                   }}
-                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
+                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'upload' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
                                 >
-                                  <i className="bx bx-upload mr-2" /> Upload artwork
+                                  <i className="bx bx-upload mr-2" /> Upload my artwork
                                 </button>
                                 <button
                                   type="button"
@@ -1036,9 +1032,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
                                     setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
                                   }}
-                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
+                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'catalog' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
                                 >
-                                  <i className="bx bx-palette mr-2" /> Choose from gallery
+                                  <i className="bx bx-palette mr-2" /> Choose a design
                                 </button>
                               </div>
 
@@ -1717,7 +1713,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </div>
               <p className="mt-2 text-xs text-black/55">Professional installation is available during setup.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -1726,6 +1722,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               >
                 {isSubmitting ? 'Booking your skin...' : 'Book My Skin'}
               </button>
+              <Link
+                href="/orders"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold text-black transition hover:border-black focus:outline-none focus:ring-2 focus:ring-[#2f8f8f]"
+              >
+                <i className="bx bx-history text-base" />
+                <span>View Order History</span>
+              </Link>
             </div>
           </div>
           {submissionResult ? (
