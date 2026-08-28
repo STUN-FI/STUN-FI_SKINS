@@ -41,3 +41,150 @@ body {
   @apply bg-[#f3f3f1] text-black;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 }
+
+video {
+  display: block;
+  max-width: 100%;
+}
+
+.finish-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+}
+
+.finish-swatch-standard {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #ffffff, #dfe4e2);
+}
+
+.finish-swatch-shiny {
+  border: 1px solid rgba(49, 153, 153, 0.35);
+  background: radial-gradient(circle at 35% 30%, #ffffff 0 8%, transparent 9%), radial-gradient(circle at 70% 65%, #ffffff 0 7%, transparent 8%), #66cccc;
+  color: #0b5555;
+  box-shadow: 0 0 18px rgba(102, 204, 204, 0.35);
+}
+
+.builder-progress {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(4.5rem, 1fr));
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-block: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.85rem 0;
+}
+
+.builder-progress-step {
+  min-width: 4.5rem;
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.builder-progress-step span {
+  display: block;
+  color: rgba(0, 0, 0, 0.3);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+}
+
+.builder-progress-step strong {
+  display: block;
+  margin-top: 0.35rem;
+  white-space: nowrap;
+}
+
+.builder-progress-step.is-active,
+.builder-progress-step.is-active span {
+  color: #319999;
+}
+
+#builder input:focus-visible,
+#builder select:focus-visible,
+#builder textarea:focus-visible,
+#builder button:focus-visible {
+  outline: 2px solid #66cccc;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .builder-shell {
+    border-radius: 1.25rem;
+    padding: 0.75rem;
+  }
+
+  .builder-content {
+    gap: 1.25rem;
+  }
+
+  .builder-progress {
+    display: block;
+    margin-inline: 0;
+    padding: 0.75rem 0;
+  }
+
+  .builder-progress::before {
+    color: rgba(0, 0, 0, 0.58);
+    content: 'Your customization journey  ·  7 steps';
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .builder-progress-step {
+    display: none;
+  }
+
+  .builder-artwork-mode {
+    gap: 0.25rem;
+  }
+
+  .builder-artwork-mode button {
+    flex-basis: 100%;
+  }
+
+  .builder-catalog-selection button:first-child {
+    width: 100%;
+  }
+
+  .builder-panel,
+  .builder-summary {
+    border-radius: 1.25rem;
+  }
+
+  .builder-summary {
+    padding-bottom: 1.25rem;
+  }
+}
+
+.landing-nav a:focus-visible,
+.landing-hero a:focus-visible {
+  outline: 2px solid #66cccc;
+  outline-offset: 4px;
+}
+
+.landing-hero-media img {
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.landing-hero:hover .landing-hero-media img {
+  transform: scale(1.025);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-media img {
+    transition: none;
+  }
+
+  .landing-hero:hover .landing-hero-media img {
+    transform: none;
+  }
+}

@@ -30,6 +30,7 @@ export default function ReceiptModal({
   onClose,
 }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isSharing, setIsSharing] = useState(false);
 
   const receiptMessage = useMemo(
@@ -82,20 +83,27 @@ export default function ReceiptModal({
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
 
     return () => {
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-xl md:max-w-3xl h-[calc(100vh-2rem)] overflow-hidden rounded-[1.75rem] bg-white shadow-2xl">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md" role="presentation">
+      <div className="relative h-[calc(100dvh-1rem)] w-full max-w-xl overflow-hidden rounded-[1.75rem] bg-white shadow-2xl md:max-w-3xl sm:h-[calc(100dvh-2rem)]" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={onClose}
           className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 sm:right-4 sm:top-4"
@@ -111,7 +119,7 @@ export default function ReceiptModal({
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Stun-Fi</p>
-                    <h1 className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
+                    <h1 id="receipt-modal-title" className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
                   </div>
                   <span className="rounded-full bg-black px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">{orderId}</span>
                 </div>

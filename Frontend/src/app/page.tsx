@@ -595,62 +595,80 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
   };
 
   return (
-    <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 py-10 text-black md:px-8">
+    <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
       <div className="w-full mx-auto max-w-6xl">
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur"
-        >
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-14 w-14 min-w-[3.5rem] items-center justify-center rounded-3xl bg-black p-2 sm:h-16 sm:w-16">
-                <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={64} height={64} />
+        <header className="landing-nav mb-6 border-b border-black/10 py-4 sm:mb-10">
+          <div className="flex items-center justify-between gap-6">
+            <a href="#top" className="flex min-w-0 items-center gap-3" aria-label="STUN-FI Skins home">
+              <div className="flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-xl bg-black p-2 sm:h-11 sm:w-11 sm:min-w-[2.75rem] sm:rounded-2xl">
+                <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
               </div>
               <div className="min-w-0">
-                <BrandedLogo size="lg" />
-                <p className="mt-1 text-xs sm:text-sm font-semibold uppercase tracking-[0.24em] text-black/70">your tech. your style</p>
+                <BrandedLogo size="base" />
+                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-black/55 sm:block">your tech. your style</p>
               </div>
+            </a>
+            <nav className="hidden items-center gap-7 text-sm font-semibold text-black/65 lg:flex" aria-label="Primary navigation">
+              <a className="transition hover:text-black" href="#builder">Customize</a>
+              <a className="transition hover:text-black" href="#surfaces">Surfaces</a>
+              <a className="transition hover:text-black" href="#how-it-works">How it works</a>
+              <a className="transition hover:text-black" href="#showcase">Showcase</a>
+              <a className="transition hover:text-black" href="#order-mode">Wholesale</a>
+            </nav>
+            <div className="flex items-center gap-2">
+              <details className="relative lg:hidden">
+                <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-black/15 text-black focus:outline-none focus:ring-2 focus:ring-[#66cccc]" aria-label="Open navigation menu">
+                  <i className="bx bx-menu text-xl" aria-hidden="true" />
+                </summary>
+                <nav className="absolute right-0 top-14 z-30 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl" aria-label="Mobile navigation">
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#builder">Customize</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Surfaces</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#how-it-works">How it works</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#showcase">Showcase</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#order-mode">Wholesale</a>
+                  <a className="mt-1 block rounded-xl bg-black px-4 py-3 text-center text-sm font-bold text-white hover:bg-neutral-800" href="#builder">Design Your Skin</a>
+                </nav>
+              </details>
+              <a href="#builder" className="hidden rounded-full bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800 sm:px-5 sm:text-sm lg:inline-flex">
+                Design Your Skin
+              </a>
             </div>
           </div>
-        </motion.header>
+        </header>
 
-        <section className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 sm:p-8 shadow-glow backdrop-blur">
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.85fr] lg:items-center">
-            <div className="space-y-5">
-              <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-black/60">Premium device wraps</p>
-              <h1 className="max-w-full text-3xl font-black leading-tight tracking-[-0.04em] text-black sm:text-4xl xl:text-5xl">
-                Precision Device Wraps &amp; Surface Protection
-              </h1>
-              <p className="max-w-full text-sm leading-7 text-black/70 sm:text-base">
-                Transform your laptop, phone, or controller with high-grade vinyl and dazzling Shiny Stones sparkle finishes.
+        <section id="top" className="landing-hero mb-10 overflow-hidden rounded-[2rem] bg-black text-white sm:rounded-[2.5rem]">
+          <div className="grid lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
+            <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12 xl:p-16">
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#66cccc]">Custom device wraps</p>
+              <h1 className="max-w-xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-5xl xl:text-7xl">Your device. Your design.</h1>
+              <p className="mt-6 max-w-md text-base leading-7 text-white/65 sm:text-lg">
+                Premium custom skins precisely fitted to your laptop, phone, or controller.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href="#builder"
-                  className="w-full rounded-2xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 sm:w-auto"
-                >
-                  Customize Now
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a href="#builder" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#66cccc] px-6 text-sm font-bold text-black transition hover:bg-[#8de0e0]">
+                  Design Your Skin
+                </a>
+                <a href="#surfaces" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50">
+                  Explore finishes
                 </a>
               </div>
+              <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+                <span>Laptops</span>
+                <span>Phones</span>
+                <span>Controllers</span>
+                <span className="text-[#66cccc]">Custom artwork</span>
+              </div>
             </div>
-            <div className="rounded-[2rem] border border-black/10 bg-black/95 p-6 text-white shadow-xl">
-              <div className="text-sm uppercase tracking-[0.25em] text-white/70">Build in minutes</div>
-              <div className="mt-4 grid gap-4">
-                <div className="rounded-3xl bg-white/5 p-4 sm:p-5">
-                  <div className="text-sm text-white/70">Individual device orders</div>
-                  <div className="mt-2 text-xl sm:text-2xl font-black">Laptops, phones, controllers</div>
-                </div>
-                <div className="rounded-3xl bg-white/5 p-4 sm:p-5">
-                  <div className="text-sm text-white/70">Wholesale inventory</div>
-                  <div className="mt-2 text-xl sm:text-2xl font-black">Store partner pricing</div>
-                </div>
+            <div className="landing-hero-media relative min-h-[23rem] bg-[#d9ddda] sm:min-h-[30rem] lg:min-h-[34rem]">
+              <Image src="/img/Stripes.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
+              <div className="absolute bottom-5 left-5 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black backdrop-blur sm:bottom-7 sm:left-7">
+                Precision fit / premium finish
               </div>
             </div>
           </div>
         </section>
 
-        <section className="mb-10">
+        <section id="surfaces" className="mb-10 scroll-mt-6">
           <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Customization surfaces</p>
             <h2 className="mt-2 text-2xl font-black text-black sm:text-3xl">Top Lid, Keyboard Deck &amp; Bottom Base</h2>
@@ -684,37 +702,121 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
-        <section className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <section id="benefits" className="mb-10 border-y border-black/10 py-10 scroll-mt-6 sm:py-14">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Order experience</p>
-              <div className="mt-2 text-lg sm:text-xl font-black text-black">Select the right flow for your order</div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Why STUN-FI</p>
+              <h2 className="mt-3 max-w-sm text-3xl font-black leading-tight tracking-[-0.04em] sm:text-4xl">Made to look right. Made to fit right.</h2>
             </div>
-            <div className="w-full flex flex-col sm:inline-flex gap-1.5 sm:gap-2 rounded-full border-2 border-black/10 bg-[#f7f7f5] p-1">
+            <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+              {[
+                ['01', 'Precision fit', 'Exact cutouts for ports, cameras, buttons, and edges.'],
+                ['02', 'Premium materials', 'A considered finish that protects without adding bulk.'],
+                ['03', 'Custom artwork', 'Choose from the catalog or bring a design that is yours.'],
+                ['04', 'Professional fitting', 'Get a clean, bubble-free finish with on-site installation.'],
+              ].map(([number, title, description]) => (
+                <div key={number} className="border-t border-black/15 pt-4">
+                  <span className="text-xs font-bold tracking-[0.2em] text-[#319999]">{number}</span>
+                  <h3 className="mt-3 text-lg font-black">{title}</h3>
+                  <p className="mt-2 max-w-xs text-sm leading-6 text-black/62">{description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="finishes" className="mb-10 overflow-hidden rounded-[2rem] bg-[#e3e6e3] scroll-mt-6 sm:rounded-[2.5rem]">
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div className="p-7 sm:p-10 lg:p-14">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Choose your finish</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">The final detail changes everything.</h2>
+              <p className="mt-5 max-w-md text-sm leading-7 text-black/65 sm:text-base">Keep it clean with Standard, or catch the light with our Shiny Stones premium finish.</p>
+              <a href="#builder" className="mt-7 inline-flex min-h-11 items-center rounded-full bg-black px-5 text-sm font-semibold text-white transition hover:bg-neutral-800">Choose a finish</a>
+            </div>
+            <div className="grid min-h-[18rem] grid-cols-2">
+              <div className="flex flex-col justify-end bg-[#f5f5f3] p-6 sm:p-8">
+                <div className="h-20 w-20 rounded-full border border-black/15 bg-white shadow-[inset_12px_12px_28px_rgba(0,0,0,0.08)]" aria-hidden="true" />
+                <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em]">Standard</p>
+                <p className="mt-2 text-sm text-black/60">Clean, understated, everyday.</p>
+              </div>
+              <div className="finish-shine flex flex-col justify-end bg-black p-6 text-white sm:p-8">
+                <div className="h-20 w-20 rounded-full border border-white/25 bg-[#66cccc] shadow-[0_0_34px_rgba(102,204,204,0.55)]" aria-hidden="true" />
+                <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em]">Shiny Stones</p>
+                <p className="mt-2 text-sm text-white/60">Light-catching, unmistakably yours.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="customization" className="mb-10 scroll-mt-6">
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="relative min-h-[20rem] overflow-hidden rounded-[2rem] bg-black sm:min-h-[28rem] sm:rounded-[2.5rem]">
+              <Image src="/img/Keyboard.jpg" alt="STUN-FI skin applied across a laptop keyboard area" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
+              <div className="absolute bottom-5 left-5 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black">Preview before you order</div>
+            </div>
+            <div className="lg:pl-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Make it personal</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Start with a design. Finish with your signature.</h2>
+              <p className="mt-5 text-base leading-7 text-black/65">Pick a catalog artwork, upload your own image, or add custom text. Your choices stay visible as you build, so the finished skin never feels like a guess.</p>
+              <div className="mt-7 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.14em] text-black/60">
+                <span className="rounded-full border border-black/15 px-3 py-2">Catalog artwork</span>
+                <span className="rounded-full border border-black/15 px-3 py-2">Your upload</span>
+                <span className="rounded-full border border-black/15 px-3 py-2">Custom text</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="how-it-works" className="mb-10 rounded-[2rem] bg-black px-7 py-10 text-white scroll-mt-6 sm:rounded-[2.5rem] sm:px-10 sm:py-14">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#66cccc]">How it works</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Four steps from idea to device.</h2>
+            </div>
+            <a href="#builder" className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#66cccc] px-5 text-sm font-bold text-black transition hover:bg-[#8de0e0]">Start building</a>
+          </div>
+          <div className="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['01', 'Choose your device'],
+              ['02', 'Select your surfaces'],
+              ['03', 'Make the design yours'],
+              ['04', 'Confirm and get it fitted'],
+            ].map(([number, title]) => (
+              <div key={number}>
+                <span className="text-sm font-bold text-[#66cccc]">{number}</span>
+                <h3 className="mt-4 max-w-[12rem] text-lg font-black leading-snug">{title}</h3>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="order-mode" className="mb-10 scroll-mt-6 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#319999]">Order type</p>
+              <div className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">How are you ordering?</div>
+            </div>
+            <div className="grid w-full gap-2 md:max-w-xl md:grid-cols-2">
               {(['individual', 'wholesale'] as OrderMode[]).map((modeOption) => (
                 <button
                   key={modeOption}
                   type="button"
                   onClick={() => setForm((current) => ({ ...current, mode: modeOption }))}
-                  className={`flex-1 sm:flex-initial rounded-full px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap ${
+                  aria-pressed={form.mode === modeOption}
+                  className={`relative min-h-[4.75rem] rounded-2xl border-2 px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#66cccc] ${
                     form.mode === modeOption
-                      ? 'bg-black text-white shadow-md'
-                      : 'text-black hover:bg-white/50'
+                      ? 'border-black bg-black text-white shadow-md'
+                      : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/35'
                   }`}
                 >
-                  {modeOption === 'individual' ? (
-                    <>
-                      <i className="bx bx-mobile text-sm sm:text-lg flex-shrink-0" />
-                      <span className="hidden sm:inline">Individual Purchase</span>
-                      <span className="sm:hidden">Individual</span>
-                    </>
-                  ) : (
-                    <>
-                      <i className="bx bx-store text-sm sm:text-lg flex-shrink-0" />
-                      <span className="hidden sm:inline">Store Partner / Bulk Wholesale</span>
-                      <span className="sm:hidden">Wholesale</span>
-                    </>
-                  )}
+                  <span className="flex items-center gap-3">
+                    <i className={`bx ${modeOption === 'individual' ? 'bx-mobile' : 'bx-store'} text-xl ${form.mode === modeOption ? 'text-[#66cccc]' : 'text-black/55'}`} aria-hidden="true" />
+                    <span>
+                      <span className="block text-sm font-black">{modeOption === 'individual' ? 'Personal' : 'Wholesale'}</span>
+                      <span className={`mt-1 block text-xs ${form.mode === modeOption ? 'text-white/65' : 'text-black/55'}`}>{modeOption === 'individual' ? 'One device for yourself' : 'Bulk orders for your store'}</span>
+                    </span>
+                  </span>
+                  {form.mode === modeOption ? <i className="bx bx-check absolute right-3 top-3 text-lg text-[#66cccc]" aria-hidden="true" /> : null}
                 </button>
               ))}
             </div>
@@ -734,7 +836,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                   onSubmittingChange={setGlobalBuilderSubmitting}
                 />
                 <ApplicationGuideSection />
-                <VideoShowcase />
+                <div id="showcase" className="scroll-mt-6">
+                  <VideoShowcase />
+                </div>
               </>
             ) : (
               <section id="wholesale" className="rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
@@ -790,29 +894,14 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           )}
         </div>
 
-        <section className="mt-12 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
-          <div className="grid gap-5 sm:grid-cols-3">
-            <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
-                <i className="bx bx-target-lock" />
-              </div>
-              <h3 className="mt-4 text-lg font-bold text-black">Precision Vector Fit</h3>
-              <p className="mt-2 text-sm text-black/70">Exact cutouts for ports, cameras, and buttons for flawless wrap alignment.</p>
+        <section className="mt-12 overflow-hidden rounded-[2rem] bg-[#66cccc] px-7 py-10 text-black sm:rounded-[2.5rem] sm:px-10 sm:py-14">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-black/60">Make the next move</p>
+              <h2 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-5xl">Ready to make your device yours?</h2>
+              <p className="mt-5 max-w-lg text-base leading-7 text-black/65">Choose your device, bring your design, and see the full order before you commit.</p>
             </div>
-            <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
-                <i className="bx bx-brightness" />
-              </div>
-              <h3 className="mt-4 text-lg font-bold text-black">Shiny Stones Lamination</h3>
-              <p className="mt-2 text-sm text-black/70">Dazzling light-catching sparkle that keeps devices looking premium.</p>
-            </div>
-            <div className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/5 text-4xl text-black">
-                <i className="bx bx-wrench" />
-              </div>
-              <h3 className="mt-4 text-lg font-bold text-black">Free Campus Heat-Fitting</h3>
-              <p className="mt-2 text-sm text-black/70">Professional bubble-free installation included with campus orders.</p>
-            </div>
+            <a href="#builder" className="inline-flex min-h-12 w-fit items-center rounded-full bg-black px-6 text-sm font-bold text-white transition hover:bg-neutral-800">Design Your Skin</a>
           </div>
         </section>
 
@@ -927,7 +1016,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           onClick={() => setShowOrderModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-black/10 bg-white p-4 shadow-2xl sm:p-5"
+            className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-black/10 bg-white p-4 shadow-2xl sm:p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -938,7 +1027,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <button
                 type="button"
                 onClick={() => setShowOrderModal(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-black"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-black focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
                 aria-label="Close order modal"
               >
                 <i className="bx bx-x text-lg" />

@@ -51,9 +51,9 @@ const ARTWORK_CATALOG = [
 ];
 
 const DEFAULT_LAPTOP_FINISHES: Record<LaptopSurface, FinishType> = {
-  'top-lid': 'standard',
-  'keyboard-deck': 'standard',
-  'bottom-base': 'standard',
+  'top-lid': 'shiny-stones',
+  'keyboard-deck': 'shiny-stones',
+  'bottom-base': 'shiny-stones',
 };
 
 const DEFAULT_LAPTOP_TEXTS: Record<LaptopSurface, string> = {
@@ -288,7 +288,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       return;
     }
 
-    onPriceChange(pricingQuotePending ? 0 : pricing.total);
+    onPriceChange(pricingQuotePending ? null : pricing.total);
   }, [onPriceChange, pricingQuotePending, pricing.total]);
 
   const normalizedPhone = phoneNumber.replace(/\D/g, '');
@@ -736,8 +736,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   };
 
   return (
-    <section id="builder" className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-4 sm:p-6 shadow-glow backdrop-blur overflow-x-auto">
-      <div className="space-y-6">
+    <section id="builder" className="builder-shell mb-10 overflow-hidden rounded-[2.5rem] border border-black/10 bg-white/90 p-4 shadow-glow backdrop-blur sm:p-6">
+      <div className="builder-content space-y-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Client Order Configurator</p>
@@ -752,7 +752,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           </Link>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-6">
+        <div className="builder-progress" aria-label="Customization steps">
+          {['Details', 'Device', 'Surfaces', 'Artwork', 'Finish', 'Install', 'Review'].map((step, index) => (
+            <div key={step} className={`builder-progress-step ${index === 0 ? 'is-active' : ''}`}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{step}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-black">Order Category</span>
             <select
@@ -833,16 +842,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
         <div className="grid gap-6">
           {category === 'laptop' && (
-            <div className="space-y-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Laptop Customization</p>
-                <p className="mt-2 text-base text-black/80">
-                  Select one or more surfaces you want wrapped. For a full custom finish, you can choose all three: Top Lid, Keyboard Deck, and Bottom Base.
-                </p>
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800">
-                  <i className="bx bx-check text-[16px]" />
-                  Multi-select enabled: choose all 3 for full customization
-                </div>
                 <button type="button" onClick={onHelpOpen} className="mt-3 inline-flex items-center gap-1 text-sm text-blue-600">
                   <i className="bx bx-info-circle" /> Which parts are these?
                 </button>
@@ -864,10 +866,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 </label>
               </div>
 
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
-                Choose any combination you want — for a full customization, select all three surfaces together.
-              </div>
-
               <div className="grid gap-3 sm:grid-cols-3">
                 {LAPTOP_SURFACES.map((surface) => {
                   const selected = laptopSelectedSurfaces.includes(surface.value);
@@ -876,10 +874,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       key={surface.value}
                       type="button"
                       onClick={() => handleToggleLaptopSurface(surface.value)}
-                      className={`relative rounded-3xl border px-4 py-4 text-left text-sm font-semibold transition ${
+                      className={`relative rounded-3xl border-2 px-4 py-4 text-left text-sm font-semibold transition-all duration-200 ${
                         selected
-                          ? 'border-black bg-white text-black shadow-sm'
-                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                          ? 'border-black bg-[#f5f5f3] text-black shadow-[0_0_0_2px_rgba(0,0,0,0.04)] ring-2 ring-black/5'
+                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/40 hover:bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -896,7 +894,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             ) : null}
                           </div>
                           <div>
-                            <div>{surface.label}</div>
+                            <div className="flex items-center gap-2">
+                              <span>{surface.label}</span>
+                              {selected && (
+                                <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-white">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
                             <div className="text-xs text-black/60">
                               {surface.value === 'top-lid'
                                 ? 'Outer back cover'
@@ -907,10 +912,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           </div>
                         </div>
                         {selected ? (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black bg-black/5 text-black/80">
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black bg-black text-white shadow-sm">
                             <i className="bx bx-check text-[18px]" />
                           </span>
-                        ) : null}
+                        ) : (
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-black/40">
+                            <i className="bx bx-plus text-[18px]" />
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
@@ -935,14 +944,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           onClick={() => setExpandedLaptopSurface(isExpanded ? null : surface)}
                           className="w-full rounded-3xl border border-black/10 bg-white p-5 transition hover:border-black/30"
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 flex-1 text-left">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-left">
                               <span className="text-lg font-semibold text-black">{surfaceLabel}</span>
                               {!isExpanded && laptopCopiedSettings && surface !== laptopSelectedSurfaces[0] && (
                                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Copied</span>
                               )}
                               {!isExpanded && (
-                                <div className="text-xs text-black/60 flex gap-2">
+                                <div className="flex min-w-0 flex-wrap gap-x-2 text-xs text-black/60">
                                   {laptopFinishes[surface] === 'shiny-stones' ? (
                                     <span>Premium</span>
                                   ) : (
@@ -955,47 +964,25 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 </div>
                               )}
                             </div>
-                            <i className={`bx bx-chevron-down transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <i className={`bx bx-chevron-down shrink-0 pt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </div>
                         </button>
 
                         {/* Accordion Content */}
                         {isExpanded && (
                           <div className="rounded-b-3xl border border-t-0 border-black/10 bg-[#f7f7f5] p-5 space-y-4">
-                            {/* Copy Settings Prompt - Show on first selected surface */}
-                            {surface === laptopSelectedSurfaces[0] && laptopFinishes[surface] && !laptopCopiedSettings && (
-                              <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-4 mb-4">
-                                <div className="flex items-start gap-3">
-                                  <i className="bx bx-bulb text-blue-600 text-xl mt-1 flex-shrink-0" />
-                                  <div className="flex-1">
-                                    <p className="text-sm font-semibold text-blue-900">Apply to all surfaces?</p>
-                                    <p className="text-xs text-blue-800 mt-1">Use the same design for Keyboard Deck and Bottom Base</p>
-                                    <div className="mt-3">
-                                      <button
-                                        type="button"
-                                        onClick={handleCopyLaptopSettings}
-                                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition"
-                                      >
-                                        Copy Settings
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
                             {/* Artwork Selection */}
                             <div>
-                              <div className="inline-flex rounded-full bg-[#efefef] p-1 mb-4">
+                              <div className="builder-artwork-mode flex w-full flex-wrap rounded-2xl bg-[#efefef] p-1 mb-4 sm:inline-flex sm:w-auto sm:rounded-full">
                                 <button
                                   type="button"
                                   onClick={() => {
                                     setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
                                     setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
                                   }}
-                                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
+                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'upload' ? 'bg-white' : 'text-black/70'}`}
                                 >
-                                  <i className="bx bx-upload mr-2" /> Upload Own Image
+                                  <i className="bx bx-upload mr-2" /> Upload artwork
                                 </button>
                                 <button
                                   type="button"
@@ -1003,16 +990,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
                                     setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
                                   }}
-                                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
+                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'catalog' ? 'bg-white' : 'text-black/70'}`}
                                 >
-                                  <i className="bx bx-palette mr-2" /> Choose Existing Design
+                                  <i className="bx bx-palette mr-2" /> Choose from gallery
                                 </button>
                               </div>
 
                               <div className="mt-4">
                                 {laptopArtworkMode[surface] === 'upload' ? (
                                   <label className="space-y-2">
-                                    <span className="text-sm text-black/70">Upload own image</span>
+                                    <span className="text-sm text-black/70">Your artwork</span>
 
                                     <input
                                       type="file"
@@ -1045,19 +1032,19 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                   </label>
                                 ) : (
                                   <div className="space-y-2">
-                                    <span className="text-sm text-black/70">Catalog art</span>
-                                    <div className="flex items-center gap-3">
+                                    <span className="text-sm text-black/70">Gallery artwork</span>
+                                    <div className="builder-catalog-selection flex flex-wrap items-center gap-3">
                                       <button
                                         type="button"
                                         onClick={() => onCatalogOpen(surface)}
-                                        className="rounded-2xl border px-4 py-3 text-sm bg-white"
+                                        className="min-h-11 rounded-2xl border px-4 py-3 text-sm bg-white"
                                       >
-                                        <i className="bx bx-palette mr-2" /> Choose Existing Design
+                                        <i className="bx bx-palette mr-2" /> Choose from gallery
                                       </button>
                                       {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex min-w-0 items-center gap-2">
                                           <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
-                                          <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="text-sm text-red-600">Remove</button>
+                                          <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="min-h-11 px-2 text-sm text-red-600">Remove</button>
                                         </div>
                                       ) : null}
                                     </div>
@@ -1069,28 +1056,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             {/* Finish & Text Options */}
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div className="space-y-2">
-                                <span className="text-sm text-black/70">Surface finish</span>
-                                <div className="grid grid-cols-2 gap-2">
+                                <span className="text-sm font-semibold text-black/70">Choose finish</span>
+                                <div className="grid gap-2 sm:grid-cols-2">
                                   <button
                                     type="button"
                                     onClick={() => {
                                       markSelectionStarted();
                                       setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
                                     }}
-                                    className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                                    className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                                       laptopFinishes[surface] === 'shiny-stones'
-                                        ? 'border-black bg-black text-white shadow-lg scale-105'
-                                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                                        ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                                        : 'border-black/15 bg-white text-black hover:border-black/45'
                                     }`}
                                   >
-                                    <div className="flex items-center justify-center mb-2">
-                                      <i className="bx bxs-star text-lg" />
+                                    <div className="flex items-center gap-3">
+                                      <span className="finish-swatch finish-swatch-shiny" aria-hidden="true"><i className="bx bxs-star" /></span>
+                                      <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                                     </div>
-                                    <div className="text-xs mb-1 opacity-75">PREMIUM</div>
-                                    <div className="text-sm font-black">+ ₦500</div>
                                     {laptopFinishes[surface] === 'shiny-stones' && (
-                                      <div className="absolute top-2 right-2">
-                                        <i className="bx bx-check text-xl" />
+                                      <div className="absolute right-3 top-3 text-[#319999]">
+                                        <i className="bx bx-check text-lg" aria-hidden="true" />
                                       </div>
                                     )}
                                   </button>
@@ -1100,20 +1086,19 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                       markSelectionStarted();
                                       setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
                                     }}
-                                    className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                                    className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                                       laptopFinishes[surface] === 'standard'
-                                        ? 'border-black bg-black text-white shadow-lg scale-105'
-                                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                                        ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                                        : 'border-black/15 bg-white text-black hover:border-black/45'
                                     }`}
                                   >
-                                    <div className="flex items-center justify-center mb-2">
-                                      <i className="bx bx-layer text-lg" />
+                                    <div className="flex items-center gap-3">
+                                      <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
+                                      <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                                     </div>
-                                    <div className="text-xs mb-1 opacity-75">STANDARD</div>
-                                    <div className="text-sm font-black">Base</div>
                                     {laptopFinishes[surface] === 'standard' && (
-                                      <div className="absolute top-2 right-2">
-                                        <i className="bx bx-check text-xl" />
+                                      <div className="absolute right-3 top-3 text-[#319999]">
+                                        <i className="bx bx-check text-lg" aria-hidden="true" />
                                       </div>
                                     )}
                                   </button>
@@ -1126,7 +1111,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     onClick={() => setLaptopTextToggle((current) => ({ ...current, [surface]: true }))}
                                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
                                   >
-                                    <i className="bx bx-plus mr-2" />Add custom text?
+                                    <i className="bx bx-plus mr-2" />Add text
                                   </button>
                                 ) : (
                                   <div className="space-y-2">
@@ -1160,6 +1145,21 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             </div>
                           </div>
                         )}
+                        {isExpanded && surface === laptopSelectedSurfaces[0] && laptopSelectedSurfaces.length > 1 && laptopFinishes[surface] && !laptopCopiedSettings ? (
+                          <div className="flex flex-col gap-3 rounded-b-3xl border border-t-0 border-[#b8e5e5] bg-[#f1fbfb] p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-sm font-bold text-black">Use this design on all surfaces?</p>
+                              <p className="mt-1 text-xs text-black/60">Copy the first surface&apos;s artwork, finish, and text.</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleCopyLaptopSettings}
+                              className="min-h-11 rounded-full bg-black px-4 py-2 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
+                            >
+                              Apply to all
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                     );
                   })}
@@ -1186,7 +1186,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       <div className="flex items-center gap-3">
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
-                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Fitting' : 'Self-application'}</div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</div>
                           <div className={`text-xs mt-1 ${laptopInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
@@ -1203,7 +1203,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           )}
 
           {category === 'phone' && (
-            <div className="space-y-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Phone Customization</p>
                 <p className="mt-2 text-base text-black/80">Choose wrap coverage, finish, and optional custom text.</p>
@@ -1226,28 +1226,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <span className="text-sm text-black/70">Surface finish</span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <span className="text-sm font-semibold text-black/70">Choose finish</span>
+                  <div className="grid gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => {
                         markSelectionStarted();
                         setPhoneFinish('shiny-stones');
                       }}
-                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         phoneFinish === 'shiny-stones'
-                          ? 'border-black bg-black text-white shadow-lg scale-105'
-                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
-                      <div className="flex items-center justify-center mb-2">
-                        <i className="bx bxs-star text-lg" />
+                      <div className="flex items-center gap-3">
+                        <span className="finish-swatch finish-swatch-shiny" aria-hidden="true"><i className="bx bxs-star" /></span>
+                        <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                       </div>
-                      <div className="text-xs mb-1 opacity-75">PREMIUM</div>
-                      <div className="text-sm font-black">Quality</div>
                       {phoneFinish === 'shiny-stones' && (
-                        <div className="absolute top-2 right-2">
-                          <i className="bx bx-check text-xl" />
+                        <div className="absolute right-3 top-3 text-[#319999]">
+                          <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
                     </button>
@@ -1257,27 +1256,26 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setPhoneFinish('standard');
                       }}
-                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         phoneFinish === 'standard'
-                          ? 'border-black bg-black text-white shadow-lg scale-105'
-                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
-                      <div className="flex items-center justify-center mb-2">
-                        <i className="bx bx-layer text-lg" />
+                      <div className="flex items-center gap-3">
+                        <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
+                        <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                       </div>
-                      <div className="text-xs mb-1 opacity-75">STANDARD</div>
-                      <div className="text-sm font-black">(- ₦500)</div>
                       {phoneFinish === 'standard' && (
-                        <div className="absolute top-2 right-2">
-                          <i className="bx bx-check text-xl" />
+                        <div className="absolute right-3 top-3 text-[#319999]">
+                          <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
                     </button>
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Upload own image</span>
+                  <span className="text-sm text-black/70">Your artwork</span>
 
                   <input
                     type="file"
@@ -1293,7 +1291,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 </label>
               </div>
               <label className="space-y-2">
-                <span className="text-sm text-black/70">Catalog art</span>
+                <span className="text-sm text-black/70">Gallery artwork</span>
                 <select
                   value={phoneArtworkCatalog}
                   onChange={(event) => {
@@ -1315,7 +1313,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     onClick={() => setPhoneTextToggle(true)}
                     className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
                   >
-                    <i className="bx bx-plus mr-2" />Add custom text?
+                    <i className="bx bx-plus mr-2" />Add text
                   </button>
                 ) : (
                   <div className="space-y-2">
@@ -1366,7 +1364,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       <div className="flex items-center gap-3">
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
-                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</div>
                           <div className={`text-xs mt-1 ${phoneInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
@@ -1383,7 +1381,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           )}
 
           {category === 'controller' && (
-            <div className="space-y-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Controller Customization</p>
                 <p className="mt-2 text-base text-black/80">Pick your controller type, finish, and gamer tag.</p>
@@ -1405,28 +1403,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <span className="text-sm text-black/70">Surface finish</span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <span className="text-sm font-semibold text-black/70">Choose finish</span>
+                  <div className="grid gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => {
                         markSelectionStarted();
                         setControllerFinish('shiny-stones');
                       }}
-                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         controllerFinish === 'shiny-stones'
-                          ? 'border-black bg-black text-white shadow-lg scale-105'
-                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
-                      <div className="flex items-center justify-center mb-2">
-                        <i className="bx bxs-star text-lg" />
+                      <div className="flex items-center gap-3">
+                        <span className="finish-swatch finish-swatch-shiny" aria-hidden="true"><i className="bx bxs-star" /></span>
+                        <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
                       </div>
-                      <div className="text-xs mb-1 opacity-75">PREMIUM</div>
-                      <div className="text-sm font-black">Quality</div>
                       {controllerFinish === 'shiny-stones' && (
-                        <div className="absolute top-2 right-2">
-                          <i className="bx bx-check text-xl" />
+                        <div className="absolute right-3 top-3 text-[#319999]">
+                          <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
                     </button>
@@ -1436,27 +1433,26 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                         markSelectionStarted();
                         setControllerFinish('standard');
                       }}
-                      className={`relative rounded-2xl border-2 px-3 py-4 text-center font-bold transition-all duration-200 ${
+                      className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                         controllerFinish === 'standard'
-                          ? 'border-black bg-black text-white shadow-lg scale-105'
-                          : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
+                          ? 'border-[#319999] bg-[#effafa] text-black shadow-sm'
+                          : 'border-black/15 bg-white text-black hover:border-black/45'
                       }`}
                     >
-                      <div className="flex items-center justify-center mb-2">
-                        <i className="bx bx-layer text-lg" />
+                      <div className="flex items-center gap-3">
+                        <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
+                        <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
                       </div>
-                      <div className="text-xs mb-1 opacity-75">STANDARD</div>
-                      <div className="text-sm font-black">(- ₦500)</div>
                       {controllerFinish === 'standard' && (
-                        <div className="absolute top-2 right-2">
-                          <i className="bx bx-check text-xl" />
+                        <div className="absolute right-3 top-3 text-[#319999]">
+                          <i className="bx bx-check text-lg" aria-hidden="true" />
                         </div>
                       )}
                     </button>
                   </div>
                 </div>
                 <label className="space-y-2">
-                  <span className="text-sm text-black/70">Upload own image</span>
+                  <span className="text-sm text-black/70">Your artwork</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -1471,7 +1467,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 </label>
               </div>
               <label className="space-y-2">
-                <span className="text-sm text-black/70">Catalog art</span>
+                <span className="text-sm text-black/70">Gallery artwork</span>
                 <select
                   value={controllerArtworkCatalog}
                   onChange={(event) => {
@@ -1493,7 +1489,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     onClick={() => setControllerTagToggle(true)}
                     className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
                   >
-                    <i className="bx bx-plus mr-2" />Add gamer tag?
+                    <i className="bx bx-plus mr-2" />Add gamer tag
                   </button>
                 ) : (
                   <div className="space-y-2">
@@ -1544,7 +1540,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                       <div className="flex items-center gap-3">
                         <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
                         <div>
-                          <div className="text-base font-bold">{option === 'professional' ? 'Professional Installation' : 'Self-application'}</div>
+                          <div className="text-base font-bold">{option === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</div>
                           <div className={`text-xs mt-1 ${controllerInstallOption === option ? 'text-white/80' : 'text-black/60'}`}>{option === 'professional' ? 'Free' : '- ₦500 discount'}</div>
                         </div>
                       </div>
@@ -1561,10 +1557,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           )}
 
           {category === 'others' && (
-            <div className="space-y-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Custom Item Request</p>
-                <p className="mt-2 text-base text-black/80">Tell us what you want wrapped and we’ll quote it separately.</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Custom item</p>
               </div>
               <label className="space-y-2">
                 <span className="text-sm text-black/70">Item Name</span>
@@ -1580,7 +1575,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-black/70">Instructions / Coverage details</span>
+                <span className="text-sm text-black/70">Coverage details</span>
                 <textarea
                   value={instructions}
                   onChange={(event) => {
@@ -1593,7 +1588,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-black/70">Reference photo (optional)</span>
+                <span className="text-sm text-black/70">Reference photo</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -1610,14 +1605,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           )}
         </div>
 
-        <div id="price-section" className="rounded-3xl border border-black/10 bg-[#fafafa] p-6">
-          <div className="flex items-center justify-between gap-4">
+        <div id="price-section" className="builder-summary rounded-3xl border border-black/10 bg-[#fafafa] p-5 sm:p-6">
+          <div className="flex flex-col gap-4 border-b border-black/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Order Summary</p>
-              <p className="mt-2 text-base text-black/80">Here&apos;s exactly how your price breaks down.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#319999]">Your skin</p>
+              <h3 className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">Order summary</h3>
+              <p className="mt-2 text-sm text-black/60">A clear breakdown before you book.</p>
             </div>
-            <div className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
-              {pricingQuotePending ? 'Pending Quote' : formatCurrency(pricing.total)}
+            <div className={`rounded-full px-4 py-2 text-sm font-bold ${pricingQuotePending ? 'border border-amber-200 bg-amber-50 text-amber-900' : 'bg-black text-white'}`}>
+              {pricingQuotePending ? 'Quote required' : formatCurrency(pricing.total)}
             </div>
           </div>
           <div className="mt-6 space-y-2">
@@ -1631,7 +1627,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                   return (
                     <div
                       key={`${item.label}-${index}`}
-                      className={`flex items-center justify-between rounded-2xl border px-4 py-3 transition ${
+                      className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3 transition ${
                         isAdjustment
                           ? 'border-green-200 bg-green-50'
                           : 'border-black/10 bg-white hover:border-black/20'
@@ -1653,19 +1649,20 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
               </>
             )}
           </div>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-5 border-t border-black/10 pt-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="text-sm text-black/60">Final total</div>
-              <div className="text-2xl font-black text-black">
-                {pricingQuotePending ? 'Custom Quote' : formatCurrency(pricing.total)}
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-black/50">Total</div>
+              <div className="mt-1 text-3xl font-black tracking-[-0.04em] text-black">
+                {pricingQuotePending ? 'Custom quote' : formatCurrency(pricing.total)}
               </div>
+              <p className="mt-2 text-xs text-black/55">Professional installation is available during setup.</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="rounded-3xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-black/40"
+                className="min-h-12 rounded-full bg-black px-6 py-4 text-sm font-bold text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#66cccc] disabled:cursor-not-allowed disabled:bg-black/40"
               >
                 {isSubmitting ? 'Booking order...' : 'Book Order'}
               </button>

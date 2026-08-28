@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 type LaptopPreviewModalProps = {
   imageUrl: string;
@@ -15,23 +15,47 @@ const SURFACE_LABELS: Record<LaptopPreviewModalProps['surface'], string> = {
 };
 
 export default function LaptopPreviewModal({ imageUrl, surface, onClose }: LaptopPreviewModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!imageUrl) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [imageUrl, onClose]);
+
   if (!imageUrl) {
     return null;
   }
 
   return (
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl"
+        className="relative my-3 max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl overflow-y-auto rounded-[1.5rem] bg-white shadow-2xl sm:my-6 sm:max-h-[calc(100dvh-3rem)] sm:rounded-[2rem]"
         onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="laptop-preview-title"
       >
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900"
+          className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#66cccc]"
           aria-label="Close preview"
         >
           <i className="bx bx-x" />
@@ -39,13 +63,13 @@ export default function LaptopPreviewModal({ imageUrl, surface, onClose }: Lapto
 
         <div className="px-6 pb-6 pt-12 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/60">Live preview</p>
-          <h2 className="mt-2 text-2xl font-black text-black">{SURFACE_LABELS[surface]} surface preview</h2>
+          <h2 id="laptop-preview-title" className="mt-2 text-2xl font-black text-black">{SURFACE_LABELS[surface]} surface preview</h2>
           <p className="mt-2 text-sm text-black/70">
             View your uploaded artwork under the laptop surface cutouts and overlay template.
           </p>
         </div>
 
-        <div className="relative mx-auto mb-6 h-[420px] max-h-[70vh] w-full overflow-hidden rounded-[2rem] bg-black">
+        <div className="relative mx-3 mb-5 h-[min(420px,52dvh)] overflow-hidden rounded-[1.25rem] bg-black sm:mx-6 sm:mb-6 sm:h-[min(420px,62vh)] sm:rounded-[2rem]">
           <img
             src={imageUrl}
             alt="Uploaded artwork preview"

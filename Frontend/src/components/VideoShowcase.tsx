@@ -73,7 +73,6 @@ export default function VideoShowcase() {
                   controls={false}
                   loop
                   muted
-                  autoPlay
                   playsInline
                   preload="metadata"
                   src={video.src}
