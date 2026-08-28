@@ -739,9 +739,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </a>
             <nav className="hidden items-center gap-7 text-sm font-semibold text-black/65 lg:flex" aria-label="Primary navigation">
               <a className="transition hover:text-black" href="/customize">Customize</a>
-              <a className="transition hover:text-black" href="#surfaces">Gallery</a>
+              <a className="transition hover:text-black" href="#gallery">Gallery</a>
               <a className="transition hover:text-black" href="#how-it-works">How it works</a>
-              <a className="transition hover:text-black" href="#surfaces">Showcase</a>
+              <a className="transition hover:text-black" href="#showcase">Showcase</a>
               <a className="transition hover:text-black" href="/customize">Wholesale</a>
             </nav>
             <div className="flex items-center gap-2">
@@ -751,9 +751,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 </summary>
                 <nav className="absolute right-0 top-14 z-30 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl" aria-label="Mobile navigation">
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Customize</a>
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Gallery</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#gallery">Gallery</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#how-it-works">How it works</a>
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Showcase</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#showcase">Showcase</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Wholesale</a>
                   <a className="mt-1 block rounded-xl bg-black px-4 py-3 text-center text-sm font-bold text-white hover:bg-neutral-800" href="/customize">Design Your Skin</a>
                 </nav>
@@ -782,7 +782,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 <a href="/customize" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#66cccc] px-6 text-sm font-bold text-black transition hover:bg-[#8de0e0]">
                   Design Your Skin
                 </a>
-                <a href="#surfaces" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50">
+                <a href="#gallery" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50">
                   Explore Designs
                 </a>
               </div>
@@ -804,7 +804,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
-        <section id="surfaces" className="mb-10 scroll-mt-6">
+        <section id="gallery" className="mb-10 scroll-mt-6">
           <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI Showcase</p>
@@ -854,7 +854,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
-        <section id="benefits" className="mb-10 border-y border-black/10 py-10 scroll-mt-6 sm:py-14">
+        <section id="showcase" className="mb-10 border-y border-black/10 py-10 scroll-mt-6 sm:py-14">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Why STUN-FI</p>
