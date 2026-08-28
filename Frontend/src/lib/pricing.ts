@@ -83,15 +83,12 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
       : options.customTextSurfaceCount * LAPTOP_TEXT_FEE_PER_SURFACE;
   }
 
-  // A matching-quality discount only applies to a full 3-surface laptop set.
-  // Single-surface or 2-surface selections should not receive the same-quality deduction.
-  const allSelectedQualities = selectedKeys.map((key) => options.surfaces[key].quality);
+  // The bundle discount applies to a full 3-surface laptop set, including mixed finishes.
+  // Single-surface or 2-surface selections should not receive the bundle deduction.
   const allThreeSelected = selectedKeys.length === 3;
-  const allSameQuality = allThreeSelected && allSelectedQualities.length > 0 && allSelectedQualities.every((q) => q === allSelectedQualities[0]);
 
-  // Apply same-quality discount only when all three selected surfaces match.
   let qualityAdjustment = 0;
-  if (allSameQuality) {
+  if (allThreeSelected) {
     qualityAdjustment = -LAPTOP_MATCHING_QUALITY_DISCOUNT;
   }
 

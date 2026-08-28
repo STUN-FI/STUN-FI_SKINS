@@ -78,6 +78,10 @@ video {
   padding: 0.85rem 0;
 }
 
+.builder-progress-mobile-status {
+  display: none;
+}
+
 .builder-progress-step {
   min-width: 4.5rem;
   color: rgba(0, 0, 0, 0.42);
@@ -114,6 +118,14 @@ video {
 }
 
 @media (max-width: 640px) {
+  .customize-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .customize-intro {
+    margin-bottom: 1.5rem;
+  }
+
   .builder-shell {
     border-radius: 1.25rem;
     padding: 0.75rem;
@@ -129,14 +141,31 @@ video {
     padding: 0.75rem 0;
   }
 
-  .builder-progress::before {
-    color: rgba(0, 0, 0, 0.58);
-    content: 'Your customization journey  ·  7 steps';
-    display: block;
+  .builder-progress-mobile-status {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    color: rgba(0, 0, 0, 0.45);
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .builder-progress-mobile-status strong {
+    color: #2f7777;
+    font-size: 0.85rem;
+  }
+
+  .builder-progress::before {
+    content: '';
+    display: block;
+    height: 0.2rem;
+    margin-top: 0.65rem;
+    width: 14.28%;
+    background: #2f8f8f;
+    border-radius: 999px;
   }
 
   .builder-progress-step {

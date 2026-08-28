@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 
@@ -161,10 +162,6 @@ function calculateWholesaleTotal(finish: FinishType, quantity: number) {
   };
 }
 
-type HomePageProps = {
-  standalone?: boolean;
-};
-
 type OrderModeSelectorProps = {
   mode: OrderMode;
   onChange: (mode: OrderMode) => void;
@@ -207,7 +204,8 @@ function OrderModeSelector({ mode, onChange }: OrderModeSelectorProps) {
   );
 }
 
-export default function HomePage({ standalone = false }: HomePageProps) {
+export default function HomePage() {
+  const standalone = usePathname() === '/customize';
   const prefersReducedMotion = useReducedMotion();
   const [form, setForm] = useState<FormState>({
     device: 'laptop',
@@ -644,8 +642,8 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
   if (standalone) {
     return (
       <main className="min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
-        <div className="mx-auto w-full max-w-5xl">
-          <header className="mb-8 flex items-center justify-between gap-4 border-b border-black/10 py-4 sm:mb-10">
+        <div className="customize-shell mx-auto w-full max-w-5xl">
+          <header className="customize-header mb-8 flex items-center justify-between gap-4 border-b border-black/10 py-4 sm:mb-10">
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Back to STUN-FI Skins home">
               <div className="flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-xl bg-black p-2 sm:h-11 sm:w-11 sm:min-w-[2.75rem] sm:rounded-2xl">
                 <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
@@ -660,10 +658,10 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </a>
           </header>
 
-          <section className="mb-8 max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">Design your skin</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight tracking-[-0.05em] sm:text-5xl">Make your device yours.</h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-black/60">Choose your device, select the surfaces, and make the design personal.</p>
+          <section className="customize-intro mb-8 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI SKINS / CUSTOMIZER</p>
+            <h1 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">Design your skin.</h1>
+            <p className="mt-4 text-base font-medium text-black/60 sm:text-lg">Make your device yours.</p>
           </section>
 
           <OrderModeSelector mode={form.mode} onChange={(mode) => setForm((current) => ({ ...current, mode }))} />
@@ -684,7 +682,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           )}
         </div>
 
-        <FloatingPricingButton price={builderPrice} />
+        <FloatingPricingButton price={form.mode === 'wholesale' ? orderTotal : builderPrice} />
 
         {globalBuilderSubmitting ? (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
