@@ -844,7 +844,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           {category === 'laptop' && (
             <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Laptop Customization</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">What do you want to cover?</p>
                 <button type="button" onClick={onHelpOpen} className="mt-3 inline-flex items-center gap-1 text-sm text-blue-600">
                   <i className="bx bx-info-circle" /> Which parts are these?
                 </button>

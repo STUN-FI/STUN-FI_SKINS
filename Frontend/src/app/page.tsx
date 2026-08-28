@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 
 // logo moved to public/img — use public path in Image src
@@ -161,7 +161,54 @@ function calculateWholesaleTotal(finish: FinishType, quantity: number) {
   };
 }
 
-export default function HomePage() {
+type HomePageProps = {
+  standalone?: boolean;
+};
+
+type OrderModeSelectorProps = {
+  mode: OrderMode;
+  onChange: (mode: OrderMode) => void;
+};
+
+function OrderModeSelector({ mode, onChange }: OrderModeSelectorProps) {
+  return (
+    <section className="mb-8 rounded-[2rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur sm:p-6">
+      <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Order type</p>
+          <div className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">How are you ordering?</div>
+        </div>
+        <div className="grid w-full gap-2 md:max-w-xl md:grid-cols-2">
+          {(['individual', 'wholesale'] as OrderMode[]).map((modeOption) => (
+            <button
+              key={modeOption}
+              type="button"
+              onClick={() => onChange(modeOption)}
+              aria-pressed={mode === modeOption}
+              className={`relative min-h-[4.75rem] rounded-2xl border-2 px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] ${
+                mode === modeOption
+                  ? 'border-black bg-black text-white shadow-md'
+                  : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/35'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <i className={`bx ${modeOption === 'individual' ? 'bx-mobile' : 'bx-store'} text-xl ${mode === modeOption ? 'text-[#2f8f8f]' : 'text-black/55'}`} aria-hidden="true" />
+                <span>
+                  <span className="block text-sm font-black">{modeOption === 'individual' ? 'Personal' : 'Wholesale'}</span>
+                  <span className={`mt-1 block text-xs ${mode === modeOption ? 'text-white/65' : 'text-black/55'}`}>{modeOption === 'individual' ? 'One device for yourself' : 'Bulk orders for your store'}</span>
+                </span>
+              </span>
+              {mode === modeOption ? <i className="bx bx-check absolute right-3 top-3 text-lg text-[#2f8f8f]" aria-hidden="true" /> : null}
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage({ standalone = false }: HomePageProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [form, setForm] = useState<FormState>({
     device: 'laptop',
     coverage: ['top-lid', 'keyboard-deck', 'bottom-base'],
@@ -594,6 +641,90 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
     });
   };
 
+  if (standalone) {
+    return (
+      <main className="min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
+        <div className="mx-auto w-full max-w-5xl">
+          <header className="mb-8 flex items-center justify-between gap-4 border-b border-black/10 py-4 sm:mb-10">
+            <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Back to STUN-FI Skins home">
+              <div className="flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-xl bg-black p-2 sm:h-11 sm:w-11 sm:min-w-[2.75rem] sm:rounded-2xl">
+                <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
+              </div>
+              <div className="min-w-0">
+                <BrandedLogo size="base" />
+                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-black/55 sm:block">your tech. your style</p>
+              </div>
+            </a>
+            <a href="/" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-4 text-sm font-semibold text-black transition hover:border-black">
+              <i className="bx bx-arrow-back mr-2" aria-hidden="true" /> Back home
+            </a>
+          </header>
+
+          <section className="mb-8 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">Design your skin</p>
+            <h1 className="mt-3 text-4xl font-black leading-tight tracking-[-0.05em] sm:text-5xl">Make your device yours.</h1>
+            <p className="mt-4 max-w-xl text-base leading-7 text-black/60">Choose your device, select the surfaces, and make the design personal.</p>
+          </section>
+
+          <OrderModeSelector mode={form.mode} onChange={(mode) => setForm((current) => ({ ...current, mode }))} />
+
+          {form.mode === 'individual' ? (
+            <ClientBuilder
+              onReceiptOpen={handleReceiptOpen}
+              onPriceChange={setBuilderPrice}
+              onHelpOpen={handleHelpOpen}
+              onCatalogOpen={handleCatalogOpen}
+              catalogSelection={catalogSelection}
+              onSubmittingChange={setGlobalBuilderSubmitting}
+            />
+          ) : (
+            <section className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur sm:p-6">
+              <WholesaleForm />
+            </section>
+          )}
+        </div>
+
+        <FloatingPricingButton price={builderPrice} />
+
+        {globalBuilderSubmitting ? (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-8 py-7 shadow-2xl backdrop-blur-md">
+              <div className="rounded-full bg-white/10 p-4 shadow-lg shadow-black/30">
+                <BrandedLogo className="text-white" size="lg" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Processing order</p>
+            </div>
+          </div>
+        ) : null}
+
+        {receiptData && (
+          <ReceiptModal
+            isOpen={receiptOpen}
+            orderId={receiptData.orderId}
+            clientName={receiptData.clientName}
+            deviceModel={receiptData.deviceModel}
+            date={receiptData.date}
+            category={receiptData.category}
+            lineItems={receiptData.lineItems}
+            totalPrice={receiptData.totalPrice}
+            surfacePreviews={receiptData.surfacePreviews}
+            onClose={handleReceiptClose}
+          />
+        )}
+
+        <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+        <CatalogGalleryModal
+          isOpen={catalogOpen}
+          onClose={() => {
+            setCatalogOpen(false);
+            setCatalogSurface(null);
+          }}
+          onSelectArtwork={handleCatalogSelect}
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
       <div className="w-full mx-auto max-w-6xl">
@@ -609,11 +740,11 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               </div>
             </a>
             <nav className="hidden items-center gap-7 text-sm font-semibold text-black/65 lg:flex" aria-label="Primary navigation">
-              <a className="transition hover:text-black" href="#builder">Customize</a>
+              <a className="transition hover:text-black" href="/customize">Customize</a>
               <a className="transition hover:text-black" href="#surfaces">Surfaces</a>
               <a className="transition hover:text-black" href="#how-it-works">How it works</a>
               <a className="transition hover:text-black" href="#showcase">Showcase</a>
-              <a className="transition hover:text-black" href="#order-mode">Wholesale</a>
+              <a className="transition hover:text-black" href="/customize">Wholesale</a>
             </nav>
             <div className="flex items-center gap-2">
               <details className="relative lg:hidden">
@@ -621,15 +752,15 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                   <i className="bx bx-menu text-xl" aria-hidden="true" />
                 </summary>
                 <nav className="absolute right-0 top-14 z-30 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl" aria-label="Mobile navigation">
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#builder">Customize</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Customize</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#surfaces">Surfaces</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#how-it-works">How it works</a>
                   <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#showcase">Showcase</a>
-                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="#order-mode">Wholesale</a>
-                  <a className="mt-1 block rounded-xl bg-black px-4 py-3 text-center text-sm font-bold text-white hover:bg-neutral-800" href="#builder">Design Your Skin</a>
+                  <a className="block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[#f1f2ef]" href="/customize">Wholesale</a>
+                  <a className="mt-1 block rounded-xl bg-black px-4 py-3 text-center text-sm font-bold text-white hover:bg-neutral-800" href="/customize">Design Your Skin</a>
                 </nav>
               </details>
-              <a href="#builder" className="hidden rounded-full bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800 sm:px-5 sm:text-sm lg:inline-flex">
+              <a href="/customize" className="hidden rounded-full bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800 sm:px-5 sm:text-sm lg:inline-flex">
                 Design Your Skin
               </a>
             </div>
@@ -637,68 +768,91 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         </header>
 
         <section id="top" className="landing-hero mb-10 overflow-hidden rounded-[2rem] bg-black text-white sm:rounded-[2.5rem]">
-          <div className="grid lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
-            <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12 xl:p-16">
-              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#2f7777]">Custom device wraps</p>
-              <h1 className="max-w-xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-5xl xl:text-7xl">Your device. Your design.</h1>
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col justify-center p-7 sm:p-10 lg:p-14 xl:p-16"
+            >
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#66cccc]">Custom device wraps</p>
+              <h1 className="max-w-xl text-5xl font-black leading-[0.94] tracking-[-0.055em] sm:text-6xl xl:text-7xl">Your device.<br />Your design.</h1>
               <p className="mt-6 max-w-md text-base leading-7 text-white/65 sm:text-lg">
-                Premium custom skins precisely fitted to your laptop, phone, or controller.
+                Premium custom skins precisely fitted to your device.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a href="#builder" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#2f8f8f] px-6 text-sm font-bold text-white transition hover:bg-[#58adad]">
+                <a href="/customize" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#66cccc] px-6 text-sm font-bold text-black transition hover:bg-[#8de0e0]">
                   Design Your Skin
                 </a>
                 <a href="#surfaces" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50">
-                  Explore finishes
+                  Explore Designs
                 </a>
               </div>
-              <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
-                <span>Laptops</span>
-                <span>Phones</span>
-                <span>Controllers</span>
-                <span className="text-[#2f7777]">Custom artwork</span>
-              </div>
-            </div>
-            <div className="landing-hero-media relative min-h-[23rem] bg-[#d9ddda] sm:min-h-[30rem] lg:min-h-[34rem]">
-              <Image src="/img/table.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
+              <p className="mt-8 border-t border-white/15 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+                Custom designs <span className="px-2 text-white/25">•</span> Precision fit <span className="px-2 text-white/25">•</span> Professional installation
+              </p>
+            </motion.div>
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="landing-hero-media relative min-h-[24rem] bg-[#d9ddda] sm:min-h-[30rem] lg:min-h-[36rem]"
+            >
+              <Image src="/img/Toplid.jpg" alt="Custom STUN-FI skin applied to a laptop lid" fill priority className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 60vw" />
               <div className="absolute bottom-5 left-5 rounded-full border border-black/10 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black backdrop-blur sm:bottom-7 sm:left-7">
                 Precision fit / premium finish
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         <section id="surfaces" className="mb-10 scroll-mt-6">
-          <div className="mb-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Customization surfaces</p>
-            <h2 className="mt-2 text-2xl font-black text-black sm:text-3xl">Top Lid, Keyboard Deck &amp; Bottom Base</h2>
+          <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI Showcase</p>
+              <h2 className="mt-2 max-w-xl text-3xl font-black leading-tight tracking-[-0.04em] text-black sm:text-4xl">Your design. On your device.</h2>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-black/60">Real skins, real devices, made to look like they belong there.</p>
+            </div>
+            <a href="/customize" className="inline-flex min-h-11 w-fit items-center rounded-full bg-black px-5 text-sm font-bold text-white transition hover:bg-neutral-800">
+              Design yours <i className="bx bx-right-arrow-alt ml-2 text-lg" aria-hidden="true" />
+            </a>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              { title: 'Top Lid', src: '/img/Toplid.jpg', description: 'Premium lid wrap for a bold front-facing finish.' },
-              { title: 'Keyboard Deck', src: '/img/Keyboard.jpg', description: 'Palmrest coverage for a sleek, tactile feel.' },
-              { title: 'Bottom Base', src: '/img/Bottom.jpg', description: 'Base protection with a clean, finished look.' },
-            ].map((surface) => (
-              <div
-                key={surface.title}
-                className="overflow-hidden rounded-[2rem] border border-black/10 bg-white/90 p-3 shadow-glow backdrop-blur"
-              >
-                <div className="relative h-72 overflow-hidden rounded-[1.5rem] bg-[#f7f7f5]">
-                  <Image
-                    src={surface.src}
-                    alt={surface.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="mt-4 px-2 pb-2">
-                  <p className="text-lg font-black text-black">{surface.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-black/65">{surface.description}</p>
-                </div>
-              </div>
-            ))}
+          <div className="grid auto-rows-[10rem] grid-cols-2 gap-3 sm:auto-rows-[12rem] sm:gap-4 lg:grid-cols-4">
+            <figure className="group relative col-span-2 row-span-2 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
+              <Image src="/img/Toplid.jpg" alt="Custom skin applied to a laptop lid" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 50vw, 50vw" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-5 pt-14 text-white sm:p-6 sm:pt-16">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#66cccc]">STUN-FI / CUSTOM</span>
+                <strong className="mt-2 block text-xl font-black">Laptop transformation</strong>
+                <span className="mt-1 block text-xs text-white/65">Laptop &bull; Premium finish</span>
+              </figcaption>
+            </figure>
+            <figure className="group relative col-span-1 row-span-2 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
+              <Image src="/img/Keyboard.jpg" alt="Custom skin applied across a laptop keyboard area" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 25vw, 25vw" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 text-white">
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#66cccc]">STUN-FI / DETAIL</span>
+                <strong className="mt-2 block text-base font-black">Built around the keys</strong>
+              </figcaption>
+            </figure>
+            <figure className="group relative col-span-1 row-span-1 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
+              <Image src="/img/Stripes.jpg" alt="Striped custom skin design" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 25vw, 25vw" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-10 text-white">
+                <strong className="block text-sm font-black">Signature stripes</strong>
+              </figcaption>
+            </figure>
+            <figure className="group relative col-span-1 row-span-1 overflow-hidden rounded-[1.75rem] bg-black sm:rounded-[2rem]">
+              <Image src="/img/Bottom.jpg" alt="Custom skin applied to the underside of a laptop" fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 25vw, 25vw" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-10 text-white">
+                <strong className="block text-sm font-black">Finished underneath</strong>
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">Made to be seen. Made to be yours.</p>
+            <a href="/customize" className="inline-flex min-h-11 w-fit items-center text-sm font-bold text-black transition hover:text-[#2f7777]">
+              Explore all designs <i className="bx bx-right-arrow-alt ml-2 text-lg" aria-hidden="true" />
+            </a>
           </div>
         </section>
 
@@ -731,17 +885,23 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Choose your finish</p>
               <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">The final detail changes everything.</h2>
               <p className="mt-5 max-w-md text-sm leading-7 text-black/65 sm:text-base">Keep it clean with Standard, or catch the light with our Shiny Stones premium finish.</p>
-              <a href="#builder" className="mt-7 inline-flex min-h-11 items-center rounded-full bg-black px-5 text-sm font-semibold text-white transition hover:bg-neutral-800">Choose a finish</a>
+              <a href="/customize" className="mt-7 inline-flex min-h-11 items-center rounded-full bg-black px-5 text-sm font-semibold text-white transition hover:bg-neutral-800">Choose a finish</a>
             </div>
             <div className="grid min-h-[18rem] grid-cols-2">
-              <div className="flex flex-col justify-end bg-[#f5f5f3] p-6 sm:p-8">
-                <div className="h-20 w-20 rounded-full border border-black/15 bg-white shadow-[inset_12px_12px_28px_rgba(0,0,0,0.08)]" aria-hidden="true" />
-                <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em]">Standard</p>
+              <div className="flex flex-col justify-end border-r border-black/10 bg-[#f5f5f3] p-6 sm:p-8">
+                <div className="relative h-24 w-24 overflow-hidden rounded-full border border-black/15 bg-white shadow-[inset_12px_12px_28px_rgba(0,0,0,0.12)]" aria-hidden="true">
+                  <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_0_48%,rgba(0,0,0,0.06)_49%_51%,transparent_52%)]" />
+                </div>
+                <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Matte finish</p>
+                <p className="mt-1 text-sm font-bold uppercase tracking-[0.18em]">Standard</p>
                 <p className="mt-2 text-sm text-black/60">Clean, understated, everyday.</p>
               </div>
               <div className="finish-shine flex flex-col justify-end bg-black p-6 text-white sm:p-8">
-                <div className="h-20 w-20 rounded-full border border-white/25 bg-[#2f8f8f] shadow-[0_0_34px_rgba(47,143,143,0.55)]" aria-hidden="true" />
-                <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em]">Shiny Stones</p>
+                <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/35 bg-[#66cccc] shadow-[0_0_34px_rgba(102,204,204,0.55)]" aria-hidden="true">
+                  <div className="absolute -inset-8 rotate-[-25deg] bg-[linear-gradient(105deg,transparent_38%,rgba(255,255,255,0.9)_48%,transparent_58%)]" />
+                </div>
+                <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#66cccc]">Reflective finish</p>
+                <p className="mt-1 text-sm font-bold uppercase tracking-[0.18em]">Shiny Stones</p>
                 <p className="mt-2 text-sm text-white/60">Light-catching, unmistakably yours.</p>
               </div>
             </div>
@@ -773,7 +933,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#58adad]">How it works</p>
               <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Four steps from idea to device.</h2>
             </div>
-            <a href="#builder" className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#2f8f8f] px-5 text-sm font-bold text-white transition hover:bg-[#58adad]">Start building</a>
+            <a href="/customize" className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#2f8f8f] px-5 text-sm font-bold text-white transition hover:bg-[#58adad]">Start building</a>
           </div>
           <div className="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -790,110 +950,6 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
-        <section id="order-mode" className="mb-10 scroll-mt-6 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Order type</p>
-              <div className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">How are you ordering?</div>
-            </div>
-            <div className="grid w-full gap-2 md:max-w-xl md:grid-cols-2">
-              {(['individual', 'wholesale'] as OrderMode[]).map((modeOption) => (
-                <button
-                  key={modeOption}
-                  type="button"
-                  onClick={() => setForm((current) => ({ ...current, mode: modeOption }))}
-                  aria-pressed={form.mode === modeOption}
-                  className={`relative min-h-[4.75rem] rounded-2xl border-2 px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#2f8f8f] ${
-                    form.mode === modeOption
-                      ? 'border-black bg-black text-white shadow-md'
-                      : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/35'
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <i className={`bx ${modeOption === 'individual' ? 'bx-mobile' : 'bx-store'} text-xl ${form.mode === modeOption ? 'text-[#2f8f8f]' : 'text-black/55'}`} aria-hidden="true" />
-                    <span>
-                      <span className="block text-sm font-black">{modeOption === 'individual' ? 'Personal' : 'Wholesale'}</span>
-                      <span className={`mt-1 block text-xs ${form.mode === modeOption ? 'text-white/65' : 'text-black/55'}`}>{modeOption === 'individual' ? 'One device for yourself' : 'Bulk orders for your store'}</span>
-                    </span>
-                  </span>
-                  {form.mode === modeOption ? <i className="bx bx-check absolute right-3 top-3 text-lg text-[#2f8f8f]" aria-hidden="true" /> : null}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <div className={`grid gap-8 ${form.mode === 'individual' ? '' : 'lg:grid-cols-[1.5fr_0.9fr]'}`}>
-          <div className="space-y-8">
-            {form.mode === 'individual' ? (
-              <>
-                <ClientBuilder
-                  onReceiptOpen={handleReceiptOpen}
-                  onPriceChange={setBuilderPrice}
-                  onHelpOpen={handleHelpOpen}
-                  onCatalogOpen={handleCatalogOpen}
-                  catalogSelection={catalogSelection}
-                  onSubmittingChange={setGlobalBuilderSubmitting}
-                />
-                <ApplicationGuideSection />
-                <div id="showcase" className="scroll-mt-6">
-                  <VideoShowcase />
-                </div>
-              </>
-            ) : (
-              <section id="wholesale" className="rounded-[2.5rem] border border-black/10 bg-white/90 p-6 shadow-glow backdrop-blur">
-                <WholesaleForm />
-              </section>
-            )}
-          </div>
-
-          {form.mode === 'wholesale' && (
-            <aside className="space-y-6">
-              <div className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Live order summary</p>
-                    <h2 className="mt-2 text-2xl font-black text-black">Wholesale estimate</h2>
-                  </div>
-                  <span className="rounded-full bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">Partner mode</span>
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
-                    <div className="text-sm text-black/60">Total cost</div>
-                    <div className="mt-2 text-3xl font-black text-black">{formatCurrency(orderTotal)}</div>
-                  </div>
-
-                  <div className="space-y-4 rounded-3xl border border-black/10 bg-[#f7f7f5] p-4">
-                    <div className="rounded-3xl bg-white p-4">
-                      <div className="text-sm text-black/60">Unit price</div>
-                      <div className="mt-1 text-lg font-semibold text-black">{formatCurrency(wholesaleSummary.unitPrice)} / sheet</div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-3xl bg-white p-4">
-                        <div className="text-sm text-black/60">Free bonus skins</div>
-                        <div className="mt-1 text-lg font-semibold text-black">{wholesaleSummary.freeBonus}</div>
-                      </div>
-                      <div className="rounded-3xl bg-white p-4">
-                        <div className="text-sm text-black/60">Total received</div>
-                        <div className="mt-1 text-lg font-semibold text-black">{wholesaleSummary.totalReceived}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handlePlaceOrder}
-                    className="w-full rounded-3xl bg-black px-5 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800"
-                  >
-                    Place order
-                  </button>
-                </div>
-              </div>
-            </aside>
-          )}
-        </div>
-
         <section className="mt-12 overflow-hidden rounded-[2rem] bg-[#2f8f8f] px-7 py-10 text-white sm:rounded-[2.5rem] sm:px-10 sm:py-14">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
@@ -901,7 +957,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               <h2 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-5xl">Ready to make your device yours?</h2>
               <p className="mt-5 max-w-lg text-base leading-7 text-black/65">Choose your device, bring your design, and see the full order before you commit.</p>
             </div>
-            <a href="#builder" className="inline-flex min-h-12 w-fit items-center rounded-full bg-black px-6 text-sm font-bold text-white transition hover:bg-neutral-800">Design Your Skin</a>
+            <a href="/customize" className="inline-flex min-h-12 w-fit items-center rounded-full bg-black px-6 text-sm font-bold text-white transition hover:bg-neutral-800">Design Your Skin</a>
           </div>
         </section>
 
@@ -971,8 +1027,6 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </footer>
       </div>
-
-      <FloatingPricingButton price={form.mode === 'wholesale' ? orderTotal : builderPrice} />
 
       {globalBuilderSubmitting ? (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
