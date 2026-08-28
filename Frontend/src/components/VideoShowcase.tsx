@@ -90,7 +90,7 @@ export default function VideoShowcase() {
               <div className="px-4 py-4 sm:px-5">
                 <h3 className="text-base font-semibold text-white">{video.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Smooth playback, crisp detail, and a clean preview of how Stun-Fi finished the wrap.
+                  See the fit, finish, and detail that goes into every STUN-FI wrap.
                 </p>
               </div>
             </article>
