@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { submitOrder } from '../lib/api';
@@ -894,60 +895,69 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 </label>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-3">
                 {LAPTOP_SURFACES.map((surface) => {
                   const selected = laptopSelectedSurfaces.includes(surface.value);
+                  const imagePath =
+                    surface.value === 'top-lid'
+                      ? '/img/Top.png'
+                      : surface.value === 'keyboard-deck'
+                      ? '/img/Keyboard.png'
+                      : '/img/Bottom.png';
+
+                  const description =
+                    surface.value === 'top-lid'
+                      ? 'Outer back cover'
+                      : surface.value === 'keyboard-deck'
+                      ? 'Palm rest & trackpad'
+                      : 'Underside of laptop';
+
                   return (
                     <button
                       key={surface.value}
                       type="button"
                       onClick={() => handleToggleLaptopSurface(surface.value)}
-                      className={`relative rounded-3xl border-2 px-4 py-4 text-left text-sm font-semibold transition-all duration-200 ${
+                      className={`group relative overflow-hidden rounded-[1.75rem] border-2 bg-white p-0 text-left transition-all duration-200 ${
                         selected
-                          ? 'border-black bg-[#f5f5f3] text-black shadow-[0_0_0_2px_rgba(0,0,0,0.04)] ring-2 ring-black/5'
-                          : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black/40 hover:bg-white'
+                          ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                          : 'border-black/10 hover:border-black/30 hover:bg-[#fafaf9]'
                       }`}
+                      aria-pressed={selected}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl text-amber-400">
-                            {surface.value !== 'top-lid' ? (
-                              <i
-                                className={`bx ${
-                                  surface.value === 'keyboard-deck'
-                                    ? 'bx-keyboard'
-                                    : 'bx-hard-drive'
-                                }`}
-                              />
-                            ) : null}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span>{surface.label}</span>
-                              {selected && (
-                                <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                                  Selected
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-black/60">
-                              {surface.value === 'top-lid'
-                                ? 'Outer back cover'
-                                : surface.value === 'keyboard-deck'
-                                ? 'Palm rest & trackpad'
-                                : 'Underneath laptop'}
-                            </div>
-                          </div>
+                      <div className="relative overflow-hidden rounded-t-[1.5rem] bg-[#f0f1ee]">
+                        <div className="relative h-44 w-full overflow-hidden sm:h-48">
+                          <Image
+                            src={imagePath}
+                            alt={`${surface.label} surface preview`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className={`object-cover transition duration-200 ${selected ? 'scale-[1.02]' : 'group-hover:scale-[1.04]'}`}
+                          />
                         </div>
-                        {selected ? (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black bg-black text-white shadow-sm">
-                            <i className="bx bx-check text-[18px]" />
-                          </span>
-                        ) : (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-black/40">
-                            <i className="bx bx-plus text-[18px]" />
+                        {selected && (
+                          <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm">
+                            <i className="bx bx-check text-lg" aria-hidden="true" />
                           </span>
                         )}
+                      </div>
+
+                      <div className="space-y-3 p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-base font-black tracking-[-0.03em] text-black">{surface.label}</span>
+                          {!selected && (
+                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-black/50">
+                              <i className="bx bx-plus text-lg" aria-hidden="true" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm leading-5 text-black/60">{description}</p>
+                        <div className={`inline-flex items-center rounded-full border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                          selected
+                            ? 'border-[#66cccc] bg-[#dff7f7] text-[#1f5f5f]'
+                            : 'border-black/10 bg-[#f7f7f5] text-black/60'
+                        }`}>
+                          {selected ? 'Selected' : 'Select'}
+                        </div>
                       </div>
                     </button>
                   );
