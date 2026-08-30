@@ -1179,67 +1179,89 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             >
                               <div>
                                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70 mb-3">Choose design</p>
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                  {/* Upload Card */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectDesignMode(surface, 'upload')}
-                                    className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'upload' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
-                                  >
-                                    <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
-                                      <div className="text-center">
-                                        <div className="text-3xl text-black/20 mb-1">
-                                          <i className="bx bx-upload" />
-                                        </div>
-                                        <p className="text-xs text-black/40">Upload</p>
+                                {surfaceDesignSourceMode[surface] ? (
+                                  <div className="rounded-2xl border border-black/10 bg-white p-3">
+                                    <div className="flex items-center justify-between gap-3">
+                                      <div>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Selected format</p>
+                                        <p className="mt-1 text-sm font-bold text-black">
+                                          {surfaceDesignSourceMode[surface] === 'upload' && 'Your Own'}
+                                          {surfaceDesignSourceMode[surface] === 'gallery' && 'Gallery'}
+                                          {surfaceDesignSourceMode[surface] === 'color' && 'Color'}
+                                        </p>
                                       </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: null }))}
+                                        className="rounded-full border border-black/10 bg-[#f7f7f5] px-3 py-1.5 text-xs font-semibold text-black transition hover:border-black/30"
+                                      >
+                                        Change design format
+                                      </button>
                                     </div>
-                                    <div className="space-y-2 p-3">
-                                      <span className="text-sm font-bold text-black">Your Own</span>
-                                      <p className="text-xs text-black/60">Upload artwork</p>
-                                    </div>
-                                  </button>
+                                  </div>
+                                ) : (
+                                  <div className="grid gap-3 sm:grid-cols-3">
+                                    {/* Upload Card */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectDesignMode(surface, 'upload')}
+                                      className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'upload' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
+                                    >
+                                      <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
+                                        <div className="text-center">
+                                          <div className="text-3xl text-black/20 mb-1">
+                                            <i className="bx bx-upload" />
+                                          </div>
+                                          <p className="text-xs text-black/40">Upload</p>
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2 p-3">
+                                        <span className="text-sm font-bold text-black">Your Own</span>
+                                        <p className="text-xs text-black/60">Upload artwork</p>
+                                      </div>
+                                    </button>
 
-                                  {/* Gallery Card */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectDesignMode(surface, 'gallery')}
-                                    className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'gallery' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
-                                  >
-                                    <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
-                                      <div className="text-center">
-                                        <div className="text-3xl text-black/20 mb-1">
-                                          <i className="bx bx-palette" />
+                                    {/* Gallery Card */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectDesignMode(surface, 'gallery')}
+                                      className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'gallery' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
+                                    >
+                                      <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
+                                        <div className="text-center">
+                                          <div className="text-3xl text-black/20 mb-1">
+                                            <i className="bx bx-palette" />
+                                          </div>
+                                          <p className="text-xs text-black/40">Gallery</p>
                                         </div>
-                                        <p className="text-xs text-black/40">Gallery</p>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2 p-3">
-                                      <span className="text-sm font-bold text-black">Gallery</span>
-                                      <p className="text-xs text-black/60">STUN-FI designs</p>
-                                    </div>
-                                  </button>
+                                      <div className="space-y-2 p-3">
+                                        <span className="text-sm font-bold text-black">Gallery</span>
+                                        <p className="text-xs text-black/60">STUN-FI designs</p>
+                                      </div>
+                                    </button>
 
-                                  {/* Color Card */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectDesignMode(surface, 'color')}
-                                    className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'color' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
-                                  >
-                                    <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
-                                      <div className="text-center">
-                                        <div className="text-3xl text-black/20 mb-1">
-                                          <i className="bx bx-droplet" />
+                                    {/* Color Card */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSelectDesignMode(surface, 'color')}
+                                      className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-200 ${surfaceDesignSourceMode[surface] === 'color' ? 'border-[#66cccc] bg-[#e6fffe]' : 'border-black/10 bg-white hover:border-black/30'}`}
+                                    >
+                                      <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
+                                        <div className="text-center">
+                                          <div className="text-3xl text-black/20 mb-1">
+                                            <i className="bx bx-droplet" />
+                                          </div>
+                                          <p className="text-xs text-black/40">Color</p>
                                         </div>
-                                        <p className="text-xs text-black/40">Color</p>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2 p-3">
-                                      <span className="text-sm font-bold text-black">Color</span>
-                                      <p className="text-xs text-black/60">Solid or gradient</p>
-                                    </div>
-                                  </button>
-                                </div>
+                                      <div className="space-y-2 p-3">
+                                        <span className="text-sm font-bold text-black">Color</span>
+                                        <p className="text-xs text-black/60">Solid or gradient</p>
+                                      </div>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Upload Mode Editor */}
