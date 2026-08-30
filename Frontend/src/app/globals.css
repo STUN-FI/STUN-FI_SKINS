@@ -23,6 +23,15 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .animate-glow {
     animation: glow 0.6s ease-in-out;
@@ -30,6 +39,10 @@
   
   .animate-price-pulse {
     animation: price-pulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-in;
   }
 }
 
@@ -107,6 +120,28 @@ video {
 .builder-progress-step.is-active,
 .builder-progress-step.is-active span {
   color: #2f7777;
+}
+
+.builder-progress-step.is-complete {
+  color: rgba(17, 24, 39, 0.8);
+}
+
+.builder-progress-step.is-complete span {
+  color: rgba(17, 24, 39, 0.5);
+}
+
+.builder-progress-step.is-locked,
+.builder-progress-step.is-locked span {
+  color: rgba(0, 0, 0, 0.26);
+  cursor: not-allowed;
+}
+
+.builder-progress-step:disabled {
+  cursor: not-allowed;
+}
+
+.builder-progress-step:not(:disabled):hover {
+  opacity: 0.92;
 }
 
 #builder input:focus-visible,

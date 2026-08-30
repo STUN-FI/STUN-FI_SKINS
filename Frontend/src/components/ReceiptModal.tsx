@@ -13,7 +13,7 @@ type ReceiptModalProps = {
   category: string;
   lineItems: Array<{ label: string; price: number }>;
   totalPrice: number;
-  surfacePreviews?: Array<{ label: string; previewUrl: string }>;
+  surfacePreviews?: Array<{ label: string; previewUrl: string; text?: string }>;
   onClose: () => void;
 };
 
@@ -75,6 +75,42 @@ export default function ReceiptModal({
       setIsSharing(false);
     }
   }, [orderId, receiptMessage]);
+
+  const renderPreview = (previewUrl: string, label: string) => {
+    if (!previewUrl) {
+      return (
+        <div className="mx-auto flex h-28 w-full max-w-[160px] items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#f2f4f7] text-xs text-black/50">
+          No artwork selected
+        </div>
+      );
+    }
+
+    const isColorValue = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(previewUrl)
+      || /^rgba?\(/i.test(previewUrl)
+      || /^hsla?\(/i.test(previewUrl)
+      || /^linear-gradient\(/i.test(previewUrl)
+      || /^radial-gradient\(/i.test(previewUrl)
+      || /^[a-z]+$/i.test(previewUrl);
+
+    if (isColorValue) {
+      return (
+        <div
+          aria-label={`${label} color preview`}
+          title={`${label} color preview`}
+          className="mx-auto h-28 w-full max-w-[160px] rounded-3xl border border-black/10 shadow-inner"
+          style={{ background: previewUrl }}
+        />
+      );
+    }
+
+    return (
+      <img
+        src={previewUrl}
+        alt={`${label} preview`}
+        className="mx-auto h-28 w-full max-w-[160px] rounded-3xl object-cover"
+      />
+    );
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -153,15 +189,10 @@ export default function ReceiptModal({
                     {surfacePreviews.map((item) => (
                       <div key={item.label} className="rounded-[1.5rem] border border-black/10 bg-[#f8fafc] p-3 text-center">
                         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-black/50">{item.label}</p>
-                        {item.previewUrl ? (
-                          <img
-                            src={item.previewUrl}
-                            alt={`${item.label} preview`}
-                            className="mx-auto h-28 w-full max-w-[160px] rounded-3xl object-cover"
-                          />
-                        ) : (
-                          <div className="mx-auto flex h-28 w-full max-w-[160px] items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#f2f4f7] text-xs text-black/50">
-                            No artwork selected
+                        {renderPreview(item.previewUrl, item.label)}
+                        {item.text?.trim() && (
+                          <div className="mt-3 rounded-xl bg-black/5 px-2 py-1.5 text-[11px] font-semibold text-black/80">
+                            {item.text}
                           </div>
                         )}
                       </div>
