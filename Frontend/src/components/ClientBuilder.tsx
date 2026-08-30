@@ -343,7 +343,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     return true;
   };
 
-  const stepLabels = ['Details', 'Device', 'Surfaces', 'Artwork', 'Finish', 'Install', 'Review'] as const;
+  const stepLabels = ['Details', 'Device', 'Surfaces', 'Artwork', 'Install', 'Review'] as const;
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -377,18 +377,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
         }
         return !!(itemName.trim() && instructions.trim() && photoFile);
       case 5:
-        if (category === 'laptop') {
-          return laptopSelectedSurfaces.every((surface) => !!laptopFinishes[surface]);
-        }
-        if (category === 'phone') return !!phoneFinish;
-        if (category === 'controller') return !!controllerFinish;
-        return true;
-      case 6:
         if (category === 'laptop') return !!laptopInstallOption;
         if (category === 'phone') return !!phoneInstallOption;
         if (category === 'controller') return !!controllerInstallOption;
         return true;
-      case 7:
+      case 6:
         return true;
       default:
         return false;
@@ -406,7 +399,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   };
 
   const handleContinue = () => {
-    if (currentStep >= 7) {
+    if (currentStep >= 6) {
       return;
     }
 
@@ -416,7 +409,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       return;
     }
 
-    setCurrentStep((step) => Math.min(7, step + 1));
+    setCurrentStep((step) => Math.min(6, step + 1));
   };
 
   const handleBack = () => {
@@ -1023,7 +1016,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
         {/* Stepper */}
         <div className="builder-progress" aria-label="Customization steps">
           <div className="builder-progress-mobile-status">
-            <span>Step {String(currentStep).padStart(2, '0')} of 07</span>
+            <span>Step {String(currentStep).padStart(2, '0')} of 06</span>
             <strong>{stepLabels[currentStep - 1]}</strong>
           </div>
           {stepLabels.map((step, index) => {
@@ -1548,199 +1541,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           </div>
         )}
 
-        {/* STEP 5: Finish */}
+        {/* STEP 5: Install */}
         {currentStep === 5 && (
-          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
-            <div>
-              <h3 className="text-lg font-bold text-black">Choose Finish</h3>
-              <p className="text-sm text-black/60 mt-1">Select your finish preference</p>
-            </div>
-
-            {category === 'laptop' && (
-              <div className="space-y-4">
-                {laptopSelectedSurfaces.map((surface) => {
-                  const surfaceLabel = LAPTOP_SURFACES.find((item) => item.value === surface)?.label;
-                  return (
-                    <div key={surface} className="space-y-2">
-                      <p className="text-sm font-semibold text-black">{surfaceLabel}</p>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            markSelectionStarted();
-                            setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
-                          }}
-                          className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                            laptopFinishes[surface] === 'shiny-stones'
-                              ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                              : 'border-black/15 bg-white text-black hover:border-black/45'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="finish-swatch finish-swatch-shiny" aria-hidden="true">
-                              <i className="bx bxs-star" />
-                            </span>
-                            <span>
-                              <span className="block text-sm font-black">Shiny Stones</span>
-                              <span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span>
-                            </span>
-                          </div>
-                          {laptopFinishes[surface] === 'shiny-stones' && (
-                            <div className="absolute right-3 top-3 text-[#2f7777]">
-                              <i className="bx bx-check text-lg" aria-hidden="true" />
-                            </div>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            markSelectionStarted();
-                            setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
-                          }}
-                          className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                            laptopFinishes[surface] === 'standard'
-                              ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                              : 'border-black/15 bg-white text-black hover:border-black/45'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
-                            <span>
-                              <span className="block text-sm font-black">Standard</span>
-                              <span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span>
-                            </span>
-                          </div>
-                          {laptopFinishes[surface] === 'standard' && (
-                            <div className="absolute right-3 top-3 text-[#2f7777]">
-                              <i className="bx bx-check text-lg" aria-hidden="true" />
-                            </div>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {category === 'phone' && (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    markSelectionStarted();
-                    setPhoneFinish('shiny-stones');
-                  }}
-                  className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                    phoneFinish === 'shiny-stones'
-                      ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                      : 'border-black/15 bg-white text-black hover:border-black/45'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="finish-swatch finish-swatch-shiny" aria-hidden="true">
-                      <i className="bx bxs-star" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-black">Shiny Stones</span>
-                      <span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span>
-                    </span>
-                  </div>
-                  {phoneFinish === 'shiny-stones' && (
-                    <div className="absolute right-3 top-3 text-[#2f7777]">
-                      <i className="bx bx-check text-lg" aria-hidden="true" />
-                    </div>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    markSelectionStarted();
-                    setPhoneFinish('standard');
-                  }}
-                  className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                    phoneFinish === 'standard'
-                      ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                      : 'border-black/15 bg-white text-black hover:border-black/45'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
-                    <span>
-                      <span className="block text-sm font-black">Standard</span>
-                      <span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span>
-                    </span>
-                  </div>
-                  {phoneFinish === 'standard' && (
-                    <div className="absolute right-3 top-3 text-[#2f7777]">
-                      <i className="bx bx-check text-lg" aria-hidden="true" />
-                    </div>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {category === 'controller' && (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    markSelectionStarted();
-                    setControllerFinish('shiny-stones');
-                  }}
-                  className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                    controllerFinish === 'shiny-stones'
-                      ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                      : 'border-black/15 bg-white text-black hover:border-black/45'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="finish-swatch finish-swatch-shiny" aria-hidden="true">
-                      <i className="bx bxs-star" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-black">Shiny Stones</span>
-                      <span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span>
-                    </span>
-                  </div>
-                  {controllerFinish === 'shiny-stones' && (
-                    <div className="absolute right-3 top-3 text-[#2f7777]">
-                      <i className="bx bx-check text-lg" aria-hidden="true" />
-                    </div>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    markSelectionStarted();
-                    setControllerFinish('standard');
-                  }}
-                  className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                    controllerFinish === 'standard'
-                      ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                      : 'border-black/15 bg-white text-black hover:border-black/45'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
-                    <span>
-                      <span className="block text-sm font-black">Standard</span>
-                      <span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span>
-                    </span>
-                  </div>
-                  {controllerFinish === 'standard' && (
-                    <div className="absolute right-3 top-3 text-[#2f7777]">
-                      <i className="bx bx-check text-lg" aria-hidden="true" />
-                    </div>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STEP 6: Install */}
-        {currentStep === 6 && (
           <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
             <div>
               <h3 className="text-lg font-bold text-black">Installation</h3>
@@ -1793,8 +1595,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
           </div>
         )}
 
-        {/* STEP 7: Review */}
-        {currentStep === 7 && (
+        {/* STEP 6: Review */}
+        {currentStep === 6 && (
           <div className="animate-fade-in space-y-6">
             <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
               <h3 className="text-lg font-bold text-black mb-4">Review Your Order</h3>
@@ -1901,7 +1703,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
             </button>
           )}
 
-          {currentStep < 7 && (
+          {currentStep < 6 && (
             <button
               type="button"
               onClick={handleContinue}
