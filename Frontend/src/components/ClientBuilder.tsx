@@ -210,8 +210,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
   const previousPriceRef = useRef<number | null>(null);
+  const surfaceAccordionRefs = useRef<Record<LaptopSurface, HTMLDivElement | null>>({
+    'top-lid': null,
+    'keyboard-deck': null,
+    'bottom-base': null,
+  });
 
   const markSelectionStarted = () => setHasStartedSelection(true);
+
+  const toggleLaptopSurface = (surface: LaptopSurface) => {
+    const nextExpanded = expandedLaptopSurface === surface ? null : surface;
+    setExpandedLaptopSurface(nextExpanded);
+
+    if (nextExpanded) {
+      requestAnimationFrame(() => {
+        surfaceAccordionRefs.current[surface]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      });
+    }
+  };
 
   const laptopSyncSourceSurface = laptopSelectedSurfaces[0] ?? null;
   const laptopSyncSourceLabel = laptopSyncSourceSurface
@@ -1086,11 +1105,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                     const hasCustomText = laptopTextToggle[surface];
                     
                     return (
-                      <div key={surface}>
+                      <div key={surface} ref={(node) => { surfaceAccordionRefs.current[surface] = node; }}>
                         {/* Accordion Header */}
                         <button
                           type="button"
-                          onClick={() => setExpandedLaptopSurface(isExpanded ? null : surface)}
+                          onClick={() => toggleLaptopSurface(surface)}
                           className="w-full rounded-3xl border border-black/10 bg-white p-5 transition hover:border-black/30"
                         >
                           <div className="flex items-start justify-between gap-3">
