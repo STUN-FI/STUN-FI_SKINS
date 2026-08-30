@@ -131,6 +131,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   });
   const [laptopInstallOption, setLaptopInstallOption] = useState<InstallationOption>('professional');
 
+  // Phase 3: Global design source mode
+  const [designSourceMode, setDesignSourceMode] = useState<'upload' | 'gallery' | 'color' | null>(null);
+  const [colorDesignType, setColorDesignType] = useState<'solid' | 'gradient'>('solid');
+  const [solidColor, setSolidColor] = useState<string>('#ffffff');
+  const [gradientColor1, setGradientColor1] = useState<string>('#000000');
+  const [gradientColor2, setGradientColor2] = useState<string>('#ffffff');
+  const [gradientDirection, setGradientDirection] = useState<'left' | 'top-left' | 'top' | 'top-right' | 'right'>('right');
+  const [globalUploadedFile, setGlobalUploadedFile] = useState<File | null>(null);
+  const [globalSelectedGalleryUrl, setGlobalSelectedGalleryUrl] = useState<string>('');
+
   const [phoneCoverage, setPhoneCoverage] = useState<PhoneCoverage>('back-panel');
   const [phoneFinish, setPhoneFinish] = useState<FinishType>('shiny-stones');
   const [phoneArtworkCatalog, setPhoneArtworkCatalog] = useState('');
@@ -212,17 +222,36 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     if (!catalogSelection) return;
     const { surface, imageUrl } = catalogSelection;
 
-    const currentUploadUrl = uploadPreviewUrlsRef.current[surface];
-    if (currentUploadUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL(currentUploadUrl);
-      uploadPreviewUrlsRef.current[surface] = '';
-    }
+    // Phase 3: If in global gallery mode, apply to all surfaces
+    if (designSourceMode === 'gallery') {
+      setGlobalSelectedGalleryUrl(imageUrl);
+      
+      laptopSelectedSurfaces.forEach((s) => {
+        const previousUrl = uploadPreviewUrlsRef.current[s];
+        if (previousUrl?.startsWith('blob:')) {
+          URL.revokeObjectURL(previousUrl);
+          uploadPreviewUrlsRef.current[s] = '';
+        }
+        
+        setLaptopArtworkCatalog((current) => ({ ...current, [s]: imageUrl }));
+        setLaptopArtworkFiles((current) => ({ ...current, [s]: null }));
+        setLaptopArtworkMode((m) => ({ ...m, [s]: 'catalog' }));
+        setSurfaceDesigns((current) => ({ ...current, [s]: { previewUrl: imageUrl } }));
+      });
+    } else {
+      // Legacy per-surface behavior
+      const currentUploadUrl = uploadPreviewUrlsRef.current[surface];
+      if (currentUploadUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(currentUploadUrl);
+        uploadPreviewUrlsRef.current[surface] = '';
+      }
 
-    setLaptopArtworkCatalog((current) => ({ ...current, [surface]: imageUrl }));
-    setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
-    setLaptopArtworkMode((current) => ({ ...current, [surface]: 'catalog' }));
-    setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl: imageUrl } }));
-  }, [catalogSelection]);
+      setLaptopArtworkCatalog((current) => ({ ...current, [surface]: imageUrl }));
+      setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+      setLaptopArtworkMode((current) => ({ ...current, [surface]: 'catalog' }));
+      setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl: imageUrl } }));
+    }
+  }, [catalogSelection, designSourceMode, laptopSelectedSurfaces]);
 
   const laptopsArtworkLabel = (surface: LaptopSurface) =>
     laptopArtworkFiles[surface]?.name || laptopArtworkCatalog[surface] || 'Choose artwork';
@@ -405,6 +434,73 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     setPreviewImageUrl('');
   };
 
+  // Phase 3: Design source handlers
+  const handleSelectDesignMode = (mode: 'upload' | 'gallery' | 'color') => {
+    markSelectionStarted();
+    setDesignSourceMode(mode);
+  };
+
+  const applyGlobalUploadToSurfaces = (file: File) => {
+    setGlobalUploadedFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    
+    laptopSelectedSurfaces.forEach((surface) => {
+      const previousUrl = uploadPreviewUrlsRef.current[surface];
+      if (previousUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      
+      uploadPreviewUrlsRef.current[surface] = previewUrl;
+      setLaptopArtworkFiles((current) => ({ ...current, [surface]: file }));
+      setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+      setLaptopArtworkMode((m) => ({ ...m, [surface]: 'upload' }));
+      setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl } }));
+    });
+  };
+
+  const applyGlobalGalleryToSurfaces = (galleryUrl: string) => {
+    setGlobalSelectedGalleryUrl(galleryUrl);
+    
+    laptopSelectedSurfaces.forEach((surface) => {
+      const previousUrl = uploadPreviewUrlsRef.current[surface];
+      if (previousUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrl);
+        uploadPreviewUrlsRef.current[surface] = '';
+      }
+      
+      setLaptopArtworkCatalog((current) => ({ ...current, [surface]: galleryUrl }));
+      setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+      setLaptopArtworkMode((m) => ({ ...m, [surface]: 'catalog' }));
+      setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl: galleryUrl } }));
+    });
+  };
+
+  const applyGlobalColorToSurfaces = () => {
+    const colorSource = colorDesignType === 'solid'
+      ? solidColor
+      : `linear-gradient(to ${gradientDirection}, ${gradientColor1}, ${gradientColor2})`;
+    
+    laptopSelectedSurfaces.forEach((surface) => {
+      const previousUrl = uploadPreviewUrlsRef.current[surface];
+      if (previousUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrl);
+        uploadPreviewUrlsRef.current[surface] = '';
+      }
+      
+      setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+      setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+      setLaptopArtworkMode((m) => ({ ...m, [surface]: 'catalog' }));
+      setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl: colorSource } }));
+    });
+  };
+
+  useEffect(() => {
+    if (designSourceMode === 'color') {
+      applyGlobalColorToSurfaces();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorDesignType, solidColor, gradientColor1, gradientColor2, gradientDirection]);
+
   useEffect(() => {
     const current = uploadPreviewUrlsRef.current;
     return () => {
@@ -469,6 +565,17 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     setHasStartedSelection(false);
     setPreviewSurface(null);
     setPreviewImageUrl('');
+    
+    // Reset Phase 3 design mode state
+    setDesignSourceMode(null);
+    setColorDesignType('solid');
+    setSolidColor('#ffffff');
+    setGradientColor1('#000000');
+    setGradientColor2('#ffffff');
+    setGradientDirection('right');
+    setGlobalUploadedFile(null);
+    setGlobalSelectedGalleryUrl('');
+    setSyncLaptopSurfaces(false);
   };
 
   const getDeviceModelLabel = () => {
@@ -964,6 +1071,298 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                 })}
               </div>
 
+              {/* Phase 3: Design Selection Interface */}
+              {laptopSelectedSurfaces.length > 0 && (
+                <div className="space-y-6">
+                  {!designSourceMode && (
+                    <>
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose your design</p>
+                        <p className="mt-2 text-sm text-black/60">Start with your own artwork, choose from STUN-FI designs, or create a clean color-based skin.</p>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        {/* Upload Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectDesignMode('upload')}
+                          className="group relative overflow-hidden rounded-[1.75rem] border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30 hover:bg-[#fafaf9]"
+                        >
+                          <div className="relative overflow-hidden rounded-t-[1.5rem] bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-44 sm:h-48">
+                            <div className="text-center">
+                              <div className="text-5xl text-black/20 mb-2">
+                                <i className="bx bx-upload" />
+                              </div>
+                              <p className="text-xs text-black/40">Your artwork</p>
+                            </div>
+                          </div>
+                          <div className="space-y-3 p-4">
+                            <span className="text-base font-black tracking-[-0.03em] text-black">Upload Your Own</span>
+                            <p className="text-sm leading-5 text-black/60">Bring your artwork and make it yours.</p>
+                            <div className="inline-flex items-center rounded-full border border-black/10 bg-[#f7f7f5] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-black/60">
+                              Select
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Gallery Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectDesignMode('gallery')}
+                          className="group relative overflow-hidden rounded-[1.75rem] border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30 hover:bg-[#fafaf9]"
+                        >
+                          <div className="relative overflow-hidden rounded-t-[1.5rem] bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-44 sm:h-48">
+                            <div className="text-center">
+                              <div className="text-5xl text-black/20 mb-2">
+                                <i className="bx bx-palette" />
+                              </div>
+                              <p className="text-xs text-black/40">Gallery</p>
+                            </div>
+                          </div>
+                          <div className="space-y-3 p-4">
+                            <span className="text-base font-black tracking-[-0.03em] text-black">STUN-FI Gallery</span>
+                            <p className="text-sm leading-5 text-black/60">Start with one of our ready-made designs.</p>
+                            <div className="inline-flex items-center rounded-full border border-black/10 bg-[#f7f7f5] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-black/60">
+                              Select
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Color Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectDesignMode('color')}
+                          className="group relative overflow-hidden rounded-[1.75rem] border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30 hover:bg-[#fafaf9]"
+                        >
+                          <div className="relative overflow-hidden rounded-t-[1.5rem] bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-44 sm:h-48">
+                            <div className="text-center">
+                              <div className="text-5xl text-black/20 mb-2">
+                                <i className="bx bx-droplet" />
+                              </div>
+                              <p className="text-xs text-black/40">Color</p>
+                            </div>
+                          </div>
+                          <div className="space-y-3 p-4">
+                            <span className="text-base font-black tracking-[-0.03em] text-black">Create with Color</span>
+                            <p className="text-sm leading-5 text-black/60">Build a clean solid or gradient skin.</p>
+                            <div className="inline-flex items-center rounded-full border border-black/10 bg-[#f7f7f5] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-black/60">
+                              Select
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Upload Mode Editor */}
+                  {designSourceMode === 'upload' && (
+                    <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-bold text-black">Upload Your Own</h3>
+                        <button
+                          type="button"
+                          onClick={() => setDesignSourceMode(null)}
+                          className="text-sm text-black/60 hover:text-black"
+                        >
+                          Change
+                        </button>
+                      </div>
+                      <label className="space-y-2">
+                        <span className="text-sm text-black/70">Your artwork file</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              applyGlobalUploadToSurfaces(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="phase3-laptop-upload"
+                        />
+                        <label htmlFor="phase3-laptop-upload" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                          <span>{globalUploadedFile?.name || 'Choose file'}</span>
+                          <span className="text-black/60">Browse</span>
+                        </label>
+                      </label>
+                      {globalUploadedFile && (
+                        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800">
+                          ✓ File selected for all surfaces
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Gallery Mode Editor */}
+                  {designSourceMode === 'gallery' && (
+                    <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-bold text-black">STUN-FI Gallery</h3>
+                        <button
+                          type="button"
+                          onClick={() => setDesignSourceMode(null)}
+                          className="text-sm text-black/60 hover:text-black"
+                        >
+                          Change
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-sm text-black/70">Select a design</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (laptopSelectedSurfaces.length > 0) {
+                              onCatalogOpen(laptopSelectedSurfaces[0]);
+                            }
+                          }}
+                          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40 hover:bg-white"
+                        >
+                          <i className="bx bx-palette mr-2" /> Browse Gallery
+                        </button>
+                      </div>
+                      {globalSelectedGalleryUrl && (
+                        <div className="flex items-center gap-3">
+                          <img src={globalSelectedGalleryUrl} alt="selected" className="h-16 w-24 rounded-lg object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGlobalSelectedGalleryUrl('');
+                              setDesignSourceMode(null);
+                            }}
+                            className="text-sm text-red-600 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Color Mode Editor */}
+                  {designSourceMode === 'color' && (
+                    <div className="rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-bold text-black">Create with Color</h3>
+                        <button
+                          type="button"
+                          onClick={() => setDesignSourceMode(null)}
+                          className="text-sm text-black/60 hover:text-black"
+                        >
+                          Change
+                        </button>
+                      </div>
+
+                      {/* Solid/Gradient Toggle */}
+                      <div className="flex gap-2 rounded-2xl bg-[#efefef] p-1.5 w-fit">
+                        <button
+                          type="button"
+                          onClick={() => setColorDesignType('solid')}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition ${colorDesignType === 'solid' ? 'bg-black text-white' : 'text-black/70 hover:text-black'}`}
+                        >
+                          Solid
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setColorDesignType('gradient')}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition ${colorDesignType === 'gradient' ? 'bg-black text-white' : 'text-black/70 hover:text-black'}`}
+                        >
+                          Gradient
+                        </button>
+                      </div>
+
+                      {/* Solid Color Controls */}
+                      {colorDesignType === 'solid' && (
+                        <div className="space-y-3">
+                          <label className="space-y-2">
+                            <span className="text-sm text-black/70">Color</span>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="color"
+                                value={solidColor}
+                                onChange={(e) => setSolidColor(e.target.value)}
+                                className="h-12 w-16 rounded-lg border border-black/10 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={solidColor}
+                                onChange={(e) => setSolidColor(e.target.value)}
+                                className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-mono"
+                              />
+                            </div>
+                          </label>
+                          <div
+                            className="h-20 rounded-lg border border-black/10"
+                            style={{ backgroundColor: solidColor }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Gradient Color Controls */}
+                      {colorDesignType === 'gradient' && (
+                        <div className="space-y-4">
+                          <label className="space-y-2">
+                            <span className="text-sm text-black/70">Color 1</span>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="color"
+                                value={gradientColor1}
+                                onChange={(e) => setGradientColor1(e.target.value)}
+                                className="h-12 w-16 rounded-lg border border-black/10 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={gradientColor1}
+                                onChange={(e) => setGradientColor1(e.target.value)}
+                                className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-mono"
+                              />
+                            </div>
+                          </label>
+                          <label className="space-y-2">
+                            <span className="text-sm text-black/70">Color 2</span>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="color"
+                                value={gradientColor2}
+                                onChange={(e) => setGradientColor2(e.target.value)}
+                                className="h-12 w-16 rounded-lg border border-black/10 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={gradientColor2}
+                                onChange={(e) => setGradientColor2(e.target.value)}
+                                className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-mono"
+                              />
+                            </div>
+                          </label>
+                          <div className="space-y-2">
+                            <span className="text-sm text-black/70">Direction</span>
+                            <div className="grid grid-cols-5 gap-2">
+                              {['left', 'top-left', 'top', 'top-right', 'right'].map((dir) => (
+                                <button
+                                  key={dir}
+                                  type="button"
+                                  onClick={() => setGradientDirection(dir as any)}
+                                  className={`py-2 rounded-lg text-sm font-bold transition ${gradientDirection === dir ? 'bg-black text-white' : 'border border-black/10 bg-white text-black hover:border-black/40'}`}
+                                >
+                                  {dir === 'left' ? '←' : dir === 'top-left' ? '↖' : dir === 'top' ? '↑' : dir === 'top-right' ? '↗' : '→'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div
+                            className="h-20 rounded-lg border border-black/10"
+                            style={{
+                              background: `linear-gradient(to ${gradientDirection}, ${gradientColor1}, ${gradientColor2})`,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {laptopSelectedSurfaces.length === 0 ? (
                 <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">Select at least one laptop surface to continue.</div>
               ) : (
@@ -1018,92 +1417,111 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 </p>
                               </div>
                             )}
-                            {/* Artwork Selection */}
-                            <div>
-                              <div className="mb-3 flex items-center justify-between gap-2">
-                                <span className="text-sm font-semibold text-black/70">Artwork source</span>
-                              </div>
-                              <div className="builder-artwork-mode flex w-full flex-wrap gap-1 rounded-2xl bg-[#efefef] p-1.5 mb-4 sm:w-auto sm:rounded-full">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleBreakSync();
-                                    setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
-                                    setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
-                                  }}
-                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'upload' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
-                                >
-                                  <i className="bx bx-upload mr-2" /> Upload my artwork
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleBreakSync();
-                                    setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
-                                    setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
-                                  }}
-                                  className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'catalog' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
-                                >
-                                  <i className="bx bx-palette mr-2" /> Choose a design
-                                </button>
-                              </div>
+                            
+                            {/* Artwork Selection - Hidden in Phase 3 global design mode */}
+                            {!designSourceMode && (
+                              <div>
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                  <span className="text-sm font-semibold text-black/70">Artwork source</span>
+                                </div>
+                                <div className="builder-artwork-mode flex w-full flex-wrap gap-1 rounded-2xl bg-[#efefef] p-1.5 mb-4 sm:w-auto sm:rounded-full">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleBreakSync();
+                                      setLaptopArtworkMode((c) => ({ ...c, [surface]: 'upload' }));
+                                      setLaptopArtworkCatalog((cur) => ({ ...cur, [surface]: '' }));
+                                    }}
+                                    className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'upload' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
+                                  >
+                                    <i className="bx bx-upload mr-2" /> Upload my artwork
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleBreakSync();
+                                      setLaptopArtworkMode((c) => ({ ...c, [surface]: 'catalog' }));
+                                      setLaptopArtworkFiles((cur) => ({ ...cur, [surface]: null }));
+                                    }}
+                                    className={`min-h-11 flex-1 rounded-xl px-3 py-2 text-xs font-bold transition sm:flex-none sm:rounded-full sm:px-4 sm:text-sm ${laptopArtworkMode[surface] === 'catalog' ? 'bg-black text-white shadow-sm' : 'bg-transparent text-black/70 hover:text-black'}`}
+                                  >
+                                    <i className="bx bx-palette mr-2" /> Choose a design
+                                  </button>
+                                </div>
 
-                              <div className="mt-4">
-                                {laptopArtworkMode[surface] === 'upload' ? (
-                                  <label className="space-y-2">
-                                    <span className="text-sm text-black/70">Your artwork</span>
+                                <div className="mt-4">
+                                  {laptopArtworkMode[surface] === 'upload' ? (
+                                    <label className="space-y-2">
+                                      <span className="text-sm text-black/70">Your artwork</span>
 
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(event) => handleArtworkFileChange(`laptop-${surface}`, event.target.files?.[0] ?? null)}
-                                      className="hidden"
-                                      id={`laptop-artwork-${surface}`}
-                                    />
-                                    <div className="flex items-center gap-3">
-                                      <label htmlFor={`laptop-artwork-${surface}`} className="inline-flex flex-1 cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
-                                        <span>{laptopsArtworkLabel(surface)}</span>
-                                        <span className="text-black/60">Browse</span>
-                                      </label>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const file = laptopArtworkFiles[surface];
-                                          if (file) {
-                                            setPreviewSurface(surface);
-                                            setPreviewImageUrl(URL.createObjectURL(file));
-                                          }
-                                        }}
-                                        disabled={!laptopArtworkFiles[surface]}
-                                        className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-black transition hover:border-black disabled:cursor-not-allowed disabled:border-black/10 disabled:text-black/30"
-                                        title="Preview artwork"
-                                      >
-                                        <i className="bx bx-show text-xl" />
-                                      </button>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(event) => handleArtworkFileChange(`laptop-${surface}`, event.target.files?.[0] ?? null)}
+                                        className="hidden"
+                                        id={`laptop-artwork-${surface}`}
+                                      />
+                                      <div className="flex items-center gap-3">
+                                        <label htmlFor={`laptop-artwork-${surface}`} className="inline-flex flex-1 cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                                          <span>{laptopsArtworkLabel(surface)}</span>
+                                          <span className="text-black/60">Browse</span>
+                                        </label>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const file = laptopArtworkFiles[surface];
+                                            if (file) {
+                                              setPreviewSurface(surface);
+                                              setPreviewImageUrl(URL.createObjectURL(file));
+                                            }
+                                          }}
+                                          disabled={!laptopArtworkFiles[surface]}
+                                          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-black transition hover:border-black disabled:cursor-not-allowed disabled:border-black/10 disabled:text-black/30"
+                                          title="Preview artwork"
+                                        >
+                                          <i className="bx bx-show text-xl" />
+                                        </button>
+                                      </div>
+                                    </label>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      <span className="text-sm text-black/70">Gallery artwork</span>
+                                      <div className="builder-catalog-selection flex flex-wrap items-center gap-3">
+                                        <button
+                                          type="button"
+                                          onClick={() => onCatalogOpen(surface)}
+                                          className="min-h-11 rounded-2xl border px-4 py-3 text-sm bg-white"
+                                        >
+                                          <i className="bx bx-palette mr-2" /> Choose from gallery
+                                        </button>
+                                        {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
+                                          <div className="flex min-w-0 items-center gap-2">
+                                            <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
+                                            <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="min-h-11 px-2 text-sm text-red-600">Remove</button>
+                                          </div>
+                                        ) : null}
+                                      </div>
                                     </div>
-                                  </label>
-                                ) : (
-                                  <div className="space-y-2">
-                                    <span className="text-sm text-black/70">Gallery artwork</span>
-                                    <div className="builder-catalog-selection flex flex-wrap items-center gap-3">
-                                      <button
-                                        type="button"
-                                        onClick={() => onCatalogOpen(surface)}
-                                        className="min-h-11 rounded-2xl border px-4 py-3 text-sm bg-white"
-                                      >
-                                        <i className="bx bx-palette mr-2" /> Choose from gallery
-                                      </button>
-                                      {laptopArtworkCatalog[surface] && laptopArtworkCatalog[surface].trim() ? (
-                                        <div className="flex min-w-0 items-center gap-2">
-                                          <img src={laptopArtworkCatalog[surface]} alt="selected" className="h-12 w-20 rounded-md object-cover" />
-                                          <button type="button" onClick={() => { setLaptopArtworkCatalog((c) => ({ ...c, [surface]: '' })); }} className="min-h-11 px-2 text-sm text-red-600">Remove</button>
-                                        </div>
-                                      ) : null}
-                                    </div>
-                                  </div>
-                                )}
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            )}
+
+                            {/* Phase 3 Design Source Preview */}
+                            {designSourceMode && (
+                              <div className="rounded-2xl border border-[#66cccc] bg-[#e6fffe] px-4 py-3">
+                                <div className="text-sm font-semibold text-[#2f7777] mb-2">
+                                  {designSourceMode === 'upload' && '📤 Using uploaded artwork'}
+                                  {designSourceMode === 'gallery' && '🎨 Using gallery design'}
+                                  {designSourceMode === 'color' && '🎭 Using color design'}
+                                </div>
+                                <p className="text-xs text-[#2f7777]">
+                                  {designSourceMode === 'upload' && 'This design is applied to all selected surfaces.'}
+                                  {designSourceMode === 'gallery' && 'This design is applied to all selected surfaces.'}
+                                  {designSourceMode === 'color' && 'This design is applied to all selected surfaces.'}
+                                </p>
+                              </div>
+                            )}
 
                             {/* Finish & Text Options */}
                             <div className="grid gap-4 sm:grid-cols-2">
