@@ -87,7 +87,7 @@ export type ReceiptData = {
   category: string;
   lineItems: Array<{ label: string; price: number }>;
   totalPrice: number;
-  surfacePreviews?: Array<{ label: string; previewUrl: string }>;
+  surfacePreviews?: Array<{ label: string; previewUrl: string; text?: string }>;
 };
 
 type ClientBuilderProps = {
@@ -200,6 +200,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     'keyboard-deck': false,
     'bottom-base': false,
   });
+  const [highlightedDesignSurface, setHighlightedDesignSurface] = useState<LaptopSurface | null>(null);
   const [expandedLaptopSurface, setExpandedLaptopSurface] = useState<LaptopSurface | null>('top-lid');
   const [laptopCopiedSettings, setLaptopCopiedSettings] = useState(false);
   const [showCopyPrompt, setShowCopyPrompt] = useState(false);
@@ -215,8 +216,27 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     'keyboard-deck': null,
     'bottom-base': null,
   });
+  const surfaceDesignEditorRefs = useRef<Record<LaptopSurface, HTMLDivElement | null>>({
+    'top-lid': null,
+    'keyboard-deck': null,
+    'bottom-base': null,
+  });
 
   const markSelectionStarted = () => setHasStartedSelection(true);
+
+  const focusSurfaceDesignEditor = (surface: LaptopSurface) => {
+    setHighlightedDesignSurface(surface);
+    requestAnimationFrame(() => {
+      surfaceDesignEditorRefs.current[surface]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    });
+
+    window.setTimeout(() => {
+      setHighlightedDesignSurface((current) => (current === surface ? null : current));
+    }, 1200);
+  };
 
   const toggleLaptopSurface = (surface: LaptopSurface) => {
     const nextExpanded = expandedLaptopSurface === surface ? null : surface;
@@ -472,6 +492,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     markSelectionStarted();
     handleBreakSync(surface);
     setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: mode }));
+    focusSurfaceDesignEditor(surface);
   };
 
   const applyUploadToSurface = (surface: LaptopSurface, file: File) => {
@@ -887,6 +908,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
             ? laptopSelectedSurfaces.map((surface) => ({
                 label: LAPTOP_SURFACES.find((item) => item.value === surface)?.label || surface,
                 previewUrl: surfaceDesigns[surface]?.previewUrl || laptopArtworkCatalog[surface] || '',
+                text: laptopTexts[surface] || '',
               }))
             : [],
       });
@@ -1149,7 +1171,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             )}
                             
                             {/* Phase 3: Per-Surface Design Selection */}
-                            <div className="space-y-4">
+                            <div
+                              ref={(node) => {
+                                surfaceDesignEditorRefs.current[surface] = node;
+                              }}
+                              className={`space-y-4 rounded-2xl border p-3 transition-all duration-300 ${highlightedDesignSurface === surface ? 'border-[#2f7777] bg-[#edf5f5] ring-2 ring-[#2f7777]/35' : 'border-transparent bg-transparent'}`}
+                            >
                               <div>
                                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70 mb-3">Choose design</p>
                                 <div className="grid gap-3 sm:grid-cols-3">
