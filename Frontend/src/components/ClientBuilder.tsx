@@ -94,13 +94,15 @@ export type ReceiptData = {
 type ClientBuilderProps = {
   onReceiptOpen: (receipt: ReceiptData) => void;
   onPriceChange?: (price: number | null) => void;
+  onStepChange?: (step: number) => void;
   onHelpOpen: () => void;
   onCatalogOpen: (surface: LaptopSurface) => void;
   catalogSelection: { surface: LaptopSurface; imageUrl: string } | null;
   onSubmittingChange?: (isSubmitting: boolean) => void;
+  onCustomerDetailsChange?: (details: { name: string; phone: string; category: string }) => void;
 };
 
-export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange }: ClientBuilderProps) {
+export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange, onCustomerDetailsChange }: ClientBuilderProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -205,7 +207,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const [expandedLaptopSurface, setExpandedLaptopSurface] = useState<LaptopSurface | null>('top-lid');
   const [laptopCopiedSettings, setLaptopCopiedSettings] = useState(false);
   const [showCopyPrompt, setShowCopyPrompt] = useState(false);
-  const [syncLaptopSurfaces, setSyncLaptopSurfaces] = useState(false);
+  const [surfaceSyncEnabled, setSurfaceSyncEnabled] = useState<Record<LaptopSurface, boolean>>({
+    'top-lid': false,
+    'keyboard-deck': false,
+    'bottom-base': false,
+  });
   const [phoneTextToggle, setPhoneTextToggle] = useState(false);
   const [controllerTagToggle, setControllerTagToggle] = useState(false);
   const [priceNotification, setPriceNotification] = useState(false);
@@ -320,6 +326,35 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     onPriceChange(pricingQuotePending ? null : pricing.total);
   }, [onPriceChange, pricingQuotePending, pricing.total]);
 
+  useEffect(() => {
+    onStepChange?.(currentStep);
+  }, [currentStep, onStepChange]);
+
+  useEffect(() => {
+    if (!catalogSelection) {
+      return;
+    }
+
+    const { surface, imageUrl } = catalogSelection;
+    if (!imageUrl) {
+      return;
+    }
+
+    setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: 'gallery' }));
+    setLaptopArtworkCatalog((current) => ({ ...current, [surface]: imageUrl }));
+    setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+    setSurfaceUploadedFile((current) => ({ ...current, [surface]: null }));
+    setSurfaceDesigns((current) => ({ ...current, [surface]: { previewUrl: imageUrl } }));
+  }, [catalogSelection]);
+
+  useEffect(() => {
+    onCustomerDetailsChange?.({
+      name: clientName,
+      phone: phoneNumber,
+      category,
+    });
+  }, [clientName, phoneNumber, category, onCustomerDetailsChange]);
+
   const normalizedPhone = phoneNumber.replace(/\D/g, '');
   const hasValidPhoneNumber = normalizedPhone.length >= 10 && normalizedPhone.length <= 15;
   const hasRequiredCustomerInfo = clientName.trim() !== '' && hasValidPhoneNumber;
@@ -404,11 +439,33 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
     }
 
     if (!isStepComplete(currentStep)) {
+      const firstMissingSurface =
+        currentStep === 4 && category === 'laptop'
+          ? laptopSelectedSurfaces.find((surface) => {
+              const mode = surfaceDesignSourceMode[surface];
+              if (!mode) return true;
+              if (mode === 'upload') return !(surfaceUploadedFile[surface] || laptopArtworkFiles[surface]);
+              if (mode === 'gallery') return !(laptopArtworkCatalog[surface]?.trim() || surfaceDesigns[surface]?.previewUrl);
+              return !surfaceDesigns[surface]?.previewUrl;
+            })
+          : undefined;
+
+      if (firstMissingSurface) {
+        setExpandedLaptopSurface(firstMissingSurface);
+        focusSurfaceDesignEditor(firstMissingSurface);
+        const label = LAPTOP_SURFACES.find((item) => item.value === firstMissingSurface)?.label ?? 'surface';
+        setSubmissionResult(`Please choose artwork for the ${label} before continuing.`);
+        setSubmissionType('error');
+        return;
+      }
+
       setSubmissionResult('Please complete the current step before continuing.');
       setSubmissionType('error');
       return;
     }
 
+    setSubmissionResult(null);
+    setSubmissionType(null);
     setCurrentStep((step) => Math.min(6, step + 1));
   };
 
@@ -609,32 +666,114 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
   const phoneArtworkLabel = phoneArtworkFile ? phoneArtworkFile.name : 'Upload your artwork';
   const controllerArtworkLabel = controllerArtworkFile ? controllerArtworkFile.name : 'Upload your artwork';
 
-  const laptopSyncSourceSurface = laptopSelectedSurfaces[0] ?? null;
-  const laptopSyncSourceLabel = laptopSyncSourceSurface
-    ? LAPTOP_SURFACES.find((item) => item.value === laptopSyncSourceSurface)?.label ?? 'Top Lid'
+  const primarySyncSurface = laptopSelectedSurfaces[0] ?? null;
+  const primarySyncSurfaceLabel = primarySyncSurface
+    ? LAPTOP_SURFACES.find((item) => item.value === primarySyncSurface)?.label ?? 'Top Lid'
     : 'Top Lid';
+  const hasSurfaceSyncTargets = laptopSelectedSurfaces.length > 0;
+  const isPrimarySyncSurface = (surface: LaptopSurface) => surface === primarySyncSurface;
+  const isSurfaceInSync = (surface: LaptopSurface) =>
+    !!primarySyncSurface && surface !== primarySyncSurface && surfaceSyncEnabled[primarySyncSurface];
 
-  const handleBreakSync = (surface: LaptopSurface) => {
-    if (syncLaptopSurfaces && surface !== laptopSyncSourceSurface) {
-      setSyncLaptopSurfaces(false);
+  const breakSyncOnSiblingChange = (surface: LaptopSurface) => {
+    if (primarySyncSurface && surface !== primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+      setSurfaceSyncEnabled((current) => ({ ...current, [primarySyncSurface]: false }));
     }
   };
 
-  const syncSelectedSurfaceToOtherSurfaces = (sourceSurface: LaptopSurface) => {
-    const sourceFinish = laptopFinishes[sourceSurface];
-    const sourceText = laptopTexts[sourceSurface];
-    const sourceMode = surfaceDesignSourceMode[sourceSurface];
+  const syncSourceSurfaceIfEnabled = (surface: LaptopSurface) => {
+    if (primarySyncSurface && surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+      syncSelectedSurfaceToOtherSurfaces(surface);
+    }
+  };
+
+  const handleBreakSync = (surface: LaptopSurface) => {
+    if (surfaceSyncEnabled[surface]) {
+      setSurfaceSyncEnabled((current) => ({ ...current, [surface]: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (!primarySyncSurface || !surfaceSyncEnabled[primarySyncSurface]) {
+      return;
+    }
+
+    syncSelectedSurfaceToOtherSurfaces(primarySyncSurface);
+  }, [
+    primarySyncSurface,
+    surfaceSyncEnabled[primarySyncSurface ?? 'top-lid'],
+    laptopFinishes[primarySyncSurface ?? 'top-lid'],
+    laptopTexts[primarySyncSurface ?? 'top-lid'],
+    surfaceDesignSourceMode[primarySyncSurface ?? 'top-lid'],
+    surfaceDesigns[primarySyncSurface ?? 'top-lid']?.previewUrl,
+    laptopArtworkCatalog[primarySyncSurface ?? 'top-lid'],
+    laptopArtworkFiles[primarySyncSurface ?? 'top-lid'],
+    uploadPreviewUrlsRef.current[primarySyncSurface ?? 'top-lid'],
+  ]);
+
+  const syncSelectedSurfaceToOtherSurfaces = (
+    sourceSurface: LaptopSurface,
+    overrides?: {
+      finish?: FinishType;
+      text?: string;
+      mode?: 'upload' | 'gallery' | 'color' | null;
+      previewUrl?: string;
+      artworkFile?: File | null;
+      artworkCatalog?: string;
+    },
+  ) => {
+    const sourceFinish = overrides?.finish ?? laptopFinishes[sourceSurface];
+    const sourceText = overrides?.text ?? laptopTexts[sourceSurface];
+    const sourceMode = overrides?.mode ?? surfaceDesignSourceMode[sourceSurface];
+    const sourcePreviewUrl =
+      overrides?.previewUrl ??
+      (uploadPreviewUrlsRef.current[sourceSurface] ||
+        surfaceDesigns[sourceSurface]?.previewUrl ||
+        laptopArtworkCatalog[sourceSurface] ||
+        '');
+    const sourceArtworkFile = overrides?.artworkFile ?? laptopArtworkFiles[sourceSurface];
+    const sourceArtworkCatalog = overrides?.artworkCatalog ?? laptopArtworkCatalog[sourceSurface];
 
     laptopSelectedSurfaces.forEach((surface) => {
-      if (surface !== sourceSurface) {
-        setLaptopFinishes((current) => ({ ...current, [surface]: sourceFinish }));
-        setLaptopTexts((current) => ({ ...current, [surface]: sourceText }));
-        setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: sourceMode }));
+      if (surface === sourceSurface) {
+        return;
+      }
+
+      setLaptopFinishes((current) => ({ ...current, [surface]: sourceFinish }));
+      setLaptopTexts((current) => ({ ...current, [surface]: sourceText }));
+      setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: sourceMode }));
+      setSurfaceDesigns((current) => ({
+        ...current,
+        [surface]: { previewUrl: sourcePreviewUrl },
+      }));
+      setLaptopArtworkMode((current) => ({
+        ...current,
+        [surface]: sourceMode === 'upload' ? 'upload' : sourceMode === 'gallery' ? 'gallery' : 'color',
+      }));
+      if (sourceMode === 'upload') {
+        setLaptopArtworkFiles((current) => ({ ...current, [surface]: sourceArtworkFile }));
+        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+      }
+      if (sourceMode === 'gallery') {
+        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: sourceArtworkCatalog }));
+        setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+      }
+      if (sourceMode === 'color') {
+        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+        setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
       }
     });
 
     setLaptopCopiedSettings(true);
     setTimeout(() => setLaptopCopiedSettings(false), 2000);
+  };
+
+  const toggleSurfaceSync = (surface: LaptopSurface, checked: boolean) => {
+    setSurfaceSyncEnabled((current) => ({ ...current, [surface]: checked }));
+
+    if (checked) {
+      syncSelectedSurfaceToOtherSurfaces(surface);
+    }
   };
 
   // Placeholder laptop artwork content (simplified for Step 4)
@@ -643,6 +782,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose artwork for each surface</p>
       </div>
+
+      {submissionResult && submissionType === 'error' ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {submissionResult}
+        </div>
+      ) : null}
 
       {laptopSelectedSurfaces.length === 0 ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
@@ -767,7 +912,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             accept="image/*"
                             onChange={(event) => {
                               const file = event.target.files?.[0];
-                              if (file) applyUploadToSurface(surface, file);
+                              if (file) {
+                                if (surface !== primarySyncSurface) {
+                                  breakSyncOnSiblingChange(surface);
+                                }
+                                applyUploadToSurface(surface, file);
+                                if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                  syncSourceSurfaceIfEnabled(surface);
+                                }
+                              }
                             }}
                             className="hidden"
                             id={`phase3-surface-upload-${surface}`}
@@ -781,13 +934,35 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
                       {surfaceDesignSourceMode[surface] === 'gallery' && (
                         <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
-                          <button
-                            type="button"
-                            onClick={() => onCatalogOpen(surface)}
-                            className="w-full min-h-10 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-medium text-black transition hover:border-black/40"
-                          >
-                            <i className="bx bx-palette mr-2" /> Browse Gallery
-                          </button>
+                          {surfaceDesigns[surface]?.previewUrl ? (
+                            <>
+                              <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                                <img
+                                  src={surfaceDesigns[surface].previewUrl}
+                                  alt={`${surfaceLabel ?? 'Surface'} selected gallery artwork`}
+                                  className="h-28 w-full object-cover"
+                                />
+                              </div>
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Selected artwork</span>
+                                <button
+                                  type="button"
+                                  onClick={() => onCatalogOpen(surface)}
+                                  className="rounded-full border border-black/10 bg-[#f7f7f5] px-3 py-1.5 text-xs font-semibold text-black transition hover:border-black/30"
+                                >
+                                  Change design
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onCatalogOpen(surface)}
+                              className="w-full min-h-10 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-medium text-black transition hover:border-black/40"
+                            >
+                              <i className="bx bx-palette mr-2" /> Browse Gallery
+                            </button>
+                          )}
                         </div>
                       )}
 
@@ -796,14 +971,38 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           <div className="flex gap-1 rounded-xl bg-[#efefef] p-1 w-auto">
                             <button
                               type="button"
-                              onClick={() => setSurfaceColorDesignType((m) => ({ ...m, [surface]: 'solid' }))}
+                              onClick={() => {
+                                if (surface !== primarySyncSurface) {
+                                  breakSyncOnSiblingChange(surface);
+                                }
+                                setSurfaceColorDesignType((m) => ({ ...m, [surface]: 'solid' }));
+                                if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                  const nextPreview = `#${surfaceSolidColor[surface]}`;
+                                  syncSelectedSurfaceToOtherSurfaces(surface, {
+                                    mode: 'color',
+                                    previewUrl: nextPreview,
+                                  });
+                                }
+                              }}
                               className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${surfaceColorDesignType[surface] === 'solid' ? 'bg-black text-white' : 'text-black/70'}`}
                             >
                               Solid
                             </button>
                             <button
                               type="button"
-                              onClick={() => setSurfaceColorDesignType((m) => ({ ...m, [surface]: 'gradient' }))}
+                              onClick={() => {
+                                if (surface !== primarySyncSurface) {
+                                  breakSyncOnSiblingChange(surface);
+                                }
+                                setSurfaceColorDesignType((m) => ({ ...m, [surface]: 'gradient' }));
+                                if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                  const nextPreview = `linear-gradient(to ${surfaceGradientDirection[surface]}, ${surfaceGradientColor1[surface]}, ${surfaceGradientColor2[surface]})`;
+                                  syncSelectedSurfaceToOtherSurfaces(surface, {
+                                    mode: 'color',
+                                    previewUrl: nextPreview,
+                                  });
+                                }
+                              }}
                               className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${surfaceColorDesignType[surface] === 'gradient' ? 'bg-black text-white' : 'text-black/70'}`}
                             >
                               Gradient
@@ -816,13 +1015,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                 <input
                                   type="color"
                                   value={surfaceSolidColor[surface]}
-                                  onChange={(e) => setSurfaceSolidColor((m) => ({ ...m, [surface]: e.target.value }))}
+                                  onChange={(e) => {
+                                    if (surface !== primarySyncSurface) {
+                                      breakSyncOnSiblingChange(surface);
+                                    }
+                                    setSurfaceSolidColor((m) => ({ ...m, [surface]: e.target.value }));
+                                    if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                      syncSourceSurfaceIfEnabled(surface);
+                                    }
+                                  }}
                                   className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
                                 />
                                 <input
                                   type="text"
                                   value={surfaceSolidColor[surface]}
-                                  onChange={(e) => setSurfaceSolidColor((m) => ({ ...m, [surface]: e.target.value }))}
+                                  onChange={(e) => {
+                                    if (surface !== primarySyncSurface) {
+                                      breakSyncOnSiblingChange(surface);
+                                    }
+                                    setSurfaceSolidColor((m) => ({ ...m, [surface]: e.target.value }));
+                                    if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                      syncSourceSurfaceIfEnabled(surface);
+                                    }
+                                  }}
                                   className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
                                 />
                               </div>
@@ -838,13 +1053,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                   <input
                                     type="color"
                                     value={surfaceGradientColor1[surface]}
-                                    onChange={(e) => setSurfaceGradientColor1((m) => ({ ...m, [surface]: e.target.value }))}
+                                    onChange={(e) => {
+                                      if (surface !== primarySyncSurface) {
+                                        breakSyncOnSiblingChange(surface);
+                                      }
+                                      setSurfaceGradientColor1((m) => ({ ...m, [surface]: e.target.value }));
+                                      if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                        syncSourceSurfaceIfEnabled(surface);
+                                      }
+                                    }}
                                     className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
                                   />
                                   <input
                                     type="text"
                                     value={surfaceGradientColor1[surface]}
-                                    onChange={(e) => setSurfaceGradientColor1((m) => ({ ...m, [surface]: e.target.value }))}
+                                    onChange={(e) => {
+                                      if (surface !== primarySyncSurface) {
+                                        breakSyncOnSiblingChange(surface);
+                                      }
+                                      setSurfaceGradientColor1((m) => ({ ...m, [surface]: e.target.value }));
+                                      if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                        syncSourceSurfaceIfEnabled(surface);
+                                      }
+                                    }}
                                     className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
                                   />
                                 </div>
@@ -856,13 +1087,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                   <input
                                     type="color"
                                     value={surfaceGradientColor2[surface]}
-                                    onChange={(e) => setSurfaceGradientColor2((m) => ({ ...m, [surface]: e.target.value }))}
+                                    onChange={(e) => {
+                                      if (surface !== primarySyncSurface) {
+                                        breakSyncOnSiblingChange(surface);
+                                      }
+                                      setSurfaceGradientColor2((m) => ({ ...m, [surface]: e.target.value }));
+                                      if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                        syncSourceSurfaceIfEnabled(surface);
+                                      }
+                                    }}
                                     className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
                                   />
                                   <input
                                     type="text"
                                     value={surfaceGradientColor2[surface]}
-                                    onChange={(e) => setSurfaceGradientColor2((m) => ({ ...m, [surface]: e.target.value }))}
+                                    onChange={(e) => {
+                                      if (surface !== primarySyncSurface) {
+                                        breakSyncOnSiblingChange(surface);
+                                      }
+                                      setSurfaceGradientColor2((m) => ({ ...m, [surface]: e.target.value }));
+                                      if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                        syncSourceSurfaceIfEnabled(surface);
+                                      }
+                                    }}
                                     className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
                                   />
                                 </div>
@@ -875,7 +1122,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                                     <button
                                       key={dir}
                                       type="button"
-                                      onClick={() => setSurfaceGradientDirection((m) => ({ ...m, [surface]: dir }))}
+                                      onClick={() => {
+                                        if (surface !== primarySyncSurface) {
+                                          breakSyncOnSiblingChange(surface);
+                                        }
+                                        setSurfaceGradientDirection((m) => ({ ...m, [surface]: dir }));
+                                        if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                          syncSourceSurfaceIfEnabled(surface);
+                                        }
+                                      }}
                                       className={`h-8 rounded-lg text-xs font-bold transition ${surfaceGradientDirection[surface] === dir ? 'bg-black text-white' : 'border border-black/10 bg-white text-black'}`}
                                     >
                                       {dir === 'left' && '←'}
@@ -902,13 +1157,72 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
+                        {!laptopTextToggle[surface] ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLaptopTextToggle((current) => ({ ...current, [surface]: true }));
+                              if (surface !== primarySyncSurface) {
+                                breakSyncOnSiblingChange(surface);
+                              }
+                            }}
+                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                          >
+                            <i className="bx bx-plus mr-2" />Add text (optional)
+                          </button>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-black/70">Custom text</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
+                                  setLaptopTexts((current) => ({ ...current, [surface]: '' }));
+                                  breakSyncOnSiblingChange(surface);
+                                }}
+                                className="text-sm text-red-600 hover:text-red-700"
+                              >
+                                <i className="bx bx-x" />Remove
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              value={laptopTexts[surface]}
+                              onChange={(event) => {
+                                markSelectionStarted();
+                                const nextText = event.target.value;
+                                if (surface !== primarySyncSurface) {
+                                  breakSyncOnSiblingChange(surface);
+                                }
+                                setLaptopTexts((current) => ({ ...current, [surface]: nextText }));
+                                if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                  syncSelectedSurfaceToOtherSurfaces(surface, {
+                                    text: nextText,
+                                  });
+                                }
+                              }}
+                              placeholder="Enter text for this surface"
+                              className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                              autoFocus
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-2">
                         <span className="text-sm font-semibold text-black/70">Choose finish</span>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <button
                             type="button"
                             onClick={() => {
                               markSelectionStarted();
+                              if (surface !== primarySyncSurface) {
+                                breakSyncOnSiblingChange(surface);
+                              }
                               setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
+                              if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                syncSourceSurfaceIfEnabled(surface);
+                              }
                             }}
                             className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                               laptopFinishes[surface] === 'shiny-stones'
@@ -930,7 +1244,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                             type="button"
                             onClick={() => {
                               markSelectionStarted();
-                              setLaptopFinishes((current) => ({ ...current, [surface]: 'standard' }));
+                              const nextFinish: FinishType = 'standard';
+                              if (surface !== primarySyncSurface) {
+                                breakSyncOnSiblingChange(surface);
+                              }
+                              setLaptopFinishes((current) => ({ ...current, [surface]: nextFinish }));
+                              if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
+                                syncSelectedSurfaceToOtherSurfaces(surface, {
+                                  finish: nextFinish,
+                                });
+                              }
                             }}
                             className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
                               laptopFinishes[surface] === 'standard'
@@ -950,47 +1273,36 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
                           </button>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        {!laptopTextToggle[surface] ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLaptopTextToggle((current) => ({ ...current, [surface]: true }));
-                            }}
-                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
-                          >
-                            <i className="bx bx-plus mr-2" />Add text
-                          </button>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-black/70">Custom text</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLaptopTextToggle((current) => ({ ...current, [surface]: false }));
-                                  setLaptopTexts((current) => ({ ...current, [surface]: '' }));
-                                }}
-                                className="text-sm text-red-600 hover:text-red-700"
-                              >
-                                <i className="bx bx-x" />Remove
-                              </button>
-                            </div>
-                            <input
-                              type="text"
-                              value={laptopTexts[surface]}
-                              onChange={(event) => {
-                                markSelectionStarted();
-                                setLaptopTexts((current) => ({ ...current, [surface]: event.target.value }));
-                              }}
-                              placeholder="Enter text for this surface"
-                              className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                              autoFocus
-                            />
-                          </div>
-                        )}
-                      </div>
                     </div>
+
+                    {isPrimarySyncSurface(surface) && hasSurfaceSyncTargets && (
+                      <div className="rounded-2xl border border-[#9adada] bg-[#edf9f9] p-3">
+                        <label className="flex cursor-pointer items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <span className="block text-sm font-black text-black">Apply this design to all selected surfaces</span>
+                            <span className="block text-xs leading-relaxed text-black/65">
+                              When enabled, every other selected surface stays in sync with {primarySyncSurfaceLabel}.
+                            </span>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={surfaceSyncEnabled[surface]}
+                            onChange={(event) => {
+                              const enabled = event.target.checked;
+                              toggleSurfaceSync(surface, enabled);
+                              if (!enabled) handleBreakSync(surface);
+                            }}
+                            className="mt-1 h-4 w-4 accent-[#2f7777]"
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    {!isPrimarySyncSurface(surface) && isSurfaceInSync(surface) && (
+                      <div className="rounded-xl border border-[#9adada] bg-[#edf9f9] px-3 py-2 text-xs font-semibold text-[#2f7777]">
+                        In sync with {primarySyncSurfaceLabel}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1014,7 +1326,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onHelpOpen
         </div>
 
         {/* Stepper */}
-        <div className="builder-progress" aria-label="Customization steps">
+        <div
+          className="builder-progress"
+          style={{
+            ['--step-progress' as string]: `${(currentStep / stepLabels.length) * 100}%`,
+          }}
+          aria-label="Customization steps"
+        >
           <div className="builder-progress-mobile-status">
             <span>Step {String(currentStep).padStart(2, '0')} of 06</span>
             <strong>{stepLabels[currentStep - 1]}</strong>

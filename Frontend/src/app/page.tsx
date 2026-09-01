@@ -100,16 +100,12 @@ function getLaptopOrderPricing(
   const sheetPrice = getSheetPrice(finish, mode);
   const selectedCount = coverage.length;
 
+  // Always show individual surfaces
   if (selectedCount > 0) {
-    if (selectedCount === 3 && mode === 'individual') {
-      const packagePrice = finish === 'standard' ? FULL_LAPTOP_STANDARD : FULL_LAPTOP_SHINY;
-      lineItems.push({ label: 'Full 3-piece laptop wrap', price: packagePrice });
-    } else {
-      coverage.forEach((item) => {
-        const label = COVERAGE_OPTIONS.find((option) => option.value === item)?.label ?? item;
-        lineItems.push({ label, price: sheetPrice });
-      });
-    }
+    coverage.forEach((item) => {
+      const label = COVERAGE_OPTIONS.find((option) => option.value === item)?.label ?? item;
+      lineItems.push({ label, price: sheetPrice });
+    });
   }
 
   if (customText.trim()) {
@@ -219,6 +215,7 @@ export default function HomePage() {
     mode: 'individual',
     storeName: '',
   });
+  const [showFloatingPricing, setShowFloatingPricing] = useState(false);
 
   const wholesaleSummary = useMemo(() => calculateWholesaleTotal(form.finish, form.quantity), [form.finish, form.quantity]);
 
@@ -450,6 +447,11 @@ export default function HomePage() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [globalBuilderSubmitting, setGlobalBuilderSubmitting] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<{ name: string; phone: string; category: string }>({
+    name: '',
+    phone: '',
+    category: 'laptop',
+  });
 
   const handleReceiptOpen = (receipt: ReceiptData) => {
     setReceiptData(receipt);
@@ -475,6 +477,10 @@ export default function HomePage() {
     setCatalogSelection({ surface: catalogSurface, imageUrl });
     setCatalogOpen(false);
     setCatalogSurface(null);
+  };
+
+  const handleCustomerDetailsChange = (details: { name: string; phone: string; category: string }) => {
+    setCustomerDetails(details);
   };
 
   const handlePlaceOrder = () => {
@@ -670,10 +676,12 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             <ClientBuilder
               onReceiptOpen={handleReceiptOpen}
               onPriceChange={setBuilderPrice}
+              onStepChange={(step) => setShowFloatingPricing(step >= 3)}
               onHelpOpen={handleHelpOpen}
               onCatalogOpen={handleCatalogOpen}
               catalogSelection={catalogSelection}
               onSubmittingChange={setGlobalBuilderSubmitting}
+              onCustomerDetailsChange={handleCustomerDetailsChange}
             />
           ) : (
             <section className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur sm:p-6">
@@ -682,7 +690,19 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           )}
         </div>
 
-        <FloatingPricingButton price={form.mode === 'wholesale' ? orderTotal : builderPrice} />
+        {(form.mode === 'wholesale' || showFloatingPricing) && (
+          <FloatingPricingButton
+            price={form.mode === 'wholesale' ? orderTotal : builderPrice}
+            summaryItems={
+              form.mode === 'wholesale'
+                ? [{ label: 'Wholesale order', price: orderTotal }]
+                : orderSummary.lineItems
+            }
+            customerName={form.mode === 'individual' ? customerDetails.name : undefined}
+            customerPhone={form.mode === 'individual' ? customerDetails.phone : undefined}
+            customerCategory={form.mode === 'individual' ? customerDetails.category : undefined}
+          />
+        )}
 
         {globalBuilderSubmitting ? (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm">
