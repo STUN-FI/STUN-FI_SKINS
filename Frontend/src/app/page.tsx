@@ -159,7 +159,7 @@ function calculateWholesaleTotal(finish: FinishType, quantity: number) {
 }
 
 type OrderModeSelectorProps = {
-  mode: OrderMode;
+  mode: OrderMode | null;
   onChange: (mode: OrderMode) => void;
 };
 
@@ -215,7 +215,9 @@ export default function HomePage() {
     mode: 'individual',
     storeName: '',
   });
+  const [selectedOrderMode, setSelectedOrderMode] = useState<OrderMode | null>(null);
   const [showFloatingPricing, setShowFloatingPricing] = useState(false);
+  const [builderLineItems, setBuilderLineItems] = useState<Array<{ label: string; price: number }>>([]);
 
   const wholesaleSummary = useMemo(() => calculateWholesaleTotal(form.finish, form.quantity), [form.finish, form.quantity]);
 
@@ -649,33 +651,44 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
     return (
       <main className="min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
         <div className="customize-shell mx-auto w-full max-w-5xl">
-          <header className="customize-header mb-8 flex items-center justify-between gap-4 border-b border-black/10 py-4 sm:mb-10">
+          <header className="customize-header mb-6 flex items-center justify-between gap-3 border-b border-black/10 py-2 sm:mb-8 sm:gap-4 sm:py-3">
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Back to STUN-FI Skins home">
-              <div className="flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-xl bg-black p-2 sm:h-11 sm:w-11 sm:min-w-[2.75rem] sm:rounded-2xl">
+              <div className="flex h-9 w-9 min-w-[2.25rem] items-center justify-center rounded-lg bg-black p-1.5 sm:h-10 sm:w-10 sm:min-w-[2.5rem] sm:rounded-xl">
                 <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
               </div>
               <div className="min-w-0">
-                <BrandedLogo size="base" />
+                <BrandedLogo size="compact" />
                 <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-black/55 sm:block">your tech. your style</p>
               </div>
             </a>
-            <a href="/" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-4 text-sm font-semibold text-black transition hover:border-black">
+            <a href="/" className="inline-flex min-h-9 items-center rounded-full border border-black/15 px-3 text-xs font-semibold text-black transition hover:border-black sm:min-h-10 sm:px-4 sm:text-sm">
               <i className="bx bx-arrow-back mr-2" aria-hidden="true" /> Back home
             </a>
           </header>
 
-          <section className="customize-intro mb-8 max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI SKINS / CUSTOMIZER</p>
-            <h1 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">Design your skin.</h1>
-            <p className="mt-4 text-base font-medium text-black/60 sm:text-lg">Make your device yours.</p>
-          </section>
+          {selectedOrderMode === null ? (
+            <>
+              <section className="customize-intro mb-8 max-w-2xl">
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI SKINS / CUSTOMIZER</p>
+                <h1 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">Design your skin.</h1>
+                <p className="mt-4 text-base font-medium text-black/60 sm:text-lg">Make your device yours.</p>
+              </section>
 
-          <OrderModeSelector mode={form.mode} onChange={(mode) => setForm((current) => ({ ...current, mode }))} />
+              <OrderModeSelector
+                mode={selectedOrderMode}
+                onChange={(mode) => {
+                  setSelectedOrderMode(mode);
+                  setForm((current) => ({ ...current, mode }));
+                }}
+              />
+            </>
+          ) : null}
 
-          {form.mode === 'individual' ? (
+          {selectedOrderMode === 'individual' ? (
             <ClientBuilder
               onReceiptOpen={handleReceiptOpen}
               onPriceChange={setBuilderPrice}
+              onLineItemsChange={setBuilderLineItems}
               onStepChange={(step) => setShowFloatingPricing(step >= 3)}
               onHelpOpen={handleHelpOpen}
               onCatalogOpen={handleCatalogOpen}
@@ -683,20 +696,20 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               onSubmittingChange={setGlobalBuilderSubmitting}
               onCustomerDetailsChange={handleCustomerDetailsChange}
             />
-          ) : (
+          ) : selectedOrderMode === 'wholesale' ? (
             <section className="rounded-[2.5rem] border border-black/10 bg-white/90 p-5 shadow-glow backdrop-blur sm:p-6">
               <WholesaleForm />
             </section>
-          )}
+          ) : null}
         </div>
 
-        {(form.mode === 'wholesale' || showFloatingPricing) && (
+        {(selectedOrderMode === 'wholesale' || (selectedOrderMode === 'individual' && showFloatingPricing)) && (
           <FloatingPricingButton
             price={form.mode === 'wholesale' ? orderTotal : builderPrice}
             summaryItems={
               form.mode === 'wholesale'
                 ? [{ label: 'Wholesale order', price: orderTotal }]
-                : orderSummary.lineItems
+                : builderLineItems
             }
             customerName={form.mode === 'individual' ? customerDetails.name : undefined}
             customerPhone={form.mode === 'individual' ? customerDetails.phone : undefined}

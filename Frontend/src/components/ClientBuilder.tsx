@@ -94,6 +94,7 @@ export type ReceiptData = {
 type ClientBuilderProps = {
   onReceiptOpen: (receipt: ReceiptData) => void;
   onPriceChange?: (price: number | null) => void;
+  onLineItemsChange?: (lineItems: Array<{ label: string; price: number }>) => void;
   onStepChange?: (step: number) => void;
   onHelpOpen: () => void;
   onCatalogOpen: (surface: LaptopSurface) => void;
@@ -102,7 +103,7 @@ type ClientBuilderProps = {
   onCustomerDetailsChange?: (details: { name: string; phone: string; category: string }) => void;
 };
 
-export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange, onCustomerDetailsChange }: ClientBuilderProps) {
+export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItemsChange, onStepChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange, onCustomerDetailsChange }: ClientBuilderProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -325,6 +326,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
 
     onPriceChange(pricingQuotePending ? null : pricing.total);
   }, [onPriceChange, pricingQuotePending, pricing.total]);
+
+  useEffect(() => {
+    onLineItemsChange?.(pricing.lineItems);
+  }, [onLineItemsChange, pricing.lineItems]);
 
   useEffect(() => {
     onStepChange?.(currentStep);
@@ -821,7 +826,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
                       }`}
                     >
                       <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70 mb-3">Choose design</p>
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose one design format</p>
+                        <p className="mt-1 text-xs text-black/55">Select one option below. You do not need to use all three.</p>
                         {surfaceDesignSourceMode[surface] ? (
                           <div className="rounded-2xl border border-black/10 bg-white p-3">
                             <div className="flex items-center justify-between gap-3">
@@ -843,9 +849,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
                             </div>
                           </div>
                         ) : (
-                          <div className="grid gap-3 sm:grid-cols-3">
+                          <div className="mt-3 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={`${surfaceLabel ?? 'Surface'} design format`}>
                             <button
                               type="button"
+                              aria-pressed="false"
                               onClick={() => handleSelectDesignMode(surface, 'upload')}
                               className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
                             >
@@ -865,6 +872,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
 
                             <button
                               type="button"
+                              aria-pressed="false"
                               onClick={() => handleSelectDesignMode(surface, 'gallery')}
                               className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
                             >
@@ -884,6 +892,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
 
                             <button
                               type="button"
+                              aria-pressed="false"
                               onClick={() => handleSelectDesignMode(surface, 'color')}
                               className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
                             >
@@ -1317,14 +1326,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
   return (
     <section id="builder" className="builder-shell mb-10 overflow-hidden rounded-[2.5rem] border border-black/10 bg-white/90 p-4 shadow-glow backdrop-blur sm:p-6">
       <div className="builder-content space-y-8">
-        {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2f7777]">Your device / Your design</p>
-            <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-black">Customize your skin</h2>
-          </div>
-        </div>
-
         {/* Stepper */}
         <div
           className="builder-progress"
@@ -1917,9 +1918,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
         {currentStep === 6 && (
           <div className="animate-fade-in space-y-6">
             <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
-              <h3 className="text-lg font-bold text-black mb-4">Review Your Order</h3>
+              <h3 className="mb-4 text-lg font-bold text-black">Review Your Order</h3>
 
-              <div className="space-y-3">
+              <div className="space-y-3 border-b border-black/10 pb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-black/60">Name</span>
                   <span className="font-semibold text-black">{clientName}</span>
@@ -1932,6 +1933,112 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onStepChan
                   <span className="text-black/60">Category</span>
                   <span className="font-semibold text-black capitalize">{category}</span>
                 </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#2f7777]">Your selections</h4>
+
+                {category === 'laptop' && (
+                  <>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Laptop model</span>
+                      <span className="text-right font-semibold text-black">{laptopModel}</span>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-sm text-black/60">Surfaces</span>
+                      {laptopSelectedSurfaces.map((surface) => (
+                        <div key={surface} className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm">
+                          <div className="flex justify-between gap-4">
+                            <span className="font-semibold text-black">
+                              {LAPTOP_SURFACES.find((option) => option.value === surface)?.label ?? surface}
+                            </span>
+                            <span className="text-black/60">
+                              {laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-xs text-black/55">
+                            {surfaceDesignSourceMode[surface] === 'gallery' && 'Gallery artwork'}
+                            {surfaceDesignSourceMode[surface] === 'upload' && 'Your own artwork'}
+                            {surfaceDesignSourceMode[surface] === 'color' && 'Color design'}
+                            {!surfaceDesignSourceMode[surface] && 'No artwork selected'}
+                            {laptopTexts[surface].trim() && ` | Text: ${laptopTexts[surface]}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Installation</span>
+                      <span className="font-semibold text-black">{laptopInstallOption === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</span>
+                    </div>
+                  </>
+                )}
+
+                {category === 'phone' && (
+                  <>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Coverage</span>
+                      <span className="text-right font-semibold text-black">{PHONE_COVERAGE_OPTIONS.find((option) => option.value === phoneCoverage)?.label}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Finish</span>
+                      <span className="font-semibold text-black">{phoneFinish === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Artwork</span>
+                      <span className="text-right font-semibold text-black">{phoneArtworkCatalog || phoneArtworkFile?.name || 'Not selected'}</span>
+                    </div>
+                    {phoneCustomText.trim() && (
+                      <div className="flex justify-between gap-4 text-sm">
+                        <span className="text-black/60">Custom text</span>
+                        <span className="text-right font-semibold text-black">{phoneCustomText}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Installation</span>
+                      <span className="font-semibold text-black">{phoneInstallOption === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</span>
+                    </div>
+                  </>
+                )}
+
+                {category === 'controller' && (
+                  <>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Controller</span>
+                      <span className="text-right font-semibold text-black">{CONTROLLER_SUBTYPES.find((option) => option.value === controllerSubtype)?.label}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Finish</span>
+                      <span className="font-semibold text-black">{controllerFinish === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Artwork</span>
+                      <span className="text-right font-semibold text-black">{controllerArtworkCatalog || controllerArtworkFile?.name || 'Not selected'}</span>
+                    </div>
+                    {controllerGamerTag.trim() && (
+                      <div className="flex justify-between gap-4 text-sm">
+                        <span className="text-black/60">Gamer tag</span>
+                        <span className="text-right font-semibold text-black">{controllerGamerTag}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Installation</span>
+                      <span className="font-semibold text-black">{controllerInstallOption === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</span>
+                    </div>
+                  </>
+                )}
+
+                {category === 'others' && (
+                  <>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Item</span>
+                      <span className="text-right font-semibold text-black">{itemName}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-black/60">Instructions</span>
+                      <span className="max-w-[65%] text-right font-semibold text-black">{instructions}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
