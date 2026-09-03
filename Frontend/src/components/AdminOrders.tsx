@@ -167,13 +167,17 @@ export default function AdminOrders() {
   const [activeTab, setActiveTab] = useState<typeof MODE_TABS[number]['key']>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [newOrderNotice, setNewOrderNotice] = useState<Order | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const detailsRef = useRef<HTMLDivElement>(null);
+  const hasLoadedOrdersRef = useRef(false);
+  const knownOrderIdsRef = useRef(new Set<string>());
 
-  const fetchOrders = async () => {
-    setIsLoading(true);
+  const fetchOrders = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     setError('');
 
     try {
@@ -182,18 +186,43 @@ export default function AdminOrders() {
       if (!response.ok) {
         throw new Error(data?.error || 'Unable to fetch orders');
       }
-      setOrders(data.orders ?? []);
+      const nextOrders: Order[] = data.orders ?? [];
+      const incomingOrder = hasLoadedOrdersRef.current
+        ? nextOrders.find((order) => !knownOrderIdsRef.current.has(order.orderId))
+        : null;
+
+      knownOrderIdsRef.current = new Set(nextOrders.map((order) => order.orderId));
+      hasLoadedOrdersRef.current = true;
+      setOrders(nextOrders);
+
+      if (incomingOrder) {
+        setNewOrderNotice(incomingOrder);
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification('New STUN-FI order', {
+            body: `Order #${incomingOrder.orderId} has arrived.`,
+          });
+        }
+      }
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Unable to load orders');
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchOrders();
+    const pollingId = window.setInterval(() => fetchOrders(true), 15000);
+
+    return () => window.clearInterval(pollingId);
   }, []);
+
+  const enableNotifications = async () => {
+    if (!('Notification' in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationsEnabled(permission === 'granted');
+  };
 
   const filteredOrders = useMemo(() => {
     if (activeTab === 'individual') {
@@ -342,7 +371,33 @@ export default function AdminOrders() {
             <span className="text-sm uppercase tracking-[0.24em] text-black/60">Order Management</span>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={enableNotifications}
+          disabled={notificationsEnabled || (typeof window !== 'undefined' && !('Notification' in window))}
+          className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-emerald-700"
+        >
+          {notificationsEnabled ? 'Notifications on' : 'Enable notifications'}
+        </button>
       </div>
+
+      {newOrderNotice ? (
+        <div className="flex flex-col gap-3 rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            New order received: <strong>#{newOrderNotice.orderId}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              openDetails(newOrderNotice);
+              setNewOrderNotice(null);
+            }}
+            className="rounded-full bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-800"
+          >
+            View order
+          </button>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[2rem] border border-black/10 bg-white p-5 shadow-sm">
