@@ -439,6 +439,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     if (targetStep === 1 || isStepComplete(targetStep)) {
       setCurrentStep(targetStep);
+      scrollToBuilderTop();
+    }
+  };
+
+  const scrollToBuilderTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -475,7 +482,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     setSubmissionResult(null);
     setSubmissionType(null);
-    setCurrentStep((step) => Math.min(7, step + 1));
+    setCurrentStep((step) => {
+      const nextStep = Math.min(7, step + 1);
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+      }
+      return nextStep;
+    });
   };
 
   const handleBack = () => {
@@ -486,6 +499,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     for (let step = currentStep - 1; step >= 1; step -= 1) {
       if (step === 1 || isStepComplete(step)) {
         setCurrentStep(step);
+        scrollToBuilderTop();
         return;
       }
     }
