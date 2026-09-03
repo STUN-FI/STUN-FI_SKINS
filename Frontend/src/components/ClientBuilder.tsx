@@ -615,11 +615,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     setIsSubmitting(true);
     try {
-      const finalOrderId = 'order-' + Date.now();
-      await submitOrder({
-        orderId: finalOrderId,
+      const result = await submitOrder({
         clientName,
-        phoneNumber,
+        whatsappNumber: phoneNumber,
         category,
         laptopModel,
         laptopSelectedSurfaces,
@@ -652,6 +650,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         surfaceGradientColor2,
         surfaceGradientDirection,
       });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Order submission failed');
+      }
+
+      const finalOrderId = result.orderId.startsWith('STN-')
+        ? result.orderId
+        : `STN-${result.orderId}`;
 
       onReceiptOpen({
         orderId: finalOrderId,
