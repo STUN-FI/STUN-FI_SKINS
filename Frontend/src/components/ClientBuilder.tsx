@@ -383,7 +383,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     return true;
   };
 
-  const stepLabels = ['Details', 'Device', 'Surfaces', 'Artwork', 'Install', 'Review'] as const;
+  const stepLabels = ['Details', 'Device', 'Surfaces', 'Artwork', 'Finish', 'Install', 'Review'] as const;
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -417,11 +417,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         }
         return !!(itemName.trim() && instructions.trim() && photoFile);
       case 5:
+        return category === 'laptop'
+          ? laptopSelectedSurfaces.length > 0 && laptopSelectedSurfaces.every((surface) => !!laptopFinishes[surface])
+          : category === 'others' || !!(category === 'phone' ? phoneFinish : controllerFinish);
+      case 6:
         if (category === 'laptop') return !!laptopInstallOption;
         if (category === 'phone') return !!phoneInstallOption;
         if (category === 'controller') return !!controllerInstallOption;
         return true;
-      case 6:
+      case 7:
         return true;
       default:
         return false;
@@ -439,7 +443,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   };
 
   const handleContinue = () => {
-    if (currentStep >= 6) {
+    if (currentStep >= 7) {
       return;
     }
 
@@ -471,7 +475,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     setSubmissionResult(null);
     setSubmissionType(null);
-    setCurrentStep((step) => Math.min(6, step + 1));
+    setCurrentStep((step) => Math.min(7, step + 1));
   };
 
   const handleBack = () => {
@@ -707,7 +711,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   }, [
     primarySyncSurface,
     surfaceSyncEnabled[primarySyncSurface ?? 'top-lid'],
-    laptopFinishes[primarySyncSurface ?? 'top-lid'],
     laptopTexts[primarySyncSurface ?? 'top-lid'],
     surfaceDesignSourceMode[primarySyncSurface ?? 'top-lid'],
     surfaceDesigns[primarySyncSurface ?? 'top-lid']?.previewUrl,
@@ -719,7 +722,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   const syncSelectedSurfaceToOtherSurfaces = (
     sourceSurface: LaptopSurface,
     overrides?: {
-      finish?: FinishType;
       text?: string;
       mode?: 'upload' | 'gallery' | 'color' | null;
       previewUrl?: string;
@@ -727,7 +729,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
       artworkCatalog?: string;
     },
   ) => {
-    const sourceFinish = overrides?.finish ?? laptopFinishes[sourceSurface];
     const sourceText = overrides?.text ?? laptopTexts[sourceSurface];
     const sourceMode = overrides?.mode ?? surfaceDesignSourceMode[sourceSurface];
     const sourcePreviewUrl =
@@ -744,7 +745,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         return;
       }
 
-      setLaptopFinishes((current) => ({ ...current, [surface]: sourceFinish }));
       setLaptopTexts((current) => ({ ...current, [surface]: sourceText }));
       setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: sourceMode }));
       setSurfaceDesigns((current) => ({
@@ -1218,70 +1218,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                           </div>
                         )}
                       </div>
-                      <div className="space-y-2">
-                        <span className="text-sm font-semibold text-black/70">Choose finish</span>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              markSelectionStarted();
-                              if (surface !== primarySyncSurface) {
-                                breakSyncOnSiblingChange(surface);
-                              }
-                              setLaptopFinishes((current) => ({ ...current, [surface]: 'shiny-stones' }));
-                              if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
-                                syncSourceSurfaceIfEnabled(surface);
-                              }
-                            }}
-                            className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                              laptopFinishes[surface] === 'shiny-stones'
-                                ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                                : 'border-black/15 bg-white text-black hover:border-black/45'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="finish-swatch finish-swatch-shiny" aria-hidden="true"><i className="bx bxs-star" /></span>
-                              <span><span className="block text-sm font-black">Shiny Stones</span><span className="mt-1 block text-xs font-medium text-black/55">+ ₦500</span></span>
-                            </div>
-                            {laptopFinishes[surface] === 'shiny-stones' && (
-                              <div className="absolute right-3 top-3 text-[#2f7777]">
-                                <i className="bx bx-check text-lg" aria-hidden="true" />
-                              </div>
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              markSelectionStarted();
-                              const nextFinish: FinishType = 'standard';
-                              if (surface !== primarySyncSurface) {
-                                breakSyncOnSiblingChange(surface);
-                              }
-                              setLaptopFinishes((current) => ({ ...current, [surface]: nextFinish }));
-                              if (surface === primarySyncSurface && surfaceSyncEnabled[primarySyncSurface]) {
-                                syncSelectedSurfaceToOtherSurfaces(surface, {
-                                  finish: nextFinish,
-                                });
-                              }
-                            }}
-                            className={`relative rounded-2xl border-2 px-4 py-3 text-left font-bold transition-colors duration-200 ${
-                              laptopFinishes[surface] === 'standard'
-                                ? 'border-[#2f7777] bg-[#edf5f5] text-black shadow-sm'
-                                : 'border-black/15 bg-white text-black hover:border-black/45'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="finish-swatch finish-swatch-standard" aria-hidden="true" />
-                              <span><span className="block text-sm font-black">Standard</span><span className="mt-1 block text-xs font-medium text-black/55">Save ₦500</span></span>
-                            </div>
-                            {laptopFinishes[surface] === 'standard' && (
-                              <div className="absolute right-3 top-3 text-[#2f7777]">
-                                <i className="bx bx-check text-lg" aria-hidden="true" />
-                              </div>
-                            )}
-                          </button>
-                        </div>
-                      </div>
                     </div>
 
                     {isPrimarySyncSurface(surface) && hasSurfaceSyncTargets && (
@@ -1335,7 +1271,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           aria-label="Customization steps"
         >
           <div className="builder-progress-mobile-status">
-            <span>Step {String(currentStep).padStart(2, '0')} of 06</span>
+            <span>Step {String(currentStep).padStart(2, '0')} of 07</span>
             <strong>{stepLabels[currentStep - 1]}</strong>
           </div>
           {stepLabels.map((step, index) => {
@@ -1860,8 +1796,100 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           </div>
         )}
 
-        {/* STEP 5: Install */}
+        {/* STEP 5: Finish */}
         {currentStep === 5 && (
+          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
+            <div>
+              <h3 className="text-lg font-bold text-black">Choose finish</h3>
+              <p className="text-sm text-black/60 mt-1">Select the finish for your selected item or surfaces.</p>
+            </div>
+
+            {category === 'laptop' ? (
+              <div className="space-y-4">
+                {laptopSelectedSurfaces.map((surface) => (
+                  <div key={surface} className="rounded-2xl border border-black/10 bg-[#f7f7f5] p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <span className="text-sm font-bold text-black">{LAPTOP_SURFACES.find((item) => item.value === surface)?.label ?? surface}</span>
+                      <span className="text-xs font-semibold text-black/55">{laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {(['shiny-stones', 'standard'] as FinishType[]).map((finish) => (
+                        <button
+                          key={finish}
+                          type="button"
+                          onClick={() => {
+                            markSelectionStarted();
+                            setLaptopFinishes((current) => ({ ...current, [surface]: finish }));
+                          }}
+                          className={`group relative overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 ${
+                            laptopFinishes[surface] === finish
+                              ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                              : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'
+                          }`}
+                        >
+                          <span className="relative block h-36 w-full overflow-hidden rounded-t-xl bg-[#f0f1ee] sm:h-44">
+                            <Image
+                              src={finish === 'shiny-stones' ? '/img/Shiny.png' : '/img/Standard%20(1).png'}
+                              alt=""
+                              fill
+                              sizes="(max-width: 640px) 50vw, 25vw"
+                              className={`object-cover transition duration-200 ${laptopFinishes[surface] === finish ? 'scale-[1.02]' : 'group-hover:scale-[1.04]'}`}
+                              aria-hidden="true"
+                            />
+                            {laptopFinishes[surface] === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
+                          </span>
+                          <span className="block space-y-1 p-3">
+                            <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
+                            <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Save ₦500'}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : category === 'phone' || category === 'controller' ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(['shiny-stones', 'standard'] as FinishType[]).map((finish) => {
+                  const selectedFinish = category === 'phone' ? phoneFinish : controllerFinish;
+                  return (
+                    <button
+                      key={finish}
+                      type="button"
+                      onClick={() => {
+                        markSelectionStarted();
+                        if (category === 'phone') setPhoneFinish(finish);
+                        if (category === 'controller') setControllerFinish(finish);
+                      }}
+                      className={`group relative overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 ${selectedFinish === finish ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]' : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'}`}
+                    >
+                      <span className="relative block h-40 w-full overflow-hidden rounded-t-xl bg-[#f0f1ee] sm:h-48">
+                        <Image
+                          src={finish === 'shiny-stones' ? '/img/Shiny.png' : '/img/Standard%20(1).png'}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                          className={`object-cover transition duration-200 ${selectedFinish === finish ? 'scale-[1.02]' : 'group-hover:scale-[1.04]'}`}
+                          aria-hidden="true"
+                        />
+                        {selectedFinish === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
+                      </span>
+                      <span className="block space-y-1 p-4">
+                        <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
+                        <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Base finish'}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/60">Finish selection is not required for custom items.</p>
+            )}
+          </div>
+        )}
+
+        {/* STEP 6: Install */}
+        {currentStep === 6 && (
           <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
             <div>
               <h3 className="text-lg font-bold text-black">Installation</h3>
@@ -1914,8 +1942,8 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           </div>
         )}
 
-        {/* STEP 6: Review */}
-        {currentStep === 6 && (
+        {/* STEP 7: Review */}
+        {currentStep === 7 && (
           <div className="animate-fade-in space-y-6">
             <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
               <h3 className="mb-4 text-lg font-bold text-black">Review Your Order</h3>
@@ -1956,13 +1984,34 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                               {laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}
                             </span>
                           </div>
-                          <div className="mt-1 text-xs text-black/55">
+                          <div className="mt-3 overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                            {surfaceDesignSourceMode[surface] === 'color' ? (
+                              <div
+                                className="h-24 w-full"
+                                style={{ background: surfaceDesigns[surface]?.previewUrl || '#ffffff' }}
+                                aria-label={`${LAPTOP_SURFACES.find((option) => option.value === surface)?.label ?? 'Surface'} color design preview`}
+                              />
+                            ) : surfaceDesigns[surface]?.previewUrl ? (
+                              <img
+                                src={surfaceDesigns[surface].previewUrl}
+                                alt={`${LAPTOP_SURFACES.find((option) => option.value === surface)?.label ?? 'Surface'} chosen artwork`}
+                                className="h-24 w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-16 items-center justify-center text-xs text-black/45">No artwork preview</div>
+                            )}
+                          </div>
+                          <div className="mt-2 text-xs text-black/55">
                             {surfaceDesignSourceMode[surface] === 'gallery' && 'Gallery artwork'}
                             {surfaceDesignSourceMode[surface] === 'upload' && 'Your own artwork'}
                             {surfaceDesignSourceMode[surface] === 'color' && 'Color design'}
                             {!surfaceDesignSourceMode[surface] && 'No artwork selected'}
-                            {laptopTexts[surface].trim() && ` | Text: ${laptopTexts[surface]}`}
                           </div>
+                          {laptopTexts[surface].trim() && (
+                            <div className="mt-2 rounded-xl border border-[#9adada] bg-[#edf9f9] px-3 py-2 text-xs font-semibold text-[#2f7777]">
+                              Text: {laptopTexts[surface]}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -2128,7 +2177,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             </button>
           )}
 
-          {currentStep < 6 && (
+          {currentStep < 7 && (
             <button
               type="button"
               onClick={handleContinue}

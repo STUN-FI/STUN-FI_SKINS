@@ -367,10 +367,8 @@ router.post('/', upload.any(), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     if (!isDbConnected()) {
-      return res.status(500).json({
-        success: false,
-        error: 'MongoDB connection unavailable. Unable to fetch orders.',
-      });
+      console.warn('MongoDB connection unavailable. Returning empty order list for admin view.');
+      return res.json({ success: true, count: 0, orders: [] });
     }
 
     const filters = {};

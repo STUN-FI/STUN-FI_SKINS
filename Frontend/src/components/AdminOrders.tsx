@@ -229,6 +229,45 @@ export default function AdminOrders() {
 
   const totalOrders = orders.length;
 
+  const chartData = useMemo(() => {
+    const today = new Date();
+    const volume = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(today);
+      date.setHours(0, 0, 0, 0);
+      date.setDate(today.getDate() - (6 - index));
+      return {
+        key: date.toISOString().slice(0, 10),
+        label: date.toLocaleDateString('en-NG', { weekday: 'short' }),
+        count: 0,
+      };
+    });
+
+    filteredOrders.forEach((order) => {
+      if (!order.createdAt) return;
+      const day = new Date(order.createdAt).toISOString().slice(0, 10);
+      const match = volume.find((item) => item.key === day);
+      if (match) match.count += 1;
+    });
+
+    const statuses = STATUS_OPTIONS.map((status) => ({
+      label: status.label,
+      count: filteredOrders.filter((order) => order.status === status.value).length,
+      color: status.value === 'completed' ? 'bg-sky-500' : status.value === 'in_production' ? 'bg-amber-500' : status.value === 'confirmed' ? 'bg-emerald-500' : 'bg-slate-400',
+    }));
+    const categories = Array.from(new Set(filteredOrders.map((order) => order.category || (order.mode === 'wholesale' ? 'Wholesale' : 'Other'))))
+      .map((category) => ({
+        label: category.replace(/-/g, ' '),
+        count: filteredOrders.filter((order) => (order.category || (order.mode === 'wholesale' ? 'Wholesale' : 'Other')) === category).length,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return { volume, statuses, categories };
+  }, [filteredOrders]);
+
+  const maxVolume = Math.max(...chartData.volume.map((item) => item.count), 1);
+  const maxCategoryCount = Math.max(...chartData.categories.map((item) => item.count), 1);
+
   const updateOrderStatus = async (orderId: string, newStatus: Status) => {
     setUpdatingOrderId(orderId);
     try {
@@ -323,6 +362,76 @@ export default function AdminOrders() {
           <p className="mt-4 text-3xl font-black text-black">{activeWholesalePartners}</p>
         </div>
       </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+        <section className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-sm" aria-labelledby="order-volume-title">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Last 7 days</p>
+              <h2 id="order-volume-title" className="mt-2 text-xl font-black text-black">Order volume</h2>
+            </div>
+            <span className="text-xs font-semibold text-black/45">{filteredOrders.length} shown</span>
+          </div>
+          <div className="mt-6 flex h-44 items-end gap-2 border-b border-black/10 sm:gap-4">
+            {chartData.volume.map((item) => (
+              <div key={item.key} className="group flex h-full flex-1 flex-col items-center justify-end gap-2">
+                <span className="text-xs font-bold text-black/60 opacity-0 transition-opacity group-hover:opacity-100">{item.count}</span>
+                <div className="flex h-32 w-full items-end justify-center">
+                  <div
+                    className="w-full max-w-10 rounded-t-xl bg-[#66cccc] transition-all duration-500 group-hover:bg-[#2f8f8f]"
+                    style={{ height: `${Math.max((item.count / maxVolume) * 100, item.count ? 8 : 2)}%` }}
+                    title={`${item.count} order${item.count === 1 ? '' : 's'} on ${item.key}`}
+                  />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-sm" aria-labelledby="status-title">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Current pipeline</p>
+          <h2 id="status-title" className="mt-2 text-xl font-black text-black">Order status</h2>
+          <div className="mt-6 space-y-4">
+            {chartData.statuses.map((status) => (
+              <div key={status.label}>
+                <div className="mb-1 flex justify-between gap-3 text-xs font-semibold text-black/65">
+                  <span>{status.label}</span>
+                  <span>{status.count}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full rounded-full ${status.color} transition-all duration-500`} style={{ width: `${filteredOrders.length ? (status.count / filteredOrders.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-sm" aria-labelledby="category-title">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Demand mix</p>
+            <h2 id="category-title" className="mt-2 text-xl font-black text-black">Orders by category</h2>
+          </div>
+          <span className="text-xs text-black/45">Filtered results</span>
+        </div>
+        {chartData.categories.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {chartData.categories.map((category) => (
+              <div key={category.label} className="space-y-2">
+                <div className="flex items-center justify-between gap-2 text-xs font-semibold text-black/65">
+                  <span className="capitalize">{category.label}</span>
+                  <span>{category.count}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-black transition-all duration-500" style={{ width: `${(category.count / maxCategoryCount) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="mt-6 text-sm text-black/50">No category data yet.</p>}
+      </section>
 
       <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-sm">
         <div className="mb-6 flex flex-wrap items-center gap-3">

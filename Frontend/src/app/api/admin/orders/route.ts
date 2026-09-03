@@ -29,10 +29,14 @@ export async function GET(request: NextRequest) {
   try {
     const apiUrl = getApiBaseUrl();
     const response = await fetch(apiUrl, { cache: 'no-store' });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      return NextResponse.json({ error: data?.error || 'Unable to fetch orders' }, { status: response.status });
+      const message = data?.error || 'Unable to fetch orders';
+      if (String(message).toLowerCase().includes('mongodb connection unavailable')) {
+        return NextResponse.json({ orders: [] });
+      }
+      return NextResponse.json({ error: message }, { status: response.status });
     }
 
     const sorted = Array.isArray(data.orders)

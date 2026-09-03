@@ -29,6 +29,9 @@ app.get('/api/health', (req, res) => {
 const orderRoutes = require('./src/routes/orderRoutes');
 app.use('/api/orders', orderRoutes);
 
+const journalRoutes = require('./src/routes/journalRoutes');
+app.use('/api/journal', journalRoutes);
+
 app.get('/api/orders/debug', (req, res) => {
   res.json({ success: true, message: 'debug route active' });
 });

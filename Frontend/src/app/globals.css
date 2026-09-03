@@ -26,9 +26,22 @@
 @keyframes fade-in {
   from {
     opacity: 0;
+    transform: translateY(0.75rem);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -42,7 +55,11 @@
   }
 
   .animate-fade-in {
-    animation: fade-in 0.3s ease-in;
+    animation: fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-page-enter {
+    animation: page-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
@@ -108,6 +125,7 @@ video {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  transition: color 220ms ease, opacity 220ms ease, transform 220ms ease;
 }
 
 .builder-progress-step span {
@@ -148,6 +166,25 @@ video {
 
 .builder-progress-step:not(:disabled):hover {
   opacity: 0.92;
+  transform: translateY(-2px);
+}
+
+.builder-panel,
+.builder-summary {
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.builder-panel:focus-within,
+.builder-summary:focus-within {
+  border-color: rgba(47, 143, 143, 0.3);
+}
+
+#builder button:not(:disabled) {
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+#builder button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
 }
 
 #builder input:focus-visible,
@@ -337,6 +374,15 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .landing-hero-media img {
     transition: none;
   }

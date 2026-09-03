@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import AdminJournal from '../../components/AdminJournal';
 import AdminOrders from '../../components/AdminOrders';
 import BrandedLogo from '../../components/BrandedLogo';
 
@@ -85,7 +86,10 @@ export default function AdminPage() {
           Logout
         </button>
       </div>
-      <AdminOrders />
+      <div className="space-y-8">
+        <AdminOrders />
+        <AdminJournal />
+      </div>
     </main>
   );
 }

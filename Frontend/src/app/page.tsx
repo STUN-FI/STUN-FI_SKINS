@@ -203,6 +203,12 @@ function OrderModeSelector({ mode, onChange }: OrderModeSelectorProps) {
 export default function HomePage() {
   const standalone = usePathname() === '/customize';
   const prefersReducedMotion = useReducedMotion();
+  const sectionReveal = {
+    initial: prefersReducedMotion ? false : { opacity: 0, y: 22 },
+    whileInView: prefersReducedMotion ? undefined : { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.14 },
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+  };
   const [form, setForm] = useState<FormState>({
     device: 'laptop',
     coverage: ['top-lid', 'keyboard-deck', 'bottom-base'],
@@ -674,13 +680,15 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
                 <p className="mt-4 text-base font-medium text-black/60 sm:text-lg">Make your device yours.</p>
               </section>
 
-              <OrderModeSelector
+              <div className="animate-page-enter">
+                <OrderModeSelector
                 mode={selectedOrderMode}
                 onChange={(mode) => {
                   setSelectedOrderMode(mode);
                   setForm((current) => ({ ...current, mode }));
                 }}
-              />
+                />
+              </div>
             </>
           ) : null}
 
@@ -837,7 +845,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
           </div>
         </section>
 
-        <section id="gallery" className="mb-10 scroll-mt-6">
+        <motion.section id="gallery" className="mb-10 scroll-mt-6" {...sectionReveal}>
           <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI Showcase</p>
@@ -885,9 +893,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               Explore all designs <i className="bx bx-right-arrow-alt ml-2 text-lg" aria-hidden="true" />
             </a>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="showcase" className="mb-10 border-y border-black/10 py-10 scroll-mt-6 sm:py-14">
+        <motion.section id="showcase" className="mb-10 border-y border-black/10 py-10 scroll-mt-6 sm:py-14" {...sectionReveal}>
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Why STUN-FI</p>
@@ -908,9 +916,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="finishes" className="mb-10 overflow-hidden rounded-[2rem] bg-[#e3e6e3] scroll-mt-6 sm:rounded-[2.5rem]">
+        <motion.section id="finishes" className="mb-10 overflow-hidden rounded-[2rem] bg-[#e3e6e3] scroll-mt-6 sm:rounded-[2.5rem]" {...sectionReveal}>
           <div className="grid lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div className="p-7 sm:p-10 lg:p-14">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-black/55">Choose your finish</p>
@@ -920,16 +928,16 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </div>
             <div className="grid min-h-[18rem] grid-cols-2">
               <div className="flex flex-col justify-end border-r border-black/10 bg-[#f5f5f3] p-6 sm:p-8">
-                <div className="relative h-24 w-24 overflow-hidden rounded-full border border-black/15 bg-white shadow-[inset_12px_12px_28px_rgba(0,0,0,0.12)]" aria-hidden="true">
-                  <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_0_48%,rgba(0,0,0,0.06)_49%_51%,transparent_52%)]" />
+                <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-black/15 bg-white shadow-[inset_12px_12px_28px_rgba(0,0,0,0.12)] sm:h-56">
+                  <Image src="/img/Standard%20(1).png" alt="Standard finish texture" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover transition duration-700 hover:scale-105" />
                 </div>
                 <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Matte finish</p>
                 <p className="mt-1 text-sm font-bold uppercase tracking-[0.18em]">Standard</p>
                 <p className="mt-2 text-sm text-black/60">Clean, understated, everyday.</p>
               </div>
               <div className="finish-shine flex flex-col justify-end bg-black p-6 text-white sm:p-8">
-                <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/35 bg-[#66cccc] shadow-[0_0_34px_rgba(102,204,204,0.55)]" aria-hidden="true">
-                  <div className="absolute -inset-8 rotate-[-25deg] bg-[linear-gradient(105deg,transparent_38%,rgba(255,255,255,0.9)_48%,transparent_58%)]" />
+                <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-white/35 bg-[#66cccc] shadow-[0_0_34px_rgba(102,204,204,0.55)] sm:h-56">
+                  <Image src="/img/Shiny.png" alt="Shiny Stones finish texture" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover transition duration-700 hover:scale-105" />
                 </div>
                 <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#66cccc]">Reflective finish</p>
                 <p className="mt-1 text-sm font-bold uppercase tracking-[0.18em]">Shiny Stones</p>
@@ -937,9 +945,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="customization" className="mb-10 scroll-mt-6">
+        <motion.section id="customization" className="mb-10 scroll-mt-6" {...sectionReveal}>
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="relative min-h-[20rem] overflow-hidden rounded-[2rem] bg-black sm:min-h-[28rem] sm:rounded-[2.5rem]">
               <Image src="/img/Stripes.jpg" alt="STUN-FI skin applied across a laptop keyboard area" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
@@ -956,9 +964,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="how-it-works" className="mb-10 rounded-[2rem] bg-black px-7 py-10 text-white scroll-mt-6 sm:rounded-[2.5rem] sm:px-10 sm:py-14">
+        <motion.section id="how-it-works" className="mb-10 rounded-[2rem] bg-black px-7 py-10 text-white scroll-mt-6 sm:rounded-[2.5rem] sm:px-10 sm:py-14" {...sectionReveal}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#58adad]">How it works</p>
@@ -979,9 +987,9 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="mt-12 overflow-hidden rounded-[2rem] bg-[#2f8f8f] px-7 py-10 text-white sm:rounded-[2.5rem] sm:px-10 sm:py-14">
+        <motion.section className="mt-12 overflow-hidden rounded-[2rem] bg-[#2f8f8f] px-7 py-10 text-white sm:rounded-[2.5rem] sm:px-10 sm:py-14" {...sectionReveal}>
           <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-black/60">Make the next move</p>
@@ -990,7 +998,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             </div>
             <a href="/customize" className="inline-flex min-h-12 w-fit items-center rounded-full bg-black px-6 text-sm font-bold text-white transition hover:bg-neutral-800">Design Your Skin</a>
           </div>
-        </section>
+        </motion.section>
 
         <footer className="mt-16 rounded-[2.5rem] border border-black/10 bg-white/90 p-8 text-black/70 shadow-glow backdrop-blur">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
