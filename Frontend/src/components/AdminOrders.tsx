@@ -212,6 +212,10 @@ export default function AdminOrders() {
   };
 
   useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted');
+    }
+
     fetchOrders();
     const pollingId = window.setInterval(() => fetchOrders(true), 15000);
 
