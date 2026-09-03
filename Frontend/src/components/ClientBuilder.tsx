@@ -623,6 +623,18 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         clientName,
         whatsappNumber: phoneNumber,
         category,
+        device: category === 'laptop'
+          ? laptopModel
+          : category === 'phone'
+          ? 'phone'
+          : category === 'controller'
+          ? controllerSubtype
+          : itemName,
+        deviceModel: category === 'laptop' ? laptopModel : '',
+        coverage: category === 'laptop' ? laptopSelectedSurfaces : category === 'phone' ? [phoneCoverage] : [],
+        finish: category === 'laptop' ? laptopFinishes[laptopSelectedSurfaces[0]] || 'standard' : category === 'phone' ? phoneFinish : controllerFinish,
+        items: pricing.lineItems,
+        totalAmount: pricingQuotePending ? 0 : pricing.total,
         laptopModel,
         laptopSelectedSurfaces,
         laptopFinishes,
