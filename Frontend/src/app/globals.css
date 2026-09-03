@@ -34,6 +34,43 @@
   }
 }
 
+@keyframes step-enter-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(2.5rem, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes step-enter-backward {
+  from {
+    opacity: 0;
+    transform: translate3d(-2.5rem, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.step-transition {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: opacity, transform;
+}
+
+.step-transition-forward {
+  animation-name: step-enter-forward;
+}
+
+.step-transition-backward {
+  animation-name: step-enter-backward;
+}
+
 @keyframes page-enter {
   from {
     opacity: 0;

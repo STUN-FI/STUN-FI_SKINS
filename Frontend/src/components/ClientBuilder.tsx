@@ -105,6 +105,7 @@ type ClientBuilderProps = {
 
 export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItemsChange, onStepChange, onHelpOpen, onCatalogOpen, catalogSelection, onSubmittingChange, onCustomerDetailsChange }: ClientBuilderProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [laptopModel, setLaptopModel] = useState('');
@@ -438,6 +439,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     }
 
     if (targetStep === 1 || isStepComplete(targetStep)) {
+      setStepDirection(targetStep > currentStep ? 'forward' : 'backward');
       setCurrentStep(targetStep);
       scrollToBuilderTop();
     }
@@ -482,6 +484,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     setSubmissionResult(null);
     setSubmissionType(null);
+    setStepDirection('forward');
     setCurrentStep((step) => {
       const nextStep = Math.min(7, step + 1);
       if (typeof window !== 'undefined') {
@@ -498,6 +501,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     for (let step = currentStep - 1; step >= 1; step -= 1) {
       if (step === 1 || isStepComplete(step)) {
+        setStepDirection('backward');
         setCurrentStep(step);
         scrollToBuilderTop();
         return;
@@ -1320,7 +1324,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 1: Details */}
         {currentStep === 1 && (
-          <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6 animate-fade-in">
+          <div className={`builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div className="mb-6">
               <h3 className="text-lg font-bold text-black">Your Details</h3>
               <p className="text-sm text-black/60 mt-1">Start by telling us about yourself</p>
@@ -1418,7 +1422,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 2: Device */}
         {currentStep === 2 && (
-          <div className="builder-panel rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
+          <div className={`builder-panel rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div className="mb-6">
               <h3 className="text-lg font-bold text-black">
                 {category === 'laptop' && 'Your Laptop'}
@@ -1529,7 +1533,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 3: Surfaces (Laptop only) */}
         {currentStep === 3 && category === 'laptop' && (
-          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
+          <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Which surfaces?</h3>
               <p className="text-sm text-black/60 mt-1">Select the parts you want to cover</p>
@@ -1619,7 +1623,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 4: Artwork */}
         {currentStep === 4 && (
-          <div className="animate-fade-in">
+          <div className={`step-transition step-transition-${stepDirection}`}>
             {category === 'laptop' && renderLaptopArtworkContent()}
 
             {category === 'phone' && (
@@ -1818,7 +1822,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 5: Finish */}
         {currentStep === 5 && (
-          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
+          <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Choose finish</h3>
               <p className="text-sm text-black/60 mt-1">Select the finish for your selected item or surfaces.</p>
@@ -1910,7 +1914,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 6: Install */}
         {currentStep === 6 && (
-          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 animate-fade-in">
+          <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Installation</h3>
               <p className="text-sm text-black/60 mt-1">How would you like it installed?</p>
@@ -1964,7 +1968,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
         {/* STEP 7: Review */}
         {currentStep === 7 && (
-          <div className="animate-fade-in space-y-6">
+          <div className={`step-transition step-transition-${stepDirection} space-y-6`}>
             <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
               <h3 className="mb-4 text-lg font-bold text-black">Review Your Order</h3>
 
