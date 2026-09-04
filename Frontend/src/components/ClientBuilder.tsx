@@ -619,7 +619,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
 
     setIsSubmitting(true);
     try {
-      const result = await submitOrder({
+      const submittedSurfaces = laptopSelectedSurfaces.map((surface) => ({
+        name: surface,
+        imageUrl: surfaceDesigns[surface]?.previewUrl || laptopArtworkCatalog[surface] || '',
+        monogramText: laptopTexts[surface] || '',
+      }));
+      const orderPayload = {
         clientName,
         whatsappNumber: phoneNumber,
         category,
@@ -635,6 +640,12 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         finish: category === 'laptop' ? laptopFinishes[laptopSelectedSurfaces[0]] || 'standard' : category === 'phone' ? phoneFinish : controllerFinish,
         items: pricing.lineItems,
         totalAmount: pricingQuotePending ? 0 : pricing.total,
+        surfaces: submittedSurfaces,
+        laptop: {
+          model: laptopModel,
+          selectedSurfaces: laptopSelectedSurfaces,
+          customTexts: laptopSelectedSurfaces.map((surface) => ({ surface, text: laptopTexts[surface] || '' })),
+        },
         laptopModel,
         laptopSelectedSurfaces,
         laptopFinishes,
@@ -665,7 +676,19 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         surfaceGradientColor1,
         surfaceGradientColor2,
         surfaceGradientDirection,
+      };
+      const submissionData = new FormData();
+      submissionData.append('orderPayload', JSON.stringify(orderPayload));
+
+      laptopSelectedSurfaces.forEach((surface) => {
+        const file = surfaceUploadedFile[surface] || laptopArtworkFiles[surface];
+        if (file) submissionData.append(`artwork_${surface}`, file, file.name);
       });
+      if (phoneArtworkFile) submissionData.append('artwork_phone', phoneArtworkFile, phoneArtworkFile.name);
+      if (controllerArtworkFile) submissionData.append('artwork_controller', controllerArtworkFile, controllerArtworkFile.name);
+      if (photoFile) submissionData.append('photo_others', photoFile, photoFile.name);
+
+      const result = await submitOrder(submissionData);
 
       if (!result.success) {
         throw new Error(result.error || 'Order submission failed');
