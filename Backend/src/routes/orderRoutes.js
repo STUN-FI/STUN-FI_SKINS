@@ -30,6 +30,18 @@ const STATUS_MAP = {
   completed: 'Completed',
 };
 
+function parseArrayField(value, fallback = []) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string' || !value.trim()) return fallback;
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return value.split(',').map((item) => item.trim()).filter(Boolean);
+  }
+}
+
 function getSheetPrice(finish, mode = 'individual') {
   if (mode === 'wholesale') return finish === 'standard' ? WHOLESALE_STANDARD_PER_SHEET : WHOLESALE_SHINY_PER_SHEET;
   return finish === 'standard' ? BASE_PER_SHEET : BASE_PER_SHEET + SHINY_EXTRA_PER_SHEET;
@@ -149,8 +161,8 @@ router.post('/', upload.any(), async (req, res) => {
       });
     }
     const category = body.category || payload.category || '';
-    let surfaces = payload.surfaces || (body.surfaces ? JSON.parse(body.surfaces) : []) || [];
-    const items = payload.items || (body.items ? JSON.parse(body.items) : []) || [];
+    let surfaces = payload.surfaces || parseArrayField(body.surfaces);
+    const items = payload.items || parseArrayField(body.items);
     const totalAmount = Number(body.totalAmount ?? payload.totalAmount ?? 0);
     const payloadLaptop = payload.laptop || {};
     const payloadPhone = payload.phone || {};
@@ -267,11 +279,7 @@ router.post('/', upload.any(), async (req, res) => {
       const device = body.device || payload.laptop?.model || payload.phone?.model || payload.controller?.subtype || 'laptop';
       let coverage = [];
       if (body.coverage) {
-        try {
-          coverage = typeof body.coverage === 'string' ? JSON.parse(body.coverage) : body.coverage;
-        } catch (e) {
-          coverage = String(body.coverage).split(',').map((s) => s.trim());
-        }
+        coverage = parseArrayField(body.coverage);
       } else if (payload.phone?.coverage) {
         coverage = Array.isArray(payload.phone.coverage) ? payload.phone.coverage : [payload.phone.coverage];
       }
