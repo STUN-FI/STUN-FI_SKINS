@@ -53,9 +53,9 @@ const ARTWORK_CATALOG = [
 ];
 
 const DEFAULT_LAPTOP_FINISHES: Record<LaptopSurface, FinishType> = {
-  'top-lid': 'shiny-stones',
-  'keyboard-deck': 'shiny-stones',
-  'bottom-base': 'shiny-stones',
+  'top-lid': 'standard',
+  'keyboard-deck': 'standard',
+  'bottom-base': 'standard',
 };
 
 const DEFAULT_LAPTOP_TEXTS: Record<LaptopSurface, string> = {
@@ -577,6 +577,39 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     }));
   };
 
+  useEffect(() => {
+    setSurfaceDesigns((current) => {
+      let changed = false;
+      const next = { ...current };
+
+      laptopSelectedSurfaces.forEach((surface) => {
+        if (surfaceDesignSourceMode[surface] !== 'color') {
+          return;
+        }
+
+        const colorValue =
+          surfaceColorDesignType[surface] === 'solid'
+            ? surfaceSolidColor[surface]
+            : `linear-gradient(to ${surfaceGradientDirection[surface]}, ${surfaceGradientColor1[surface]}, ${surfaceGradientColor2[surface]})`;
+
+        if (current[surface]?.previewUrl !== colorValue) {
+          next[surface] = { previewUrl: colorValue };
+          changed = true;
+        }
+      });
+
+      return changed ? next : current;
+    });
+  }, [
+    laptopSelectedSurfaces,
+    surfaceColorDesignType,
+    surfaceDesignSourceMode,
+    surfaceGradientColor1,
+    surfaceGradientColor2,
+    surfaceGradientDirection,
+    surfaceSolidColor,
+  ]);
+
   const focusSurfaceDesignEditor = (surface: LaptopSurface) => {
     setHighlightedDesignSurface(surface);
     requestAnimationFrame(() => {
@@ -709,7 +742,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             : category === 'controller'
             ? CONTROLLER_SUBTYPES.find((item) => item.value === controllerSubtype)?.label || 'Controller'
             : itemName || 'Other',
-        date: new Date().toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }),
+        date: new Date().toLocaleString('en-NG', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
         category,
         lineItems: pricing.lineItems,
         totalPrice: pricingQuotePending ? 0 : pricing.total,
@@ -775,6 +814,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     surfaceDesigns[primarySyncSurface ?? 'top-lid']?.previewUrl,
     laptopArtworkCatalog[primarySyncSurface ?? 'top-lid'],
     laptopArtworkFiles[primarySyncSurface ?? 'top-lid'],
+    surfaceColorDesignType[primarySyncSurface ?? 'top-lid'],
+    surfaceSolidColor[primarySyncSurface ?? 'top-lid'],
+    surfaceGradientColor1[primarySyncSurface ?? 'top-lid'],
+    surfaceGradientColor2[primarySyncSurface ?? 'top-lid'],
+    surfaceGradientDirection[primarySyncSurface ?? 'top-lid'],
     uploadPreviewUrlsRef.current[primarySyncSurface ?? 'top-lid'],
   ]);
 
@@ -825,6 +869,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
       if (sourceMode === 'color') {
         setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
         setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+        setSurfaceColorDesignType((current) => ({ ...current, [surface]: surfaceColorDesignType[sourceSurface] }));
+        setSurfaceSolidColor((current) => ({ ...current, [surface]: surfaceSolidColor[sourceSurface] }));
+        setSurfaceGradientColor1((current) => ({ ...current, [surface]: surfaceGradientColor1[sourceSurface] }));
+        setSurfaceGradientColor2((current) => ({ ...current, [surface]: surfaceGradientColor2[sourceSurface] }));
+        setSurfaceGradientDirection((current) => ({ ...current, [surface]: surfaceGradientDirection[sourceSurface] }));
       }
     });
 
@@ -864,20 +913,42 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             const surfaceLabel = LAPTOP_SURFACES.find((item) => item.value === surface)?.label;
 
             return (
-              <div key={surface} ref={(node) => { surfaceAccordionRefs.current[surface] = node; }}>
+              <div
+                key={surface}
+                ref={(node) => { surfaceAccordionRefs.current[surface] = node; }}
+                className={`overflow-hidden rounded-3xl border transition-all duration-300 ${
+                  isExpanded
+                    ? 'border-[#2f8f8f] bg-[#edf8f8] shadow-[0_8px_24px_rgba(47,143,143,0.14)]'
+                    : 'border-transparent'
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => toggleLaptopSurface(surface)}
-                  className="w-full rounded-3xl border border-black/10 bg-white p-5 transition hover:border-black/30 text-left"
+                  aria-expanded={isExpanded}
+                  className={`w-full p-5 transition text-left ${
+                    isExpanded
+                      ? 'border-b border-[#2f8f8f]/30 bg-[#dff3f3]'
+                      : 'rounded-3xl border border-black/10 bg-white hover:border-black/30'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold text-black">{surfaceLabel}</span>
+                    <span className="flex items-center gap-2 text-lg font-semibold text-black">
+                      {surfaceLabel}
+                      {isExpanded ? <span className="rounded-full bg-[#2f8f8f] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">Editing</span> : null}
+                    </span>
                     <i className={`bx bx-chevron-down transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="rounded-b-3xl border border-t-0 border-black/10 bg-[#f7f7f5] p-5 space-y-4">
+                  <div className="space-y-4 bg-[#f7f7f5] p-4 sm:p-5">
+                    {!isPrimarySyncSurface(surface) && isSurfaceInSync(surface) && (
+                      <div className="rounded-xl border border-[#9adada] bg-[#edf9f9] px-3 py-2 text-xs font-semibold text-[#2f7777]">
+                        In sync with {primarySyncSurfaceLabel}
+                      </div>
+                    )}
+
                     <div
                       ref={(node) => { surfaceDesignEditorRefs.current[surface] = node; }}
                       className={`space-y-4 rounded-2xl border p-3 transition-all duration-300 ${
@@ -885,10 +956,31 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                       }`}
                     >
                       <div>
+                        <p className="mb-3 text-xs font-semibold text-[#2f7777]">Artwork settings for {surfaceLabel}</p>
                         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose one design format</p>
                         <p className="mt-1 text-xs text-black/55">Select one option below. You do not need to use all three.</p>
+                        <div className="mt-3 flex gap-1 rounded-2xl bg-[#efefef] p-1 sm:hidden" role="radiogroup" aria-label={`${surfaceLabel ?? 'Surface'} design format`}>
+                          {[
+                            { value: 'gallery' as const, label: 'Gallery' },
+                            { value: 'upload' as const, label: 'Upload' },
+                            { value: 'color' as const, label: 'Color' },
+                          ].map((option) => {
+                            const isActive = (surfaceDesignSourceMode[surface] || 'gallery') === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                aria-pressed={isActive}
+                                onClick={() => handleSelectDesignMode(surface, option.value)}
+                                className={`min-w-0 flex-1 rounded-xl px-2 py-2 text-xs font-bold transition ${isActive ? 'bg-black text-white shadow-sm' : 'text-black/65 hover:text-black'}`}
+                              >
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
                         {surfaceDesignSourceMode[surface] ? (
-                          <div className="rounded-2xl border border-black/10 bg-white p-3">
+                          <div className="hidden rounded-2xl border border-black/10 bg-white p-3 sm:block">
                             <div className="flex items-center justify-between gap-3">
                               <div>
                                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Selected format</p>
@@ -908,34 +1000,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                             </div>
                           </div>
                         ) : (
-                          <div className="mt-3 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={`${surfaceLabel ?? 'Surface'} design format`}>
-                            <button
-                              type="button"
-                              aria-pressed="false"
-                              onClick={() => handleSelectDesignMode(surface, 'upload')}
-                              className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
-                            >
-                              <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
-                                <div className="text-center">
-                                  <div className="text-3xl text-black/20 mb-1">
-                                    <i className="bx bx-upload" />
-                                  </div>
-                                  <p className="text-xs text-black/40">Upload</p>
-                                </div>
-                              </div>
-                              <div className="space-y-2 p-3">
-                                <span className="text-sm font-bold text-black">Your Own</span>
-                                <p className="text-xs text-black/60">Upload artwork</p>
-                              </div>
-                            </button>
-
+                          <div className="mt-3 hidden gap-1 rounded-2xl bg-[#efefef] p-1 sm:grid sm:grid-cols-3 sm:gap-3 sm:rounded-none sm:bg-transparent sm:p-0" role="radiogroup" aria-label={`${surfaceLabel ?? 'Surface'} design format`}>
                             <button
                               type="button"
                               aria-pressed="false"
                               onClick={() => handleSelectDesignMode(surface, 'gallery')}
-                              className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
+                              className="group relative flex min-w-0 flex-1 items-center justify-center rounded-xl border border-transparent px-2 py-2 text-center transition-all duration-200 hover:border-black/30 sm:block sm:overflow-hidden sm:rounded-2xl sm:border-2 sm:bg-white sm:p-0 sm:text-left"
                             >
-                              <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
+                              <div className="relative hidden h-32 items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] sm:flex">
                                 <div className="text-center">
                                   <div className="text-3xl text-black/20 mb-1">
                                     <i className="bx bx-palette" />
@@ -943,9 +1015,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                                   <p className="text-xs text-black/40">Gallery</p>
                                 </div>
                               </div>
-                              <div className="space-y-2 p-3">
-                                <span className="text-sm font-bold text-black">Gallery</span>
-                                <p className="text-xs text-black/60">STUN-FI designs</p>
+                              <div className="sm:space-y-2 sm:p-3">
+                                <span className="text-xs font-bold text-black sm:text-sm">Gallery</span>
+                                <p className="hidden text-xs text-black/60 sm:block">STUN-FI designs</p>
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              aria-pressed="false"
+                              onClick={() => handleSelectDesignMode(surface, 'upload')}
+                              className="group relative flex min-w-0 flex-1 items-center justify-center rounded-xl border border-transparent px-2 py-2 text-center transition-all duration-200 hover:border-black/30 sm:block sm:overflow-hidden sm:rounded-2xl sm:border-2 sm:bg-white sm:p-0 sm:text-left"
+                            >
+                              <div className="relative hidden h-32 items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] sm:flex">
+                                <div className="text-center">
+                                  <div className="text-3xl text-black/20 mb-1">
+                                    <i className="bx bx-upload" />
+                                  </div>
+                                  <p className="text-xs text-black/40">Upload</p>
+                                </div>
+                              </div>
+                              <div className="sm:space-y-2 sm:p-3">
+                                <span className="text-xs font-bold text-black sm:text-sm">Upload</span>
+                                <p className="hidden text-xs text-black/60 sm:block">Upload artwork</p>
                               </div>
                             </button>
 
@@ -953,9 +1045,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                               type="button"
                               aria-pressed="false"
                               onClick={() => handleSelectDesignMode(surface, 'color')}
-                              className="group relative overflow-hidden rounded-2xl border-2 border-black/10 bg-white p-0 text-left transition-all duration-200 hover:border-black/30"
+                              className="group relative flex min-w-0 flex-1 items-center justify-center rounded-xl border border-transparent px-2 py-2 text-center transition-all duration-200 hover:border-black/30 sm:block sm:overflow-hidden sm:rounded-2xl sm:border-2 sm:bg-white sm:p-0 sm:text-left"
                             >
-                              <div className="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] flex items-center justify-center h-32">
+                              <div className="relative hidden h-32 items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] sm:flex">
                                 <div className="text-center">
                                   <div className="text-3xl text-black/20 mb-1">
                                     <i className="bx bx-droplet" />
@@ -963,9 +1055,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                                   <p className="text-xs text-black/40">Color</p>
                                 </div>
                               </div>
-                              <div className="space-y-2 p-3">
-                                <span className="text-sm font-bold text-black">Color</span>
-                                <p className="text-xs text-black/60">Solid or gradient</p>
+                              <div className="sm:space-y-2 sm:p-3">
+                                <span className="text-xs font-bold text-black sm:text-sm">Color</span>
+                                <p className="hidden text-xs text-black/60 sm:block">Solid or gradient</p>
                               </div>
                             </button>
                           </div>
@@ -975,6 +1067,18 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                       {surfaceDesignSourceMode[surface] === 'upload' && (
                         <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
                           <span className="text-sm text-black/70">Your artwork file</span>
+                          {(surfaceUploadedFile[surface] || laptopArtworkFiles[surface]) && surfaceDesigns[surface]?.previewUrl && (
+                            <>
+                              <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                                <img
+                                  src={surfaceDesigns[surface].previewUrl}
+                                  alt={`${surfaceLabel ?? 'Surface'} uploaded artwork`}
+                                  className="h-28 w-full object-cover"
+                                />
+                              </div>
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Uploaded artwork</p>
+                            </>
+                          )}
                           <input
                             type="file"
                             accept="image/*"
@@ -1000,13 +1104,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                         </div>
                       )}
 
-                      {surfaceDesignSourceMode[surface] === 'gallery' && (
-                        <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
-                          {surfaceDesigns[surface]?.previewUrl ? (
+                      {(surfaceDesignSourceMode[surface] === 'gallery' || !surfaceDesignSourceMode[surface]) && (
+                        <div className={`rounded-2xl border border-black/10 bg-white p-4 space-y-3 ${!surfaceDesignSourceMode[surface] ? 'sm:hidden' : ''}`}>
+                          {laptopArtworkCatalog[surface] ? (
                             <>
                               <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
                                 <img
-                                  src={surfaceDesigns[surface].previewUrl}
+                                  src={laptopArtworkCatalog[surface]}
                                   alt={`${surfaceLabel ?? 'Surface'} selected gallery artwork`}
                                   className="h-28 w-full object-cover"
                                 />
@@ -1302,11 +1406,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                       </div>
                     )}
 
-                    {!isPrimarySyncSurface(surface) && isSurfaceInSync(surface) && (
-                      <div className="rounded-xl border border-[#9adada] bg-[#edf9f9] px-3 py-2 text-xs font-semibold text-[#2f7777]">
-                        In sync with {primarySyncSurfaceLabel}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -1571,10 +1670,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Which surfaces?</h3>
-              <p className="text-sm text-black/60 mt-1">Select the parts you want to cover</p>
-              <button type="button" onClick={onHelpOpen} className="mt-3 inline-flex items-center gap-1 text-sm text-blue-600">
-                <i className="bx bx-info-circle" /> Which parts are these?
-              </button>
+              <p className="text-sm text-black/60 mt-1">All three surfaces are selected by default. Tap any surface you do not want to cover to unselect it.</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -1866,7 +1962,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             {category === 'laptop' ? (
               <div className="space-y-4">
                 {laptopSelectedSurfaces.map((surface) => (
-                  <div key={surface} className="rounded-2xl border border-black/10 bg-[#f7f7f5] p-4">
+                  <div key={surface} className="rounded-2xl border border-black/10 bg-[#f7f7f5] p-3 sm:p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <span className="text-sm font-bold text-black">{LAPTOP_SURFACES.find((item) => item.value === surface)?.label ?? surface}</span>
                       <span className="text-xs font-semibold text-black/55">{laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
@@ -1880,13 +1976,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                             markSelectionStarted();
                             setLaptopFinishes((current) => ({ ...current, [surface]: finish }));
                           }}
-                          className={`group relative overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 ${
+                          className={`group relative flex overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 sm:block ${
                             laptopFinishes[surface] === finish
                               ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
                               : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'
                           }`}
                         >
-                          <span className="relative block h-36 w-full overflow-hidden rounded-t-xl bg-[#f0f1ee] sm:h-44">
+                          <span className="relative block h-24 w-28 shrink-0 overflow-hidden rounded-l-xl bg-[#f0f1ee] sm:h-44 sm:w-full sm:rounded-l-none sm:rounded-t-xl">
                             <Image
                               src={finish === 'shiny-stones' ? '/img/Shiny.png' : '/img/Standard%20(1).png'}
                               alt=""
@@ -1897,7 +1993,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                             />
                             {laptopFinishes[surface] === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
                           </span>
-                          <span className="block space-y-1 p-3">
+                          <span className="flex flex-1 flex-col justify-center space-y-1 p-3 sm:block">
                             <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
                             <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Save ₦500'}</span>
                           </span>
@@ -1920,9 +2016,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                         if (category === 'phone') setPhoneFinish(finish);
                         if (category === 'controller') setControllerFinish(finish);
                       }}
-                      className={`group relative overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 ${selectedFinish === finish ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]' : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'}`}
+                      className={`group relative flex overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 sm:block ${selectedFinish === finish ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]' : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'}`}
                     >
-                      <span className="relative block h-40 w-full overflow-hidden rounded-t-xl bg-[#f0f1ee] sm:h-48">
+                      <span className="relative block h-24 w-28 shrink-0 overflow-hidden rounded-l-xl bg-[#f0f1ee] sm:h-48 sm:w-full sm:rounded-l-none sm:rounded-t-xl">
                         <Image
                           src={finish === 'shiny-stones' ? '/img/Shiny.png' : '/img/Standard%20(1).png'}
                           alt=""
@@ -1933,7 +2029,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                         />
                         {selectedFinish === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
                       </span>
-                      <span className="block space-y-1 p-4">
+                      <span className="flex flex-1 flex-col justify-center space-y-1 p-3 sm:block sm:p-4">
                         <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
                         <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Base finish'}</span>
                       </span>

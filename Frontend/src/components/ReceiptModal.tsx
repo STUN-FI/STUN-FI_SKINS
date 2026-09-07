@@ -167,7 +167,7 @@ export default function ReceiptModal({
                   <p className="mt-2 text-base font-semibold text-black sm:text-lg">{clientName}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Date</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Date & time</p>
                   <p className="mt-2 text-base font-semibold text-black sm:text-lg">{date}</p>
                 </div>
               </div>
@@ -218,8 +218,8 @@ export default function ReceiptModal({
                 <div className="my-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
                   <i className="bx bx-info-circle text-amber-600 text-xl flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-amber-900">Production Timeline</p>
-                    <p className="text-xs text-amber-800 mt-1">Orders enter production immediately after initial deposit confirmation.</p>
+                    <p className="text-sm font-semibold text-amber-900">Payment required</p>
+                    <p className="text-xs text-amber-800 mt-1">Please pay a 50% deposit before we process your order.</p>
                   </div>
                 </div>
 
