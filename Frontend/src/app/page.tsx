@@ -15,6 +15,7 @@ import ReceiptModal from '../components/ReceiptModal';
 import HelpModal from '../components/HelpModal';
 import CatalogGalleryModal from '../components/CatalogGalleryModal';
 import FloatingPricingButton from '../components/FloatingPricingButton';
+import PremiumHomePage from '../components/PremiumHomePage';
 import { formatCurrency, getSheetPrice, type LaptopSurface } from '../lib/pricing';
 import { submitOrder } from '../lib/api';
 
@@ -764,6 +765,8 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
     );
   }
 
+  return <PremiumHomePage />;
+
   return (
     <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
       <div className="w-full mx-auto max-w-6xl">
@@ -1078,20 +1081,20 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
         </div>
       ) : null}
 
-      {receiptData && (
+      {receiptData ? (
         <ReceiptModal
           isOpen={receiptOpen}
-          orderId={receiptData.orderId}
-          clientName={receiptData.clientName}
-          deviceModel={receiptData.deviceModel}
-          date={receiptData.date}
-          category={receiptData.category}
-          lineItems={receiptData.lineItems}
-          totalPrice={receiptData.totalPrice}
-          surfacePreviews={receiptData.surfacePreviews}
+          orderId={receiptData!.orderId}
+          clientName={receiptData!.clientName}
+          deviceModel={receiptData!.deviceModel}
+          date={receiptData!.date}
+          category={receiptData!.category}
+          lineItems={receiptData!.lineItems}
+          totalPrice={receiptData!.totalPrice}
+          surfacePreviews={receiptData!.surfacePreviews}
           onClose={handleReceiptClose}
         />
-      )}
+      ) : null}
 
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       <CatalogGalleryModal
