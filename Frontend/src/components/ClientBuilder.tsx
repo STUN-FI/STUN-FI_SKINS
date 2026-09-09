@@ -18,11 +18,11 @@ import BrandedLogo from './BrandedLogo';
 import LaptopPreviewModal from './LaptopPreviewModal';
 import ReceiptModal from './ReceiptModal';
 
-const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
-  { value: 'laptop', label: 'Laptop' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'controller', label: 'Controller' },
-  { value: 'others', label: 'Others' },
+const CATEGORY_OPTIONS: { value: Category; label: string; icon: string }[] = [
+  { value: 'laptop', label: 'Laptop', icon: 'bx-laptop' },
+  { value: 'phone', label: 'Phone', icon: 'bx-mobile-alt' },
+  { value: 'controller', label: 'Controller', icon: 'bx-joystick' },
+  { value: 'others', label: 'Others', icon: 'bx-devices' },
 ];
 
 const LAPTOP_SURFACES: { value: LaptopSurface; label: string }[] = [
@@ -364,7 +364,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   const normalizedPhone = phoneNumber.replace(/\D/g, '');
   const hasValidPhoneNumber = normalizedPhone.length >= 10 && normalizedPhone.length <= 15;
   const hasRequiredCustomerInfo = clientName.trim() !== '' && hasValidPhoneNumber;
-  const canAdvanceToStep2 = hasRequiredCustomerInfo;
   const canAdvanceToStep3 =
     category !== 'others' || (itemName.trim() !== '' && instructions.trim() !== '');
 
@@ -374,7 +373,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   const isOthersValid = itemName.trim() !== '' && instructions.trim() !== '';
 
   const canAdvance = () => {
-    if (currentStep === 1) return canAdvanceToStep2;
+    if (currentStep === 1) return true;
     if (currentStep === 2) {
       if (category === 'laptop') return isLaptopValid;
       if (category === 'phone') return isPhoneValid;
@@ -389,7 +388,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
       case 1:
-        return hasRequiredCustomerInfo;
+        return true;
       case 2:
         if (category === 'laptop') return !!laptopModel.trim();
         if (category === 'phone') return !!phoneCoverage;
@@ -1384,7 +1383,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                     </div>
 
                     {isPrimarySyncSurface(surface) && hasSurfaceSyncTargets && (
-                      <div className="rounded-2xl border border-[#9adada] bg-[#edf9f9] p-3">
+                      <div className="animate-pulse rounded-2xl border-2 border-[#66cccc] bg-[#edf9f9] p-3 shadow-[0_0_0_3px_rgba(102,204,204,0.2),0_0_22px_rgba(102,204,204,0.75)]">
                         <label className="flex cursor-pointer items-start justify-between gap-3">
                           <div className="space-y-1">
                             <span className="block text-sm font-black text-black">Apply this design to all selected surfaces</span>
@@ -1464,86 +1463,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
               <p className="text-sm text-black/60 mt-1">Start by telling us about yourself</p>
             </div>
 
-            <label className="space-y-2">
+            <div className="space-y-2">
               <span className="text-sm font-semibold text-black">Order Category</span>
-              <select
-                value={category}
-                onChange={(event) => {
-                  markSelectionStarted();
-                  setCategory(event.target.value as Category);
-                }}
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-              >
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label="Order category">
                 {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={category === option.value}
+                    onClick={() => {
+                      markSelectionStarted();
+                      setCategory(option.value);
+                    }}
+                    className={`rounded-2xl border-2 px-3 py-4 text-center transition-all duration-200 ${
+                      category === option.value
+                        ? 'border-[#66cccc] bg-[#f4fbfb] text-black shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                        : 'border-black/10 bg-white text-black/70 hover:border-black/35 hover:text-black'
+                    }`}
+                  >
+                    <i className={`bx ${option.icon} text-3xl`} aria-hidden="true" />
+                    <span className="mt-2 block text-sm font-bold">{option.label}</span>
+                  </button>
                 ))}
-              </select>
-            </label>
-
-            <div className="grid gap-4 sm:grid-cols-2 mt-4">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-black">Name</span>
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={clientName}
-                  onChange={(event) => {
-                    markSelectionStarted();
-                    const nextValue = event.target.value;
-                    setClientName(nextValue);
-                    if (customerTouched.name) {
-                      setCustomerValidation((current) => ({ ...current, name: !nextValue.trim() }));
-                    }
-                    if (submissionResult) {
-                      setSubmissionResult(null);
-                    }
-                  }}
-                  onBlur={() => {
-                    const errors = getCustomerFieldErrors();
-                    setCustomerTouched((current) => ({ ...current, name: true }));
-                    setCustomerValidation((current) => ({ ...current, name: errors.name }));
-                  }}
-                  placeholder="Input your name"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${
-                    customerTouched.name && customerValidation.name ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'
-                  }`}
-                />
-                {customerTouched.name && customerValidation.name ? <p className="text-xs text-red-600">Name is required.</p> : null}
-              </label>
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-black">Phone Number</span>
-                <input
-                  ref={phoneInputRef}
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(event) => {
-                    markSelectionStarted();
-                    const nextValue = event.target.value;
-                    setPhoneNumber(nextValue);
-                    if (customerTouched.phone) {
-                      const nextDigits = nextValue.replace(/\D/g, '');
-                      setCustomerValidation((current) => ({ ...current, phone: nextDigits.length < 10 || nextDigits.length > 15 }));
-                    }
-                    if (submissionResult) {
-                      setSubmissionResult(null);
-                    }
-                  }}
-                  onBlur={() => {
-                    const errors = getCustomerFieldErrors();
-                    setCustomerTouched((current) => ({ ...current, phone: true }));
-                    setCustomerValidation((current) => ({ ...current, phone: errors.phone }));
-                  }}
-                  placeholder="Input your phone number"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${
-                    customerTouched.phone && customerValidation.phone ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'
-                  }`}
-                />
-                {customerTouched.phone && customerValidation.phone ? (
-                  <p className="text-xs text-red-600">Please enter a valid phone number with 10–15 digits.</p>
-                ) : null}
-              </label>
+              </div>
             </div>
 
             {submissionResult && submissionType === 'error' ? (
@@ -2288,6 +2230,75 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                     })}
                   </>
                 )}
+              </div>
+              <div className="mt-6 space-y-4 border-t border-black/10 pt-5">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#2f7777]">Contact Details</h4>
+                  <p className="mt-2 text-sm text-black/60">Where should we reach you about your order?</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2">
+                    <span className="text-sm font-semibold text-black">Full Name</span>
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      value={clientName}
+                      onChange={(event) => {
+                        markSelectionStarted();
+                        const nextValue = event.target.value;
+                        setClientName(nextValue);
+                        if (customerTouched.name) {
+                          setCustomerValidation((current) => ({ ...current, name: !nextValue.trim() }));
+                        }
+                        if (submissionResult) {
+                          setSubmissionResult(null);
+                        }
+                      }}
+                      onBlur={() => {
+                        const errors = getCustomerFieldErrors();
+                        setCustomerTouched((current) => ({ ...current, name: true }));
+                        setCustomerValidation((current) => ({ ...current, name: errors.name }));
+                      }}
+                      placeholder="Input your name"
+                      className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${
+                        customerTouched.name && customerValidation.name ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'
+                      }`}
+                    />
+                    {customerTouched.name && customerValidation.name ? <p className="text-xs text-red-600">Name is required.</p> : null}
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-semibold text-black">Phone Number</span>
+                    <input
+                      ref={phoneInputRef}
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(event) => {
+                        markSelectionStarted();
+                        const nextValue = event.target.value;
+                        setPhoneNumber(nextValue);
+                        if (customerTouched.phone) {
+                          const nextDigits = nextValue.replace(/\D/g, '');
+                          setCustomerValidation((current) => ({ ...current, phone: nextDigits.length < 10 || nextDigits.length > 15 }));
+                        }
+                        if (submissionResult) {
+                          setSubmissionResult(null);
+                        }
+                      }}
+                      onBlur={() => {
+                        const errors = getCustomerFieldErrors();
+                        setCustomerTouched((current) => ({ ...current, phone: true }));
+                        setCustomerValidation((current) => ({ ...current, phone: errors.phone }));
+                      }}
+                      placeholder="Input your phone number"
+                      className={`w-full rounded-2xl border bg-white px-4 py-3 text-black outline-none focus:border-black ${
+                        customerTouched.phone && customerValidation.phone ? 'border-red-500 bg-red-50' : 'border-black/10 bg-white'
+                      }`}
+                    />
+                    {customerTouched.phone && customerValidation.phone ? (
+                      <p className="text-xs text-red-600">Please enter a valid phone number with 10–15 digits.</p>
+                    ) : null}
+                  </label>
+                </div>
               </div>
               <div className="mt-6 flex flex-col gap-5 border-t border-black/10 pt-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
