@@ -248,7 +248,7 @@ export default function PremiumHomePage() {
           </div>
         </section>
 
-        <section id="finishes" data-reveal className="reveal-section relative left-1/2 w-screen -translate-x-1/2 overflow-hidden scroll-mt-24 border-b border-black/10 bg-[#e9e5df]">
+        <section id="finishes" data-reveal className="full-bleed reveal-section relative overflow-hidden scroll-mt-24 border-b border-black/10 bg-[#e9e5df]">
           <div className="mx-auto max-w-[1400px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
               <div>
@@ -302,7 +302,7 @@ export default function PremiumHomePage() {
           </div>
         </section>
 
-        <section id="how-it-works" data-reveal className="reveal-section relative left-1/2 w-screen -translate-x-1/2 scroll-mt-24 border-b border-white/10 bg-[#111111] px-6 py-16 text-white sm:px-10 sm:py-20 lg:px-14 lg:py-24">
+        <section id="how-it-works" data-reveal className="full-bleed reveal-section relative scroll-mt-24 border-b border-white/10 bg-[#111111] px-6 py-16 text-white sm:px-10 sm:py-20 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-[1400px]">
             <div className="mb-10 flex flex-col gap-5 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -335,7 +335,7 @@ export default function PremiumHomePage() {
           </div>
         </section>
 
-        <section id="final-cta" data-reveal className="reveal-section relative left-1/2 w-screen -translate-x-1/2 scroll-mt-24 border-b border-black/10 bg-[#e3e6e3] px-6 py-20 sm:px-10 sm:py-28">
+        <section id="final-cta" data-reveal className="full-bleed reveal-section relative scroll-mt-24 border-b border-black/10 bg-[#e3e6e3] px-6 py-20 sm:px-10 sm:py-28">
           <div className="mx-auto max-w-[1400px]">
             <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-black/45">Start here</p>
             <h2 className="mt-5 max-w-4xl text-3xl font-black uppercase leading-[0.94] tracking-[-0.055em] sm:text-6xl">Your device<br />is waiting.</h2>
@@ -346,7 +346,7 @@ export default function PremiumHomePage() {
           </div>
         </section>
 
-        <footer data-reveal className="reveal-section relative left-1/2 mt-16 w-screen -translate-x-1/2 border-t border-white/10 bg-[#111111] p-8 text-white/75 sm:p-10">
+        <footer data-reveal className="full-bleed reveal-section relative border-t border-white/10 bg-[#111111] p-8 text-white/75 sm:p-10">
           <div className="mx-auto max-w-[1400px]">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div>
