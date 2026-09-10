@@ -656,19 +656,19 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
 
   if (standalone) {
     return (
-      <main className="min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
+      <main className="min-h-screen overflow-x-hidden bg-[#efefe9] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
         <div className="customize-shell mx-auto w-full max-w-5xl">
-          <header className="customize-header mb-6 flex items-center justify-between gap-3 border-b border-black/10 py-2 sm:mb-8 sm:gap-4 sm:py-3">
+          <header className="customize-header mb-6 flex items-center justify-between gap-3 rounded-[1.6rem] border border-white/10 bg-[#111111] px-4 py-3 text-white shadow-[0_18px_35px_rgba(0,0,0,0.12)] sm:mb-8 sm:gap-4 sm:px-5 sm:py-4">
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Back to STUN-FI Skins home">
-              <div className="flex h-9 w-9 min-w-[2.25rem] items-center justify-center rounded-lg bg-black p-1.5 sm:h-10 sm:w-10 sm:min-w-[2.5rem] sm:rounded-xl">
-                <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
+              <div className="flex h-9 w-9 min-w-[2.25rem] items-center justify-center rounded-xl bg-white p-1.5 shadow-[0_10px_18px_rgba(255,255,255,0.12)] sm:h-10 sm:w-10 sm:min-w-[2.5rem]">
+                <Image src="/img/stunfi-logo-black.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
               </div>
               <div className="min-w-0">
-                <BrandedLogo size="compact" />
-                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-black/55 sm:block">your tech. your style</p>
+                <BrandedLogo size="compact" className="text-white" />
+                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-white/60 sm:block">your tech. your style</p>
               </div>
             </a>
-            <a href="/" className="inline-flex min-h-9 items-center rounded-full border border-black/15 px-3 text-xs font-semibold text-black transition hover:border-black sm:min-h-10 sm:px-4 sm:text-sm">
+            <a href="/" className="inline-flex min-h-9 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs font-semibold text-white transition hover:border-white/30 hover:bg-white/10 sm:min-h-10 sm:px-4 sm:text-sm">
               <i className="bx bx-arrow-back mr-2" aria-hidden="true" /> Back home
             </a>
           </header>
@@ -677,7 +677,7 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
             <>
               <section className="customize-intro mb-8 max-w-2xl">
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2f7777]">STUN-FI SKINS / CUSTOMIZER</p>
-                <h1 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl">Design your skin.</h1>
+                <h1 className="mt-3 text-4xl font-black leading-[0.98] tracking-[-0.05em] text-black sm:text-6xl">Design your skin.</h1>
                 <p className="mt-4 text-base font-medium text-black/60 sm:text-lg">Make your device yours.</p>
               </section>
 
