@@ -63,7 +63,7 @@ export default function PremiumHomePage() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <main className="min-h-screen bg-white text-black">
+    <main className="min-h-screen overflow-x-hidden bg-white text-black">
       {showWelcomeModal ? (
         <div className="welcome-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm" aria-modal="true" role="dialog">
           <div className="welcome-modal relative w-full max-w-xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] sm:p-8">
