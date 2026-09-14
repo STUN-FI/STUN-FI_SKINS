@@ -23,7 +23,6 @@ export type WholesaleDetails = {
   totalPaidUnits?: number;
   totalReceivedUnits?: number;
   freeBonusUnits?: number;
-  technicianRequested?: boolean;
 };
 
 export type RetailDetails = {

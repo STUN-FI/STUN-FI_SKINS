@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 // logo moved to public/img — use public path in Image src
 import BrandedLogo from '../components/BrandedLogo';
@@ -450,8 +450,8 @@ export default function HomePage() {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
-  const [catalogSurface, setCatalogSurface] = useState<LaptopSurface | null>(null);
-  const [catalogSelection, setCatalogSelection] = useState<{ surface: LaptopSurface; imageUrl: string } | null>(null);
+  const [catalogSurface, setCatalogSurface] = useState<LaptopSurface | 'phone' | null>(null);
+  const [catalogSelection, setCatalogSelection] = useState<{ surface: LaptopSurface | 'phone'; imageUrl: string } | null>(null);
   const [builderPrice, setBuilderPrice] = useState<number | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -476,7 +476,7 @@ export default function HomePage() {
     setHelpOpen(true);
   };
 
-  const handleCatalogOpen = (surface: LaptopSurface) => {
+  const handleCatalogOpen = (surface: LaptopSurface | 'phone') => {
     setCatalogSurface(surface);
     setCatalogOpen(true);
   };
@@ -488,9 +488,9 @@ export default function HomePage() {
     setCatalogSurface(null);
   };
 
-  const handleCustomerDetailsChange = (details: { name: string; phone: string; category: string }) => {
+  const handleCustomerDetailsChange = useCallback((details: { name: string; phone: string; category: string }) => {
     setCustomerDetails(details);
-  };
+  }, []);
 
   const handlePlaceOrder = () => {
     setShowOrderModal(true);
@@ -658,19 +658,25 @@ I am placing a device wrap order for ${formatCurrency(subtotal)}. Please check t
     return (
       <main className="min-h-screen overflow-x-hidden bg-[#efefe9] px-4 pb-24 pt-6 text-black md:px-8 md:py-10">
         <div className="customize-shell mx-auto w-full max-w-5xl">
-          <header className="customize-header mb-6 flex items-center justify-between gap-3 rounded-[1.6rem] border border-white/10 bg-[#111111] px-4 py-3 text-white shadow-[0_18px_35px_rgba(0,0,0,0.12)] sm:mb-8 sm:gap-4 sm:px-5 sm:py-4">
-            <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Back to STUN-FI Skins home">
-              <div className="flex h-9 w-9 min-w-[2.25rem] items-center justify-center rounded-xl bg-white p-1.5 shadow-[0_10px_18px_rgba(255,255,255,0.12)] sm:h-10 sm:w-10 sm:min-w-[2.5rem]">
-                <Image src="/img/stunfi-logo-black.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={44} height={44} priority />
+          <header className="customize-header mb-6 flex flex-col gap-3 rounded-[1.8rem] border border-black/10 bg-white/95 px-4 py-3 shadow-[0_18px_35px_rgba(0,0,0,0.08)] backdrop-blur sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5 sm:py-4">
+            <a href="/" className="flex w-full items-center justify-center gap-3 sm:w-auto sm:justify-start" aria-label="Back to STUN-FI Skins home">
+              <div className="flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-2xl bg-black p-1.5 shadow-[0_10px_18px_rgba(0,0,0,0.12)] sm:h-12 sm:w-12 sm:min-w-[3rem]">
+                <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={52} height={52} priority />
               </div>
               <div className="min-w-0">
-                <BrandedLogo size="compact" className="text-white" />
-                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-white/60 sm:block">your tech. your style</p>
+                <BrandedLogo size="compact" className="text-black" />
+                <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-black/60 sm:block">your tech. your style</p>
               </div>
             </a>
-            <a href="/" className="inline-flex min-h-9 items-center rounded-full border border-white/15 bg-white/5 px-3 text-xs font-semibold text-white transition hover:border-white/30 hover:bg-white/10 sm:min-h-10 sm:px-4 sm:text-sm">
-              <i className="bx bx-arrow-back mr-2" aria-hidden="true" /> Back home
-            </a>
+
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <a href="/orders" className="inline-flex min-h-9 w-full items-center justify-center rounded-full border border-black/15 bg-black/5 px-3 text-xs font-semibold text-black transition hover:border-black/30 hover:bg-black/10 sm:min-h-10 sm:w-auto sm:px-4 sm:text-sm">
+                Track Your Order
+              </a>
+              <a href="/" className="inline-flex min-h-9 w-full items-center justify-center rounded-full bg-black px-3 text-xs font-semibold text-white transition hover:bg-neutral-800 sm:min-h-10 sm:w-auto sm:px-4 sm:text-sm">
+                <i className="bx bx-arrow-back mr-2" aria-hidden="true" /> Back home
+              </a>
+            </div>
           </header>
 
           {selectedOrderMode === null ? (

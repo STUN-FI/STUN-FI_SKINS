@@ -10,9 +10,9 @@ export default function BrandedLogo({ className = '', size = 'base' }: BrandedLo
 
   return (
     <div className={`flex ${size === 'compact' ? 'flex-nowrap' : 'flex-wrap'} items-center gap-2 font-black text-inherit ${baseClass} ${className}`.trim()}>
-      <span className="whitespace-nowrap text-white">STUN-FI</span>
+      <span className="whitespace-nowrap text-inherit">STUN-FI</span>
       <span
-        className={`${size === 'compact' ? 'whitespace-nowrap' : 'whitespace-normal sm:whitespace-nowrap'} uppercase text-[0.9em] sm:text-[1em] md:text-inherit text-white`}
+        className={`${size === 'compact' ? 'whitespace-nowrap' : 'whitespace-normal sm:whitespace-nowrap'} uppercase text-[0.9em] sm:text-[1em] md:text-inherit text-inherit`}
         style={{
           fontFamily: 'Brush Script MT, Courier New, cursive',
           letterSpacing: '0.18em',

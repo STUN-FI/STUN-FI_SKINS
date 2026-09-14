@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { submitOrder } from '../lib/api';
 import {
   calculateClientOrderPricing,
@@ -11,7 +11,6 @@ import {
   FinishType,
   InstallationOption,
   LaptopSurface,
-  PhoneCoverage,
   formatCurrency,
 } from '../lib/pricing';
 import BrandedLogo from './BrandedLogo';
@@ -31,19 +30,9 @@ const LAPTOP_SURFACES: { value: LaptopSurface; label: string }[] = [
   { value: 'bottom-base', label: 'Bottom Base' },
 ];
 
-const PHONE_COVERAGE_OPTIONS: { value: PhoneCoverage; label: string }[] = [
-  { value: 'back-panel', label: 'Back Panel Only' },
-  { value: 'full-body', label: 'Full Body Wrap (+₦1,000)' },
-];
-
 const CONTROLLER_SUBTYPES: { value: ControllerSubtype; label: string }[] = [
   { value: 'ps3', label: 'PS3' },
   { value: 'ps4', label: 'PS4' },
-  { value: 'ps5-dualsense', label: 'PS5 DualSense' },
-  { value: 'xbox-360', label: 'Xbox 360' },
-  { value: 'xbox-one', label: 'Xbox One' },
-  { value: 'xbox-series', label: 'Xbox Series X/S' },
-  { value: 'switch-pro', label: 'Nintendo Switch Pro' },
 ];
 
 const ARTWORK_CATALOG = [
@@ -57,6 +46,8 @@ const DEFAULT_LAPTOP_FINISHES: Record<LaptopSurface, FinishType> = {
   'keyboard-deck': 'standard',
   'bottom-base': 'standard',
 };
+
+const getFinishLabel = (finish: FinishType) => (finish === 'shiny-stones' ? 'Shiny Stones' : 'Classic');
 
 const DEFAULT_LAPTOP_TEXTS: Record<LaptopSurface, string> = {
   'top-lid': '',
@@ -97,8 +88,8 @@ type ClientBuilderProps = {
   onLineItemsChange?: (lineItems: Array<{ label: string; price: number }>) => void;
   onStepChange?: (step: number) => void;
   onHelpOpen: () => void;
-  onCatalogOpen: (surface: LaptopSurface) => void;
-  catalogSelection: { surface: LaptopSurface; imageUrl: string } | null;
+  onCatalogOpen: (surface: LaptopSurface | 'phone') => void;
+  catalogSelection: { surface: LaptopSurface | 'phone'; imageUrl: string } | null;
   onSubmittingChange?: (isSubmitting: boolean) => void;
   onCustomerDetailsChange?: (details: { name: string; phone: string; category: string }) => void;
 };
@@ -178,17 +169,29 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     'bottom-base': '',
   });
 
-  const [phoneCoverage, setPhoneCoverage] = useState<PhoneCoverage>('back-panel');
-  const [phoneFinish, setPhoneFinish] = useState<FinishType>('shiny-stones');
+  const [phoneModel, setPhoneModel] = useState('');
   const [phoneArtworkCatalog, setPhoneArtworkCatalog] = useState('');
   const [phoneArtworkFile, setPhoneArtworkFile] = useState<File | null>(null);
+  const [phoneDesignSourceMode, setPhoneDesignSourceMode] = useState<'upload' | 'gallery' | 'color' | null>('gallery');
+  const [phoneColorDesignType, setPhoneColorDesignType] = useState<'solid' | 'gradient'>('solid');
+  const [phoneSolidColor, setPhoneSolidColor] = useState('#ffffff');
+  const [phoneGradientColor1, setPhoneGradientColor1] = useState('#000000');
+  const [phoneGradientColor2, setPhoneGradientColor2] = useState('#ffffff');
+  const [phoneGradientDirection, setPhoneGradientDirection] = useState<'left' | 'top-left' | 'top' | 'top-right' | 'right'>('right');
+  const [phoneDesignPreviewUrl, setPhoneDesignPreviewUrl] = useState('');
   const [phoneCustomText, setPhoneCustomText] = useState('');
   const [phoneInstallOption, setPhoneInstallOption] = useState<InstallationOption>('professional');
 
-  const [controllerSubtype, setControllerSubtype] = useState<ControllerSubtype>('ps5-dualsense');
-  const [controllerFinish, setControllerFinish] = useState<FinishType>('shiny-stones');
+  const [controllerSubtype, setControllerSubtype] = useState<ControllerSubtype>('ps3');
+  const [controllerDesignSourceMode, setControllerDesignSourceMode] = useState<'upload' | 'gallery' | 'color' | null>(null);
   const [controllerArtworkCatalog, setControllerArtworkCatalog] = useState('');
   const [controllerArtworkFile, setControllerArtworkFile] = useState<File | null>(null);
+  const [controllerColorDesignType, setControllerColorDesignType] = useState<'solid' | 'gradient'>('solid');
+  const [controllerSolidColor, setControllerSolidColor] = useState('#ffffff');
+  const [controllerGradientColor1, setControllerGradientColor1] = useState('#000000');
+  const [controllerGradientColor2, setControllerGradientColor2] = useState('#ffffff');
+  const [controllerGradientDirection, setControllerGradientDirection] = useState<'left' | 'top-left' | 'top' | 'top-right' | 'right'>('right');
+  const [controllerDesignPreviewUrl, setControllerDesignPreviewUrl] = useState('');
   const [controllerGamerTag, setControllerGamerTag] = useState('');
   const [controllerInstallOption, setControllerInstallOption] = useState<InstallationOption>('professional');
 
@@ -254,14 +257,11 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           installOption: laptopInstallOption,
         },
         phone: {
-          coverage: phoneCoverage,
-          finish: phoneFinish,
           customText: phoneCustomText,
           installOption: phoneInstallOption,
         },
         controller: {
           subtype: controllerSubtype,
-          finish: controllerFinish,
           gamerTag: controllerGamerTag,
           installOption: controllerInstallOption,
         },
@@ -276,12 +276,9 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
       laptopFinishes,
       laptopTexts,
       laptopInstallOption,
-      phoneCoverage,
-      phoneFinish,
       phoneCustomText,
       phoneInstallOption,
       controllerSubtype,
-      controllerFinish,
       controllerGamerTag,
       controllerInstallOption,
       itemName,
@@ -346,6 +343,14 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
       return;
     }
 
+    if (surface === 'phone') {
+      setPhoneDesignSourceMode('gallery');
+      setPhoneArtworkCatalog(imageUrl);
+      setPhoneArtworkFile(null);
+      setPhoneDesignPreviewUrl(imageUrl);
+      return;
+    }
+
     setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: 'gallery' }));
     setLaptopArtworkCatalog((current) => ({ ...current, [surface]: imageUrl }));
     setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
@@ -368,7 +373,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     category !== 'others' || (itemName.trim() !== '' && instructions.trim() !== '');
 
   const isLaptopValid = laptopSelectedSurfaces.length > 0;
-  const isPhoneValid = !!phoneCoverage;
+  const isPhoneValid = !!phoneModel.trim();
   const isControllerValid = !!controllerSubtype;
   const isOthersValid = itemName.trim() !== '' && instructions.trim() !== '';
 
@@ -383,7 +388,15 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     return true;
   };
 
-  const stepLabels = ['Details', 'Device', 'Surfaces', 'Artwork', 'Finish', 'Install', 'Review'] as const;
+  const stepLabels = category === 'laptop'
+    ? ['Details', 'Device', 'Surfaces', 'Artwork', 'Finish', 'Install', 'Review'] as const
+    : category === 'phone'
+    ? ['Details', 'Device', 'Artwork', 'Install', 'Review'] as const
+    : category === 'controller'
+    ? ['Details', 'Device', 'Design', 'Install', 'Review'] as const
+    : ['Details', 'Item Details', 'Reference Photo', 'Review'] as const;
+
+  const maxVisibleStep = stepLabels.length;
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -391,14 +404,24 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         return true;
       case 2:
         if (category === 'laptop') return !!laptopModel.trim();
-        if (category === 'phone') return !!phoneCoverage;
+        if (category === 'phone') return !!phoneModel.trim();
         if (category === 'controller') return !!controllerSubtype;
         return !!(itemName.trim() && instructions.trim());
       case 3:
         if (category === 'laptop') return laptopSelectedSurfaces.length > 0;
-        if (category === 'phone') return !!phoneCoverage;
-        if (category === 'controller') return !!controllerSubtype;
-        return !!(itemName.trim() && instructions.trim());
+        if (category === 'phone') {
+          if (phoneDesignSourceMode === 'upload') return !!phoneArtworkFile;
+          if (phoneDesignSourceMode === 'gallery') return !!phoneArtworkCatalog.trim() || !!phoneDesignPreviewUrl.trim();
+          if (phoneDesignSourceMode === 'color') return !!phoneDesignPreviewUrl.trim();
+          return false;
+        }
+        if (category === 'controller') {
+          if (controllerDesignSourceMode === 'upload') return !!controllerArtworkFile;
+          if (controllerDesignSourceMode === 'gallery') return !!(controllerArtworkCatalog.trim() || controllerGamerTag.trim());
+          if (controllerDesignSourceMode === 'color') return !!(controllerDesignPreviewUrl.trim() || controllerGamerTag.trim());
+          return !!controllerGamerTag.trim();
+        }
+        return !!(itemName.trim() && instructions.trim() && photoFile);
       case 4:
         if (category === 'laptop') {
           return laptopSelectedSurfaces.length > 0 && laptopSelectedSurfaces.every((surface) => {
@@ -409,21 +432,17 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             return !!surfaceDesigns[surface]?.previewUrl;
           });
         }
-        if (category === 'phone') {
-          return !!(phoneArtworkFile || phoneArtworkCatalog.trim() || phoneCustomText.trim());
-        }
-        if (category === 'controller') {
-          return !!(controllerArtworkFile || controllerArtworkCatalog.trim() || controllerGamerTag.trim());
-        }
-        return !!(itemName.trim() && instructions.trim() && photoFile);
-      case 5:
-        return category === 'laptop'
-          ? laptopSelectedSurfaces.length > 0 && laptopSelectedSurfaces.every((surface) => !!laptopFinishes[surface])
-          : category === 'others' || !!(category === 'phone' ? phoneFinish : controllerFinish);
-      case 6:
-        if (category === 'laptop') return !!laptopInstallOption;
         if (category === 'phone') return !!phoneInstallOption;
         if (category === 'controller') return !!controllerInstallOption;
+        return true;
+      case 5:
+        if (category === 'laptop') {
+          return laptopSelectedSurfaces.length > 0 && laptopSelectedSurfaces.every((surface) => !!laptopFinishes[surface]);
+        }
+        if (category === 'phone') return true;
+        return true;
+      case 6:
+        if (category === 'laptop') return !!laptopInstallOption;
         return true;
       case 7:
         return true;
@@ -451,7 +470,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
   };
 
   const handleContinue = () => {
-    if (currentStep >= 7) {
+    if (currentStep >= maxVisibleStep) {
       return;
     }
 
@@ -485,7 +504,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     setSubmissionType(null);
     setStepDirection('forward');
     setCurrentStep((step) => {
-      const nextStep = Math.min(7, step + 1);
+      const nextStep = Math.min(maxVisibleStep, step + 1);
       if (typeof window !== 'undefined') {
         window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
       }
@@ -519,12 +538,17 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     markSelectionStarted();
     if (category === 'phone' && field === 'phone') {
       setPhoneArtworkFile(file);
-      if (!file) setPhoneArtworkCatalog('');
+      setPhoneDesignSourceMode(file ? 'upload' : 'upload');
+      if (!file) {
+        setPhoneArtworkCatalog('');
+        setPhoneDesignPreviewUrl('');
+      }
       return;
     }
 
     if (category === 'controller' && field === 'controller') {
       setControllerArtworkFile(file);
+      setControllerDesignSourceMode(file ? 'upload' : 'upload');
       if (!file) setControllerArtworkCatalog('');
       return;
     }
@@ -663,13 +687,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         device: category === 'laptop'
           ? laptopModel
           : category === 'phone'
-          ? 'phone'
+          ? phoneModel
           : category === 'controller'
           ? controllerSubtype
           : itemName,
-        deviceModel: category === 'laptop' ? laptopModel : '',
-        coverage: category === 'laptop' ? laptopSelectedSurfaces : category === 'phone' ? [phoneCoverage] : [],
-        finish: category === 'laptop' ? laptopFinishes[laptopSelectedSurfaces[0]] || 'standard' : category === 'phone' ? phoneFinish : controllerFinish,
+        deviceModel: category === 'laptop' ? laptopModel : category === 'phone' ? phoneModel : category === 'controller' ? controllerSubtype : itemName,
+        coverage: category === 'laptop' ? laptopSelectedSurfaces : [],
+        finish: category === 'laptop' ? laptopFinishes[laptopSelectedSurfaces[0]] || 'standard' : 'standard',
         items: pricing.lineItems,
         totalAmount: pricingQuotePending ? 0 : pricing.total,
         surfaces: submittedSurfaces,
@@ -685,16 +709,22 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         laptopArtworkCatalog,
         laptopArtworkFiles,
         laptopInstallOption,
-        phoneCoverage,
-        phoneFinish,
         phoneArtworkCatalog,
         phoneArtworkFile,
+        phoneDesignSourceMode,
+        phoneDesignPreviewUrl,
         phoneCustomText,
         phoneInstallOption,
         controllerSubtype,
-        controllerFinish,
         controllerArtworkCatalog,
         controllerArtworkFile,
+        controllerDesignSourceMode,
+        controllerColorDesignType,
+        controllerSolidColor,
+        controllerGradientColor1,
+        controllerGradientColor2,
+        controllerGradientDirection,
+        controllerDesignPreviewUrl,
         controllerGamerTag,
         controllerInstallOption,
         itemName,
@@ -737,7 +767,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           category === 'laptop'
             ? laptopModel || 'Laptop'
             : category === 'phone'
-            ? PHONE_COVERAGE_OPTIONS.find((item) => item.value === phoneCoverage)?.label || 'Phone'
+            ? 'Phone'
             : category === 'controller'
             ? CONTROLLER_SUBTYPES.find((item) => item.value === controllerSubtype)?.label || 'Controller'
             : itemName || 'Other',
@@ -799,86 +829,79 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     }
   };
 
-  useEffect(() => {
-    if (!primarySyncSurface || !surfaceSyncEnabled[primarySyncSurface]) {
-      return;
-    }
+  const syncSelectedSurfaceToOtherSurfaces = useCallback(
+    (
+      sourceSurface: LaptopSurface,
+      overrides?: {
+        text?: string;
+        mode?: 'upload' | 'gallery' | 'color' | null;
+        previewUrl?: string;
+        artworkFile?: File | null;
+        artworkCatalog?: string;
+      },
+    ) => {
+      const sourceText = overrides?.text ?? laptopTexts[sourceSurface];
+      const sourceMode = overrides?.mode ?? surfaceDesignSourceMode[sourceSurface];
+      const sourcePreviewUrl =
+        overrides?.previewUrl ??
+        (uploadPreviewUrlsRef.current[sourceSurface] ||
+          surfaceDesigns[sourceSurface]?.previewUrl ||
+          laptopArtworkCatalog[sourceSurface] ||
+          '');
+      const sourceArtworkFile = overrides?.artworkFile ?? laptopArtworkFiles[sourceSurface];
+      const sourceArtworkCatalog = overrides?.artworkCatalog ?? laptopArtworkCatalog[sourceSurface];
 
-    syncSelectedSurfaceToOtherSurfaces(primarySyncSurface);
-  }, [
-    primarySyncSurface,
-    surfaceSyncEnabled[primarySyncSurface ?? 'top-lid'],
-    laptopTexts[primarySyncSurface ?? 'top-lid'],
-    surfaceDesignSourceMode[primarySyncSurface ?? 'top-lid'],
-    surfaceDesigns[primarySyncSurface ?? 'top-lid']?.previewUrl,
-    laptopArtworkCatalog[primarySyncSurface ?? 'top-lid'],
-    laptopArtworkFiles[primarySyncSurface ?? 'top-lid'],
-    surfaceColorDesignType[primarySyncSurface ?? 'top-lid'],
-    surfaceSolidColor[primarySyncSurface ?? 'top-lid'],
-    surfaceGradientColor1[primarySyncSurface ?? 'top-lid'],
-    surfaceGradientColor2[primarySyncSurface ?? 'top-lid'],
-    surfaceGradientDirection[primarySyncSurface ?? 'top-lid'],
-    uploadPreviewUrlsRef.current[primarySyncSurface ?? 'top-lid'],
-  ]);
+      laptopSelectedSurfaces.forEach((surface) => {
+        if (surface === sourceSurface) {
+          return;
+        }
 
-  const syncSelectedSurfaceToOtherSurfaces = (
-    sourceSurface: LaptopSurface,
-    overrides?: {
-      text?: string;
-      mode?: 'upload' | 'gallery' | 'color' | null;
-      previewUrl?: string;
-      artworkFile?: File | null;
-      artworkCatalog?: string;
+        setLaptopTexts((current) => ({ ...current, [surface]: sourceText }));
+        setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: sourceMode }));
+        setSurfaceDesigns((current) => ({
+          ...current,
+          [surface]: { previewUrl: sourcePreviewUrl },
+        }));
+        setLaptopArtworkMode((current) => ({
+          ...current,
+          [surface]: sourceMode === 'upload' ? 'upload' : sourceMode === 'gallery' ? 'gallery' : 'color',
+        }));
+        if (sourceMode === 'upload') {
+          setLaptopArtworkFiles((current) => ({ ...current, [surface]: sourceArtworkFile }));
+          setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+        }
+        if (sourceMode === 'gallery') {
+          setLaptopArtworkCatalog((current) => ({ ...current, [surface]: sourceArtworkCatalog }));
+          setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+        }
+        if (sourceMode === 'color') {
+          setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
+          setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
+          setSurfaceColorDesignType((current) => ({ ...current, [surface]: surfaceColorDesignType[sourceSurface] }));
+          setSurfaceSolidColor((current) => ({ ...current, [surface]: surfaceSolidColor[sourceSurface] }));
+          setSurfaceGradientColor1((current) => ({ ...current, [surface]: surfaceGradientColor1[sourceSurface] }));
+          setSurfaceGradientColor2((current) => ({ ...current, [surface]: surfaceGradientColor2[sourceSurface] }));
+          setSurfaceGradientDirection((current) => ({ ...current, [surface]: surfaceGradientDirection[sourceSurface] }));
+        }
+      });
+
+      setLaptopCopiedSettings(true);
+      setTimeout(() => setLaptopCopiedSettings(false), 2000);
     },
-  ) => {
-    const sourceText = overrides?.text ?? laptopTexts[sourceSurface];
-    const sourceMode = overrides?.mode ?? surfaceDesignSourceMode[sourceSurface];
-    const sourcePreviewUrl =
-      overrides?.previewUrl ??
-      (uploadPreviewUrlsRef.current[sourceSurface] ||
-        surfaceDesigns[sourceSurface]?.previewUrl ||
-        laptopArtworkCatalog[sourceSurface] ||
-        '');
-    const sourceArtworkFile = overrides?.artworkFile ?? laptopArtworkFiles[sourceSurface];
-    const sourceArtworkCatalog = overrides?.artworkCatalog ?? laptopArtworkCatalog[sourceSurface];
-
-    laptopSelectedSurfaces.forEach((surface) => {
-      if (surface === sourceSurface) {
-        return;
-      }
-
-      setLaptopTexts((current) => ({ ...current, [surface]: sourceText }));
-      setSurfaceDesignSourceMode((current) => ({ ...current, [surface]: sourceMode }));
-      setSurfaceDesigns((current) => ({
-        ...current,
-        [surface]: { previewUrl: sourcePreviewUrl },
-      }));
-      setLaptopArtworkMode((current) => ({
-        ...current,
-        [surface]: sourceMode === 'upload' ? 'upload' : sourceMode === 'gallery' ? 'gallery' : 'color',
-      }));
-      if (sourceMode === 'upload') {
-        setLaptopArtworkFiles((current) => ({ ...current, [surface]: sourceArtworkFile }));
-        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
-      }
-      if (sourceMode === 'gallery') {
-        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: sourceArtworkCatalog }));
-        setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
-      }
-      if (sourceMode === 'color') {
-        setLaptopArtworkCatalog((current) => ({ ...current, [surface]: '' }));
-        setLaptopArtworkFiles((current) => ({ ...current, [surface]: null }));
-        setSurfaceColorDesignType((current) => ({ ...current, [surface]: surfaceColorDesignType[sourceSurface] }));
-        setSurfaceSolidColor((current) => ({ ...current, [surface]: surfaceSolidColor[sourceSurface] }));
-        setSurfaceGradientColor1((current) => ({ ...current, [surface]: surfaceGradientColor1[sourceSurface] }));
-        setSurfaceGradientColor2((current) => ({ ...current, [surface]: surfaceGradientColor2[sourceSurface] }));
-        setSurfaceGradientDirection((current) => ({ ...current, [surface]: surfaceGradientDirection[sourceSurface] }));
-      }
-    });
-
-    setLaptopCopiedSettings(true);
-    setTimeout(() => setLaptopCopiedSettings(false), 2000);
-  };
+    [
+      laptopArtworkCatalog,
+      laptopArtworkFiles,
+      laptopSelectedSurfaces,
+      laptopTexts,
+      surfaceColorDesignType,
+      surfaceDesigns,
+      surfaceDesignSourceMode,
+      surfaceGradientColor1,
+      surfaceGradientColor2,
+      surfaceGradientDirection,
+      surfaceSolidColor,
+    ],
+  );
 
   const toggleSurfaceSync = (surface: LaptopSurface, checked: boolean) => {
     setSurfaceSyncEnabled((current) => ({ ...current, [surface]: checked }));
@@ -886,6 +909,363 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
     if (checked) {
       syncSelectedSurfaceToOtherSurfaces(surface);
     }
+  };
+
+  const renderPhoneArtworkContent = () => {
+    const phoneOptions = [
+      { value: 'gallery' as const, label: 'Gallery', description: 'STUN-FI designs', icon: 'bx-palette' },
+      { value: 'upload' as const, label: 'Upload', description: 'Upload artwork', icon: 'bx-upload' },
+      { value: 'color' as const, label: 'Color', description: 'Solid or gradient', icon: 'bx-droplet' },
+    ];
+
+    const phoneSelectedFormatLabel = phoneDesignSourceMode === 'upload'
+      ? 'Your Own'
+      : phoneDesignSourceMode === 'gallery'
+      ? 'Gallery'
+      : phoneDesignSourceMode === 'color'
+      ? 'Color'
+      : null;
+
+    const phoneArtworkPreviewUrl =
+      phoneDesignSourceMode === 'upload'
+        ? phoneArtworkFile ? URL.createObjectURL(phoneArtworkFile) : ''
+        : phoneDesignSourceMode === 'gallery'
+        ? phoneArtworkCatalog || phoneDesignPreviewUrl
+        : phoneDesignSourceMode === 'color'
+        ? phoneDesignPreviewUrl
+        : '';
+
+    return (
+      <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose artwork for your phone</p>
+        </div>
+
+        {submissionResult && submissionType === 'error' ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {submissionResult}
+          </div>
+        ) : null}
+
+        <div className="space-y-4 rounded-3xl border border-black/10 bg-[#f7f7f5] p-4 sm:p-5">
+          <div className="hidden sm:block">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose one design format</p>
+            <p className="mt-1 text-xs text-black/55">Select one option below. You do not need to use all three.</p>
+
+            <div className="mt-3 rounded-2xl border border-black/10 bg-white p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Selected format</p>
+                  <p className="mt-1 text-sm font-bold text-black">{phoneSelectedFormatLabel}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPhoneDesignSourceMode(null)}
+                  className="rounded-full border border-black/10 bg-[#f7f7f5] px-3 py-1.5 text-xs font-semibold text-black transition hover:border-black/30"
+                >
+                  Change design format
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {phoneOptions.map((option) => {
+                const isActive = phoneDesignSourceMode === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setPhoneDesignSourceMode(option.value)}
+                    className={`group relative flex min-w-0 flex-1 items-center justify-center rounded-xl border px-2 py-2 text-center transition-all duration-200 sm:block sm:overflow-hidden sm:rounded-2xl sm:border-2 sm:bg-white sm:p-0 sm:text-left ${
+                      isActive
+                        ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)] sm:shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                        : 'border-black/15 bg-white hover:border-black/30'
+                    }`}
+                  >
+                    <div className="relative hidden h-32 items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] sm:flex">
+                      <div className="text-center">
+                        <div className="mb-1 text-3xl text-black/20">
+                          <i className={`bx ${option.icon}`} />
+                        </div>
+                        <p className="text-xs text-black/40">{option.label}</p>
+                      </div>
+                    </div>
+                    <div className="sm:space-y-2 sm:p-3">
+                      <span className="text-xs font-bold text-black sm:text-sm">{option.label}</span>
+                      <p className="hidden text-xs text-black/60 sm:block">{option.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex gap-1 rounded-2xl bg-[#efefef] p-1 sm:hidden" role="radiogroup" aria-label="Phone artwork source">
+            {phoneOptions.map((option) => {
+              const isActive = phoneDesignSourceMode === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setPhoneDesignSourceMode(option.value)}
+                  className={`min-w-0 flex-1 rounded-xl px-2 py-2 text-xs font-bold transition ${isActive ? 'bg-black text-white shadow-sm' : 'text-black/65 hover:text-black'}`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {phoneDesignSourceMode === 'upload' && (
+            <div className="space-y-3">
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-black">Your Artwork</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => handleArtworkFileChange('phone', event.target.files?.[0] ?? null)}
+                  className="hidden"
+                  id="phone-artwork"
+                />
+                <label htmlFor="phone-artwork" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                  <span>{phoneArtworkLabel}</span>
+                  <span className="text-black/60">Browse</span>
+                </label>
+              </label>
+
+              {phoneArtworkPreviewUrl ? (
+                <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#f7f7f5]">
+                  <img
+                    src={phoneArtworkPreviewUrl}
+                    alt="Phone uploaded artwork preview"
+                    className="h-40 w-full object-cover"
+                  />
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {phoneDesignSourceMode === 'gallery' && (
+            <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
+              {phoneArtworkCatalog || phoneDesignPreviewUrl ? (
+                <>
+                  <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                    <img
+                      src={phoneArtworkCatalog || phoneDesignPreviewUrl}
+                      alt="Phone selected gallery artwork"
+                      className="h-40 w-full object-cover"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/60">Selected artwork</span>
+                    <button
+                      type="button"
+                      onClick={() => onCatalogOpen('phone')}
+                      className="rounded-full border border-black/10 bg-[#f7f7f5] px-3 py-1.5 text-xs font-semibold text-black transition hover:border-black/30"
+                    >
+                      Change design
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onCatalogOpen('phone')}
+                  className="w-full min-h-10 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-medium text-black transition hover:border-black/40"
+                >
+                  <i className="bx bx-palette mr-2" /> Browse Gallery
+                </button>
+              )}
+            </div>
+          )}
+
+          {phoneDesignSourceMode === 'color' && (
+            <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
+              <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                <div
+                  className="h-40 w-full"
+                  style={{ background: phoneDesignPreviewUrl || '#ffffff' }}
+                  aria-label="Phone color design preview"
+                />
+              </div>
+
+              <div className="flex gap-1 rounded-xl bg-[#efefef] p-1 w-auto">
+                <button
+                  type="button"
+                  onClick={() => setPhoneColorDesignType('solid')}
+                  className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${phoneColorDesignType === 'solid' ? 'bg-black text-white' : 'text-black/70'}`}
+                >
+                  Solid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhoneColorDesignType('gradient')}
+                  className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${phoneColorDesignType === 'gradient' ? 'bg-black text-white' : 'text-black/70'}`}
+                >
+                  Gradient
+                </button>
+              </div>
+
+              {phoneColorDesignType === 'solid' && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={phoneSolidColor}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setPhoneSolidColor(next);
+                        setPhoneDesignPreviewUrl(next);
+                      }}
+                      className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={phoneSolidColor}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setPhoneSolidColor(next);
+                        setPhoneDesignPreviewUrl(next);
+                      }}
+                      className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                    />
+                  </div>
+                  <div className="h-16 rounded-lg border border-black/10" style={{ backgroundColor: phoneSolidColor }} />
+                </div>
+              )}
+
+              {phoneColorDesignType === 'gradient' && (
+                <div className="space-y-2">
+                  <div className="space-y-1.5">
+                    <span className="text-xs text-black/60 font-semibold">Color 1</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={phoneGradientColor1}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPhoneGradientColor1(next);
+                          setPhoneDesignPreviewUrl(`linear-gradient(to ${phoneGradientDirection}, ${next}, ${phoneGradientColor2})`);
+                        }}
+                        className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={phoneGradientColor1}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPhoneGradientColor1(next);
+                          setPhoneDesignPreviewUrl(`linear-gradient(to ${phoneGradientDirection}, ${next}, ${phoneGradientColor2})`);
+                        }}
+                        className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-xs text-black/60 font-semibold">Color 2</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={phoneGradientColor2}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPhoneGradientColor2(next);
+                          setPhoneDesignPreviewUrl(`linear-gradient(to ${phoneGradientDirection}, ${phoneGradientColor1}, ${next})`);
+                        }}
+                        className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={phoneGradientColor2}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPhoneGradientColor2(next);
+                          setPhoneDesignPreviewUrl(`linear-gradient(to ${phoneGradientDirection}, ${phoneGradientColor1}, ${next})`);
+                        }}
+                        className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-xs text-black/60 font-semibold">Direction</span>
+                    <div className="grid grid-cols-5 gap-1">
+                      {(['left', 'top-left', 'top', 'top-right', 'right'] as const).map((dir) => (
+                        <button
+                          key={dir}
+                          type="button"
+                          onClick={() => {
+                            setPhoneGradientDirection(dir);
+                            setPhoneDesignPreviewUrl(`linear-gradient(to ${dir}, ${phoneGradientColor1}, ${phoneGradientColor2})`);
+                          }}
+                          className={`h-8 rounded-lg text-xs font-bold transition ${phoneGradientDirection === dir ? 'bg-black text-white' : 'border border-black/10 bg-white text-black'}`}
+                        >
+                          {dir === 'left' && '←'}
+                          {dir === 'top-left' && '↖'}
+                          {dir === 'top' && '↑'}
+                          {dir === 'top-right' && '↗'}
+                          {dir === 'right' && '→'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    className="h-16 rounded-lg border border-black/10 transition-all"
+                    style={{
+                      background: `linear-gradient(to ${phoneGradientDirection}, ${phoneGradientColor1}, ${phoneGradientColor2})`,
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {!phoneTextToggle ? (
+              <button
+                type="button"
+                onClick={() => setPhoneTextToggle(true)}
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/70 transition hover:border-black"
+              >
+                <i className="bx bx-plus mr-2" />Add text
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-black">Custom Text</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhoneTextToggle(false);
+                      setPhoneCustomText('');
+                    }}
+                    className="text-sm text-red-600 hover:text-red-700"
+                  >
+                    <i className="bx bx-x" />Remove
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={phoneCustomText}
+                  onChange={(event) => {
+                    markSelectionStarted();
+                    setPhoneCustomText(event.target.value);
+                  }}
+                  placeholder="Enter custom text"
+                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                  autoFocus
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Placeholder laptop artwork content (simplified for Step 4)
@@ -1497,18 +1877,16 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         )}
 
         {/* STEP 2: Device */}
-        {currentStep === 2 && (
+        {currentStep === 2 && category !== 'phone' && (
           <div className={`builder-panel rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div className="mb-6">
               <h3 className="text-lg font-bold text-black">
                 {category === 'laptop' && 'Your Laptop'}
-                {category === 'phone' && 'Your Phone'}
                 {category === 'controller' && 'Your Controller'}
                 {category === 'others' && 'Your Item'}
               </h3>
               <p className="text-sm text-black/60 mt-1">
                 {category === 'laptop' && 'Enter your laptop model'}
-                {category === 'phone' && 'Select your phone coverage'}
                 {category === 'controller' && 'Pick your controller type'}
                 {category === 'others' && 'Tell us about your item'}
               </p>
@@ -1530,48 +1908,50 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
               </label>
             )}
 
-            {category === 'phone' && (
-              <div className="space-y-4">
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-black">Phone Coverage</span>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {PHONE_COVERAGE_OPTIONS.map((option) => (
+            {category === 'controller' && (
+              <div className="space-y-3">
+                <span className="text-sm font-semibold text-black">Controller Type</span>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {CONTROLLER_SUBTYPES.map((subtype) => {
+                    const isSelected = controllerSubtype === subtype.value;
+
+                    return (
                       <button
-                        key={option.value}
+                        key={subtype.value}
                         type="button"
-                        onClick={() => setPhoneCoverage(option.value)}
-                        className={`rounded-3xl border px-4 py-4 text-left transition ${
-                          phoneCoverage === option.value
-                            ? 'border-black bg-black text-white'
-                            : 'border-black/10 bg-[#f7f7f5] text-black hover:border-black'
+                        onClick={() => {
+                          markSelectionStarted();
+                          setControllerSubtype(subtype.value as ControllerSubtype);
+                        }}
+                        className={`relative rounded-3xl border-2 px-5 py-4 text-left font-bold transition-all duration-200 ${
+                          isSelected
+                            ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                            : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md'
                         }`}
                       >
-                        {option.label}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-black/10 bg-[#f7f7f5] text-xl text-black/80">
+                              <i className="bx bx-joystick" aria-hidden="true" />
+                            </div>
+                            <div>
+                              <div className="text-base font-black">{subtype.label}</div>
+                              <div className={`text-xs mt-1 ${isSelected ? 'text-black/70' : 'text-black/60'}`}>
+                                {subtype.value === 'ps3' ? 'Classic controller' : 'Modern controller'}
+                              </div>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm">
+                              <i className="bx bx-check text-lg" aria-hidden="true" />
+                            </div>
+                          )}
+                        </div>
                       </button>
-                    ))}
-                  </div>
-                </label>
+                    );
+                  })}
+                </div>
               </div>
-            )}
-
-            {category === 'controller' && (
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-black">Controller Type</span>
-                <select
-                  value={controllerSubtype}
-                  onChange={(event) => {
-                    markSelectionStarted();
-                    setControllerSubtype(event.target.value as ControllerSubtype);
-                  }}
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                >
-                  {CONTROLLER_SUBTYPES.map((subtype) => (
-                    <option key={subtype.value} value={subtype.value}>
-                      {subtype.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
             )}
 
             {category === 'others' && (
@@ -1694,207 +2074,470 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
           </div>
         )}
 
-        {/* STEP 4: Artwork */}
-        {currentStep === 4 && (
+        {/* STEP 3 / STEP 4: Design and install flow */}
+        {currentStep === 2 && category === 'phone' && (
+          <div className={`builder-panel rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-black">Your Phone</h3>
+              <p className="text-sm text-black/60 mt-1">Enter your phone model or device name</p>
+            </div>
+
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-black">Phone Model</span>
+              <input
+                type="text"
+                value={phoneModel}
+                onChange={(event) => {
+                  markSelectionStarted();
+                  setPhoneModel(event.target.value);
+                }}
+                placeholder="e.g. iPhone 15 Pro"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+              />
+            </label>
+          </div>
+        )}
+
+        {currentStep === 3 && category === 'phone' && (
           <div className={`step-transition step-transition-${stepDirection}`}>
-            {category === 'laptop' && renderLaptopArtworkContent()}
+            {renderPhoneArtworkContent()}
+          </div>
+        )}
 
-            {category === 'phone' && (
-              <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-bold text-black">Phone Design</h3>
-                  <p className="text-sm text-black/60 mt-1">Choose artwork and optional custom text</p>
-                </div>
+        {currentStep === 4 && category === 'laptop' && (
+          <div className={`step-transition step-transition-${stepDirection}`}>
+            {renderLaptopArtworkContent()}
+          </div>
+        )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="space-y-2">
-                    <span className="text-sm font-semibold text-black">Your Artwork</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => handleArtworkFileChange('phone', event.target.files?.[0] ?? null)}
-                      className="hidden"
-                      id="phone-artwork"
-                    />
-                    <label htmlFor="phone-artwork" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
-                      <span>{phoneArtworkLabel}</span>
-                      <span className="text-black/60">Browse</span>
-                    </label>
-                  </label>
+        {currentStep === 4 && category === 'controller' && (
+          <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
+            <div>
+              <h3 className="text-lg font-bold text-black">Installation</h3>
+              <p className="text-sm text-black/60 mt-1">How would you like it installed?</p>
+            </div>
 
-                  <label className="space-y-2">
-                    <span className="text-sm font-semibold text-black">Gallery Artwork</span>
-                    <select
-                      value={phoneArtworkCatalog}
-                      onChange={(event) => {
-                        setPhoneArtworkCatalog(event.target.value);
-                        if (event.target.value) setPhoneArtworkFile(null);
-                      }}
-                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                    >
-                      <option value="">Select artwork</option>
-                      {ARTWORK_CATALOG.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(['professional', 'diy'] as InstallationOption[]).map((option) => {
+                const isSelected = controllerInstallOption === option;
 
-                <div className="space-y-2">
-                  {!phoneTextToggle ? (
-                    <button
-                      type="button"
-                      onClick={() => setPhoneTextToggle(true)}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
-                    >
-                      <i className="bx bx-plus mr-2" />Add text
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-black">Custom Text</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPhoneTextToggle(false);
-                            setPhoneCustomText('');
-                          }}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          <i className="bx bx-x" />Remove
-                        </button>
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      markSelectionStarted();
+                      setControllerInstallOption(option);
+                    }}
+                    className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
+                      isSelected
+                        ? 'border-black bg-black text-white shadow-lg scale-105'
+                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md hover:scale-102'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
+                      <div>
+                        <div className="text-base font-bold">{option === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</div>
+                        <div className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-black/60'}`}>
+                          {option === 'professional' ? 'Free' : '- ₦500 discount'}
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        value={phoneCustomText}
-                        onChange={(event) => {
-                          markSelectionStarted();
-                          setPhoneCustomText(event.target.value);
-                        }}
-                        placeholder="Enter custom text"
-                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                        autoFocus
-                      />
                     </div>
-                  )}
+                    {isSelected && (
+                      <div className="absolute top-3 right-3 text-white">
+                        <i className="bx bx-check text-2xl" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && category === 'controller' && (
+          <div className={`step-transition step-transition-${stepDirection}`}>
+            <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
+              <div>
+                <h3 className="text-lg font-bold text-black">Controller Design</h3>
+                <p className="text-sm text-black/60 mt-1">Choose artwork and optional gamer tag</p>
+              </div>
+
+              <div className="space-y-4 rounded-3xl border border-black/10 bg-[#f7f7f5] p-4 sm:p-5">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black/70">Choose one design format</p>
+                  <p className="mt-1 text-xs text-black/55">Select one option below.</p>
+                </div>
+
+                <div className="hidden sm:grid sm:grid-cols-3">
+                  {(['gallery', 'upload', 'color'] as const).map((option) => {
+                    const isActive = controllerDesignSourceMode === option;
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          setControllerDesignSourceMode(option);
+                          if (option === 'gallery') {
+                            setControllerArtworkFile(null);
+                          }
+                          if (option !== 'color') {
+                            setControllerDesignPreviewUrl('');
+                          }
+                        }}
+                        className={`group relative flex min-w-0 flex-1 items-center justify-center rounded-2xl border px-2 py-2 text-center transition-all duration-200 sm:block sm:overflow-hidden sm:border-2 sm:bg-white sm:p-0 sm:text-left ${
+                          isActive
+                            ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)] sm:shadow-[0_0_0_1px_rgba(102,204,204,0.25)]'
+                            : 'border-black/15 bg-white hover:border-black/30'
+                        }`}
+                      >
+                        <div className="relative hidden h-28 items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-[#f0f1ee] to-[#e8e8e5] sm:flex">
+                          <div className="text-center">
+                            <div className="mb-1 text-3xl text-black/20">
+                              <i className={`bx ${option === 'upload' ? 'bx-upload' : option === 'gallery' ? 'bx-palette' : 'bx-droplet'}`} />
+                            </div>
+                            <p className="text-xs text-black/40">{option === 'upload' ? 'Upload' : option === 'gallery' ? 'Gallery' : 'Color'}</p>
+                          </div>
+                        </div>
+                        <div className="sm:space-y-2 sm:p-3">
+                          <span className="text-xs font-bold text-black sm:text-sm">{option === 'upload' ? 'Upload' : option === 'gallery' ? 'Gallery' : 'Color'}</span>
+                          <p className="hidden text-xs text-black/60 sm:block">
+                            {option === 'upload' ? 'Use your own artwork' : option === 'gallery' ? 'Choose a STUN-FI design' : 'Solid or gradient'}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-1 rounded-2xl bg-[#efefef] p-1 sm:hidden" role="radiogroup" aria-label="Controller artwork source">
+                  {(['gallery', 'upload', 'color'] as const).map((option) => {
+                    const isActive = controllerDesignSourceMode === option;
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          setControllerDesignSourceMode(option);
+                          if (option === 'gallery') {
+                            setControllerArtworkFile(null);
+                          }
+                          if (option !== 'color') {
+                            setControllerDesignPreviewUrl('');
+                          }
+                        }}
+                        className={`min-w-0 flex-1 rounded-xl px-2 py-2 text-xs font-bold transition ${
+                          isActive ? 'bg-black text-white shadow-sm' : 'text-black/65 hover:text-black'
+                        }`}
+                      >
+                        {option === 'upload' ? 'Upload' : option === 'gallery' ? 'Gallery' : 'Color'}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
 
-            {category === 'controller' && (
-              <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-bold text-black">Controller Design</h3>
-                  <p className="text-sm text-black/60 mt-1">Choose artwork and optional gamer tag</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="space-y-2">
-                    <span className="text-sm font-semibold text-black">Your Artwork</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => handleArtworkFileChange('controller', event.target.files?.[0] ?? null)}
-                      className="hidden"
-                      id="controller-artwork"
-                    />
-                    <label htmlFor="controller-artwork" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
-                      <span>{controllerArtworkLabel}</span>
-                      <span className="text-black/60">Browse</span>
-                    </label>
-                  </label>
-
-                  <label className="space-y-2">
-                    <span className="text-sm font-semibold text-black">Gallery Artwork</span>
-                    <select
-                      value={controllerArtworkCatalog}
-                      onChange={(event) => {
-                        setControllerArtworkCatalog(event.target.value);
-                        if (event.target.value) setControllerArtworkFile(null);
-                      }}
-                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                    >
-                      <option value="">Select artwork</option>
-                      {ARTWORK_CATALOG.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-
-                <div className="space-y-2">
-                  {!controllerTagToggle ? (
-                    <button
-                      type="button"
-                      onClick={() => setControllerTagToggle(true)}
-                      className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
-                    >
-                      <i className="bx bx-plus mr-2" />Add gamer tag
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-black">Gamer Tag</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setControllerTagToggle(false);
-                            setControllerGamerTag('');
-                          }}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          <i className="bx bx-x" />Remove
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={controllerGamerTag}
-                        onChange={(event) => {
-                          markSelectionStarted();
-                          setControllerGamerTag(event.target.value);
-                        }}
-                        placeholder="Enter gamer tag"
-                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
-                        autoFocus
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {category === 'others' && (
-              <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-bold text-black">Reference Photo</h3>
-                  <p className="text-sm text-black/60 mt-1">Upload a reference image for your item</p>
-                </div>
-
+              {controllerDesignSourceMode === 'upload' && (
                 <label className="space-y-2">
-                  <span className="text-sm font-semibold text-black">Photo</span>
+                  <span className="text-sm font-semibold text-black">Your Artwork</span>
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(event) => handleArtworkFileChange('photo', event.target.files?.[0] ?? null)}
+                    onChange={(event) => handleArtworkFileChange(category, event.target.files?.[0] ?? null)}
                     className="hidden"
-                    id="others-photo"
+                    id={`${category}-artwork`}
                   />
-                  <label htmlFor="others-photo" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
-                    <span>{photoFile?.name || 'Upload reference photo'}</span>
+                  <label htmlFor={`${category}-artwork`} className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                    <span>{controllerArtworkLabel}</span>
                     <span className="text-black/60">Browse</span>
                   </label>
                 </label>
+              )}
+
+              {controllerDesignSourceMode === 'gallery' && (
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-black">Gallery Artwork</span>
+                  <select
+                    value={controllerArtworkCatalog}
+                    onChange={(event) => {
+                      setControllerArtworkCatalog(event.target.value);
+                      setControllerDesignSourceMode(event.target.value ? 'gallery' : null);
+                      if (event.target.value) setControllerArtworkFile(null);
+                    }}
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                  >
+                    <option value="">Select artwork</option>
+                    {ARTWORK_CATALOG.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {controllerDesignSourceMode === 'color' && (
+                <div className="rounded-2xl border border-black/10 bg-white p-4 space-y-3">
+                  <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
+                    <div
+                      className="h-40 w-full"
+                      style={{ background: controllerDesignPreviewUrl || '#ffffff' }}
+                      aria-label="Controller color design preview"
+                    />
+                  </div>
+
+                  <div className="flex gap-1 rounded-xl bg-[#efefef] p-1 w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setControllerColorDesignType('solid')}
+                      className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${controllerColorDesignType === 'solid' ? 'bg-black text-white' : 'text-black/70'}`}
+                    >
+                      Solid
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setControllerColorDesignType('gradient')}
+                      className={`min-h-9 rounded-lg px-3 py-1 text-xs font-bold transition ${controllerColorDesignType === 'gradient' ? 'bg-black text-white' : 'text-black/70'}`}
+                    >
+                      Gradient
+                    </button>
+                  </div>
+
+                  {controllerColorDesignType === 'solid' && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={controllerSolidColor}
+                          onChange={(e) => {
+                            const next = e.target.value;
+                            setControllerSolidColor(next);
+                            setControllerDesignPreviewUrl(next);
+                          }}
+                          className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={controllerSolidColor}
+                          onChange={(e) => {
+                            const next = e.target.value;
+                            setControllerSolidColor(next);
+                            setControllerDesignPreviewUrl(next);
+                          }}
+                          className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                        />
+                      </div>
+                      <div className="h-16 rounded-lg border border-black/10" style={{ backgroundColor: controllerSolidColor }} />
+                    </div>
+                  )}
+
+                  {controllerColorDesignType === 'gradient' && (
+                    <div className="space-y-2">
+                      <div className="space-y-1.5">
+                        <span className="text-xs text-black/60 font-semibold">Color 1</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={controllerGradientColor1}
+                            onChange={(e) => {
+                              const next = e.target.value;
+                              setControllerGradientColor1(next);
+                              setControllerDesignPreviewUrl(`linear-gradient(to ${controllerGradientDirection}, ${next}, ${controllerGradientColor2})`);
+                            }}
+                            className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={controllerGradientColor1}
+                            onChange={(e) => {
+                              const next = e.target.value;
+                              setControllerGradientColor1(next);
+                              setControllerDesignPreviewUrl(`linear-gradient(to ${controllerGradientDirection}, ${next}, ${controllerGradientColor2})`);
+                            }}
+                            className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <span className="text-xs text-black/60 font-semibold">Color 2</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={controllerGradientColor2}
+                            onChange={(e) => {
+                              const next = e.target.value;
+                              setControllerGradientColor2(next);
+                              setControllerDesignPreviewUrl(`linear-gradient(to ${controllerGradientDirection}, ${controllerGradientColor1}, ${next})`);
+                            }}
+                            className="h-10 w-12 rounded-lg border border-black/10 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={controllerGradientColor2}
+                            onChange={(e) => {
+                              const next = e.target.value;
+                              setControllerGradientColor2(next);
+                              setControllerDesignPreviewUrl(`linear-gradient(to ${controllerGradientDirection}, ${controllerGradientColor1}, ${next})`);
+                            }}
+                            className="flex-1 rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-mono uppercase"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <span className="text-xs text-black/60 font-semibold">Direction</span>
+                        <div className="grid grid-cols-5 gap-1">
+                          {(['left', 'top-left', 'top', 'top-right', 'right'] as const).map((dir) => (
+                            <button
+                              key={dir}
+                              type="button"
+                              onClick={() => {
+                                setControllerGradientDirection(dir);
+                                setControllerDesignPreviewUrl(`linear-gradient(to ${dir}, ${controllerGradientColor1}, ${controllerGradientColor2})`);
+                              }}
+                              className={`h-8 rounded-lg text-xs font-bold transition ${controllerGradientDirection === dir ? 'bg-black text-white' : 'border border-black/10 bg-white text-black'}`}
+                            >
+                              {dir === 'left' && '←'}
+                              {dir === 'top-left' && '↖'}
+                              {dir === 'top' && '↑'}
+                              {dir === 'top-right' && '↗'}
+                              {dir === 'right' && '→'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div
+                        className="h-16 rounded-lg border border-black/10 transition-all"
+                        style={{
+                          background: `linear-gradient(to ${controllerGradientDirection}, ${controllerGradientColor1}, ${controllerGradientColor2})`,
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                {!controllerTagToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => setControllerTagToggle(true)}
+                    className="w-full rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/70 transition hover:border-black"
+                  >
+                    <i className="bx bx-plus mr-2" />Add gamer tag
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-black">Gamer Tag</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setControllerTagToggle(false);
+                          setControllerGamerTag('');
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        <i className="bx bx-x" />Remove
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={controllerGamerTag}
+                      onChange={(event) => {
+                        markSelectionStarted();
+                        setControllerGamerTag(event.target.value);
+                      }}
+                      placeholder="Enter gamer tag"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-black outline-none focus:border-black"
+                      autoFocus
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && category === 'others' && (
+          <div className="builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
+            <div>
+              <h3 className="text-lg font-bold text-black">Reference Photo</h3>
+              <p className="text-sm text-black/60 mt-1">Upload a reference image for your item</p>
+            </div>
+
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-black">Photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleArtworkFileChange('photo', event.target.files?.[0] ?? null)}
+                className="hidden"
+                id="others-photo"
+              />
+              <label htmlFor="others-photo" className="inline-flex w-full cursor-pointer items-center justify-between rounded-2xl border border-dashed border-black/20 bg-white px-4 py-3 text-sm font-medium text-black transition hover:border-black/40">
+                <span>{photoFile?.name || 'Upload reference photo'}</span>
+                <span className="text-black/60">Browse</span>
+              </label>
+            </label>
+          </div>
+        )}
+
+        {currentStep === 4 && category === 'phone' && (
+          <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
+            <div>
+              <h3 className="text-lg font-bold text-black">Installation</h3>
+              <p className="text-sm text-black/60 mt-1">How would you like it installed?</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(['professional', 'diy'] as InstallationOption[]).map((option) => {
+                const isSelected = phoneInstallOption === option;
+
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      markSelectionStarted();
+                      setPhoneInstallOption(option);
+                    }}
+                    className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
+                      isSelected
+                        ? 'border-black bg-black text-white shadow-lg scale-105'
+                        : 'border-black/20 bg-white text-black hover:border-black hover:shadow-md hover:scale-102'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl">{option === 'professional' ? '🔧' : '✋'}</div>
+                      <div>
+                        <div className="text-base font-bold">{option === 'professional' ? 'Professional fitting' : 'Apply it yourself'}</div>
+                        <div className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-black/60'}`}>
+                          {option === 'professional' ? 'Free' : '- ₦500 discount'}
+                        </div>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className="absolute top-3 right-3 text-white">
+                        <i className="bx bx-check text-2xl" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
         {/* STEP 5: Finish */}
-        {currentStep === 5 && (
+        {currentStep === 5 && category === 'laptop' && (
           <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Choose finish</h3>
@@ -1907,7 +2550,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                   <div key={surface} className="rounded-2xl border border-black/10 bg-[#f7f7f5] p-3 sm:p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <span className="text-sm font-bold text-black">{LAPTOP_SURFACES.find((item) => item.value === surface)?.label ?? surface}</span>
-                      <span className="text-xs font-semibold text-black/55">{laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
+                      <span className="text-xs font-semibold text-black/55">{getFinishLabel(laptopFinishes[surface])}</span>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {(['shiny-stones', 'standard'] as FinishType[]).map((finish) => (
@@ -1936,7 +2579,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                             {laptopFinishes[surface] === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
                           </span>
                           <span className="flex flex-1 flex-col justify-center space-y-1 p-3 sm:block">
-                            <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
+                            <span className="block text-sm font-black">{getFinishLabel(finish)}</span>
                             <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Save ₦500'}</span>
                           </span>
                         </button>
@@ -1946,38 +2589,10 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                 ))}
               </div>
             ) : category === 'phone' || category === 'controller' ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(['shiny-stones', 'standard'] as FinishType[]).map((finish) => {
-                  const selectedFinish = category === 'phone' ? phoneFinish : controllerFinish;
-                  return (
-                    <button
-                      key={finish}
-                      type="button"
-                      onClick={() => {
-                        markSelectionStarted();
-                        if (category === 'phone') setPhoneFinish(finish);
-                        if (category === 'controller') setControllerFinish(finish);
-                      }}
-                      className={`group relative flex overflow-hidden rounded-2xl border-2 bg-white p-0 text-left transition-all duration-200 sm:block ${selectedFinish === finish ? 'border-[#66cccc] bg-[#f4fbfb] shadow-[0_0_0_1px_rgba(102,204,204,0.25)]' : 'border-black/15 text-black hover:border-black/45 hover:bg-[#fafaf9]'}`}
-                    >
-                      <span className="relative block h-24 w-28 shrink-0 overflow-hidden rounded-l-xl bg-[#f0f1ee] sm:h-48 sm:w-full sm:rounded-l-none sm:rounded-t-xl">
-                        <Image
-                          src={finish === 'shiny-stones' ? '/img/Shiny.png' : '/img/Standard%20(1).png'}
-                          alt=""
-                          fill
-                          sizes="(max-width: 640px) 100vw, 50vw"
-                          className={`object-cover transition duration-200 ${selectedFinish === finish ? 'scale-[1.02]' : 'group-hover:scale-[1.04]'}`}
-                          aria-hidden="true"
-                        />
-                        {selectedFinish === finish ? <span className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2f7777] bg-[#66cccc] text-white shadow-sm"><i className="bx bx-check text-lg" aria-hidden="true" /></span> : null}
-                      </span>
-                      <span className="flex flex-1 flex-col justify-center space-y-1 p-3 sm:block sm:p-4">
-                        <span className="block text-sm font-black">{finish === 'shiny-stones' ? 'Shiny Stones' : 'Standard'}</span>
-                        <span className="block text-xs font-medium text-black/55">{finish === 'shiny-stones' ? '+ ₦500' : 'Base finish'}</span>
-                      </span>
-                    </button>
-                  );
-                })}
+              <div className="rounded-2xl border border-black/10 bg-[#f7f7f5] p-4 text-sm text-black/70">
+                {category === 'phone'
+                  ? 'Phone skins use the single-skin product with optional custom text. No separate finish selector is needed.'
+                  : 'Controller skins use the standard PS3/PS4 product structure. Optional gamer tag is configured in the previous step.'}
               </div>
             ) : (
               <p className="rounded-2xl border border-black/10 bg-[#f7f7f5] px-4 py-3 text-sm text-black/60">Finish selection is not required for custom items.</p>
@@ -1986,31 +2601,25 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
         )}
 
         {/* STEP 6: Install */}
-        {currentStep === 6 && (
+        {currentStep === 6 && category === 'laptop' && (
           <div className={`builder-panel space-y-6 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 step-transition step-transition-${stepDirection}`}>
             <div>
               <h3 className="text-lg font-bold text-black">Installation</h3>
               <p className="text-sm text-black/60 mt-1">How would you like it installed?</p>
             </div>
 
-            {(category === 'laptop' || category === 'phone' || category === 'controller') && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {(['professional', 'diy'] as InstallationOption[]).map((option) => {
-                  const isSelected =
-                    (category === 'laptop' && laptopInstallOption === option) ||
-                    (category === 'phone' && phoneInstallOption === option) ||
-                    (category === 'controller' && controllerInstallOption === option);
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(['professional', 'diy'] as InstallationOption[]).map((option) => {
+                const isSelected = laptopInstallOption === option;
 
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        markSelectionStarted();
-                        if (category === 'laptop') setLaptopInstallOption(option);
-                        if (category === 'phone') setPhoneInstallOption(option);
-                        if (category === 'controller') setControllerInstallOption(option);
-                      }}
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      markSelectionStarted();
+                      setLaptopInstallOption(option);
+                    }}
                       className={`relative rounded-3xl border-2 px-6 py-5 text-left font-bold transition-all duration-200 ${
                         isSelected
                           ? 'border-black bg-black text-white shadow-lg scale-105'
@@ -2033,14 +2642,13 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                       )}
                     </button>
                   );
-                })}
-              </div>
-            )}
+              })}
+            </div>
           </div>
         )}
 
-        {/* STEP 7: Review */}
-        {currentStep === 7 && (
+        {/* Review */}
+        {currentStep === maxVisibleStep && (
           <div className={`step-transition step-transition-${stepDirection} space-y-6`}>
             <div className="builder-panel rounded-3xl border border-black/10 bg-[#f7f7f5] p-5 sm:p-6">
               <h3 className="mb-4 text-lg font-bold text-black">Review Your Order</h3>
@@ -2078,7 +2686,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                               {LAPTOP_SURFACES.find((option) => option.value === surface)?.label ?? surface}
                             </span>
                             <span className="text-black/60">
-                              {laptopFinishes[surface] === 'shiny-stones' ? 'Premium' : 'Standard'}
+                              {getFinishLabel(laptopFinishes[surface])}
                             </span>
                           </div>
                           <div className="mt-3 overflow-hidden rounded-xl border border-black/10 bg-[#f7f7f5]">
@@ -2122,16 +2730,32 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                 {category === 'phone' && (
                   <>
                     <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-black/60">Coverage</span>
-                      <span className="text-right font-semibold text-black">{PHONE_COVERAGE_OPTIONS.find((option) => option.value === phoneCoverage)?.label}</span>
+                      <span className="text-black/60">Phone model</span>
+                      <span className="text-right font-semibold text-black">{phoneModel || 'Not selected'}</span>
                     </div>
                     <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-black/60">Finish</span>
-                      <span className="font-semibold text-black">{phoneFinish === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
+                      <span className="text-black/60">Product</span>
+                      <span className="text-right font-semibold text-black">Phone skin</span>
                     </div>
-                    <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-black/60">Artwork</span>
-                      <span className="text-right font-semibold text-black">{phoneArtworkCatalog || phoneArtworkFile?.name || 'Not selected'}</span>
+                    <div className="space-y-3">
+                      <span className="text-sm text-black/60">Artwork preview</span>
+                      <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#f7f7f5]">
+                        {phoneDesignSourceMode === 'color' ? (
+                          <div
+                            className="h-24 w-full"
+                            style={{ background: phoneDesignPreviewUrl || '#ffffff' }}
+                            aria-label="Phone artwork review preview"
+                          />
+                        ) : phoneArtworkCatalog || phoneDesignPreviewUrl || phoneArtworkFile ? (
+                          <img
+                            src={phoneArtworkCatalog || phoneDesignPreviewUrl || URL.createObjectURL(phoneArtworkFile as File)}
+                            alt="Phone artwork review preview"
+                            className="h-24 w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-24 items-center justify-center text-xs text-black/45">No artwork preview</div>
+                        )}
+                      </div>
                     </div>
                     {phoneCustomText.trim() && (
                       <div className="flex justify-between gap-4 text-sm">
@@ -2151,10 +2775,6 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
                     <div className="flex justify-between gap-4 text-sm">
                       <span className="text-black/60">Controller</span>
                       <span className="text-right font-semibold text-black">{CONTROLLER_SUBTYPES.find((option) => option.value === controllerSubtype)?.label}</span>
-                    </div>
-                    <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-black/60">Finish</span>
-                      <span className="font-semibold text-black">{controllerFinish === 'shiny-stones' ? 'Premium' : 'Standard'}</span>
                     </div>
                     <div className="flex justify-between gap-4 text-sm">
                       <span className="text-black/60">Artwork</span>
@@ -2343,7 +2963,7 @@ export default function ClientBuilder({ onReceiptOpen, onPriceChange, onLineItem
             </button>
           )}
 
-          {currentStep < 7 && (
+          {currentStep < maxVisibleStep && (
             <button
               type="button"
               onClick={handleContinue}

@@ -11,8 +11,8 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Pricing helpers (mirror frontend rules)
-const WHOLESALE_STANDARD_PER_SHEET = 2000;
-const WHOLESALE_SHINY_PER_SHEET = 2500;
+const WHOLESALE_STANDARD_PER_SHEET = 1000;
+const WHOLESALE_SHINY_PER_SHEET = 1500;
 const BASE_PER_SHEET = 3500;
 const SHINY_EXTRA_PER_SHEET = 500;
 const FULL_LAPTOP_STANDARD = 10000;
@@ -44,7 +44,131 @@ function parseArrayField(value, fallback = []) {
 
 function getSheetPrice(finish, mode = 'individual') {
   if (mode === 'wholesale') return finish === 'standard' ? WHOLESALE_STANDARD_PER_SHEET : WHOLESALE_SHINY_PER_SHEET;
-  return finish === 'standard' ? BASE_PER_SHEET : BASE_PER_SHEET + SHINY_EXTRA_PER_SHEET;
+  return finish === 'standard' ? 3000 : 3500;
+}
+
+function getSurfaceLabel(surface = '') {
+  return String(surface)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim();
+}
+
+function getSelectedSurfaces(payload, body) {
+  const explicit = body.laptopSelectedSurfaces || payload.laptop?.selectedSurfaces || payload.selectedSurfaces || [];
+  const safeExplicit = Array.isArray(explicit) ? explicit : parseArrayField(explicit, []);
+
+  if (safeExplicit.length > 0) {
+    return safeExplicit;
+  }
+
+  return ['top-lid', 'keyboard-deck', 'bottom-base'];
+}
+
+function getLaptopCustomTextMap(payload, body) {
+  const customTexts = payload.laptop?.customTexts || body.laptopTexts || payload.laptopTexts || {};
+
+  if (Array.isArray(customTexts)) {
+    return customTexts.reduce((acc, item) => {
+      if (item && item.surface) {
+        acc[item.surface] = item.text || '';
+      }
+      return acc;
+    }, {});
+  }
+
+  if (customTexts && typeof customTexts === 'object') {
+    return customTexts;
+  }
+
+  return {};
+}
+
+function getInstallOption(payload, body, category) {
+  const categoryPayload = payload[category] || {};
+  const explicitOption = categoryPayload.installOption || body[`${category}InstallOption`] || body.installOption || categoryPayload.installRequested || body.installRequested;
+
+  if (explicitOption === 'diy') return 'diy';
+  if (explicitOption === 'professional' || explicitOption === true || explicitOption === 'true') return 'professional';
+  if (explicitOption === false || explicitOption === 'false') return 'diy';
+
+  return 'professional';
+}
+
+function calculateRetailFallbackPricing({ category, payload, body, quantity = 1 }) {
+  const lineItems = [];
+
+  if (category === 'laptop') {
+    const selectedSurfaces = getSelectedSurfaces(payload, body);
+    const laptopFinishes = payload.laptop?.finishes || body.laptopFinishes || {};
+    const laptopCustomTextMap = getLaptopCustomTextMap(payload, body);
+
+    selectedSurfaces.forEach((surface) => {
+      const finish = laptopFinishes[surface] || 'standard';
+      const finishLabel = finish === 'shiny-stones' ? 'Shiny Stones' : 'Classic';
+      const price = finish === 'shiny-stones' ? 3500 : 3000;
+      lineItems.push({ label: `${getSurfaceLabel(surface)} - ${finishLabel}`, price });
+    });
+
+    const textSurfaceCount = selectedSurfaces.filter((surface) => (laptopCustomTextMap[surface] || '').trim()).length;
+    if (textSurfaceCount > 0) {
+      lineItems.push({
+        label: 'Custom text overlay',
+        price: textSurfaceCount === 3 ? 1000 : textSurfaceCount * 400,
+      });
+    }
+
+    const allThreeSelected = selectedSurfaces.length === 3;
+    const matchingQuality = allThreeSelected && selectedSurfaces.every((surface) => {
+      const finish = laptopFinishes[surface] || 'standard';
+      return finish === (laptopFinishes[selectedSurfaces[0]] || 'standard');
+    });
+
+    if (matchingQuality) {
+      lineItems.push({ label: 'Matching finish discount', price: -500 });
+    }
+
+    if (getInstallOption(payload, body, 'laptop') === 'diy') {
+      lineItems.push({ label: 'Self-application discount', price: -500 });
+    }
+
+    const total = lineItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0) * quantity;
+    return { lineItems, total };
+  }
+
+  if (category === 'phone') {
+    const customText = (payload.phone?.customText || body.customText || body.phoneCustomText || '').trim();
+    const lineItems = [{ label: 'Phone Skin', price: 2000 }];
+
+    if (customText) {
+      lineItems.push({ label: 'Custom text', price: 300 });
+    }
+
+    if (getInstallOption(payload, body, 'phone') === 'diy') {
+      lineItems.push({ label: 'Self-application', price: -500 });
+    }
+
+    const total = lineItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0) * quantity;
+    return { lineItems, total };
+  }
+
+  if (category === 'controller') {
+    const gamerTag = (payload.controller?.gamerTag || body.controllerGamerTag || body.gamerTag || '').trim();
+    const lineItems = [{ label: `${payload.controller?.subtype || body.controllerSubtype || 'PS4'} Skin`, price: 2500 }];
+
+    if (gamerTag) {
+      lineItems.push({ label: 'Custom GamerTag / text', price: 300 });
+    }
+
+    if (getInstallOption(payload, body, 'controller') === 'diy') {
+      lineItems.push({ label: 'Self-application', price: -500 });
+    }
+
+    const total = lineItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0) * quantity;
+    return { lineItems, total };
+  }
+
+  return { lineItems: [], total: 0 };
 }
 
 function normalizeSurfaceKey(value = '') {
@@ -253,15 +377,10 @@ router.post('/', upload.any(), async (req, res) => {
     if (mode === 'wholesale') {
       const standardQty = Number(body.standardQty || body.standard_qty || payload.wholesale?.standardQty || payload.wholesale?.standard_qty || 0);
       const shinyStonesQty = Number(body.shinyStonesQty || body.shiny_stones_qty || payload.wholesale?.shinyStonesQty || payload.wholesale?.shiny_stones_qty || 0);
-      const technicianRequested =
-        body.technicianRequested === 'true' || body.technicianRequested === true || body.technician_requested === 'true' ||
-        payload.wholesale?.technicianRequested === true || payload.wholesale?.technicianRequested === 'true' ||
-        payload.wholesale?.technician_requested === 'true';
       const totalPaidUnits = standardQty + shinyStonesQty;
       const freeBonusUnits = Math.floor(totalPaidUnits / 12);
       const totalReceivedUnits = totalPaidUnits + freeBonusUnits;
-      const technicianFee = technicianRequested ? totalPaidUnits * 500 : 0;
-      const totalCost = standardQty * WHOLESALE_STANDARD_PER_SHEET + shinyStonesQty * WHOLESALE_SHINY_PER_SHEET + technicianFee;
+      const totalCost = standardQty * WHOLESALE_STANDARD_PER_SHEET + shinyStonesQty * WHOLESALE_SHINY_PER_SHEET;
 
       orderDoc.wholesaleDetails = {
         standardQty,
@@ -269,14 +388,13 @@ router.post('/', upload.any(), async (req, res) => {
         totalPaidUnits,
         freeBonusUnits,
         totalReceivedUnits,
-        technicianRequested,
       };
       orderDoc.items = items.length > 0 ? items : [{ label: 'Wholesale order total', price: totalCost }];
       orderDoc.pricing.totalAmount = totalCost;
       orderDoc.totalAmount = totalAmount || totalCost;
     } else {
       // Individual / retail
-      const device = body.device || payload.laptop?.model || payload.phone?.model || payload.controller?.subtype || 'laptop';
+      const device = body.device || payload.device || payload.laptop?.model || payload.phone?.model || payload.controller?.subtype || 'laptop';
       let coverage = [];
       if (body.coverage) {
         coverage = parseArrayField(body.coverage);
@@ -287,11 +405,6 @@ router.post('/', upload.any(), async (req, res) => {
       const customText =
         body.customText || body.custom_text ||
         payload.laptop?.customText || payload.phone?.customText || payload.controller?.gamerTag || payload.others?.instructions || '';
-      const installRequested =
-        body.installRequested === 'true' || body.installRequested === true || body.install_requested === 'true' ||
-        payload.laptop?.installRequested === true || payload.laptop?.installRequested === 'true' ||
-        payload.phone?.installRequested === true || payload.phone?.installRequested === 'true' ||
-        payload.controller?.installRequested === true || payload.controller?.installRequested === 'true';
       const quantity = Number(body.quantity ?? payload.quantity ?? 1);
 
       let surfaceDesigns = [];
@@ -302,12 +415,12 @@ router.post('/', upload.any(), async (req, res) => {
           surfaceDesigns = [];
         }
       } else if (payload.laptop?.selectedSurfaces) {
-        surfaceDesigns = payload.laptop.selectedSurfaces.map((surface, idx) => ({
+        surfaceDesigns = payload.laptop.selectedSurfaces.map((surface) => ({
           surface,
           customText:
             Array.isArray(payload.laptop.customTexts)
               ? payload.laptop.customTexts.find((item) => item.surface === surface)?.text || ''
-              : payload.laptop.customTexts?.find?.((item) => item.surface === surface)?.text || '' || '',
+              : payload.laptop.customTexts?.find?.((item) => item.surface === surface)?.text || '',
           imageUrl: '',
         }));
       } else if (Array.isArray(surfaces) && surfaces.length > 0) {
@@ -326,21 +439,19 @@ router.post('/', upload.any(), async (req, res) => {
         }
       }
 
-      let lineItems = [];
-      const sheetPrice = getSheetPrice(finish, 'individual');
-      const selectedCount = coverage.length;
-      if (selectedCount > 0) {
-        if (selectedCount === 3) {
-          const packagePrice = finish === 'standard' ? FULL_LAPTOP_STANDARD : FULL_LAPTOP_SHINY;
-          lineItems.push({ label: 'Full 3-piece laptop wrap', price: packagePrice });
-        } else {
-          coverage.forEach((item) => lineItems.push({ label: item, price: sheetPrice }));
-        }
-      }
-      if (customText && customText.trim()) lineItems.push({ label: 'Custom name / monogram', price: NAME_PRINT });
-      if (selectedCount === 3 && !installRequested) lineItems.push({ label: 'Self-application', price: -DIY_DISCOUNT });
+      const categoryForPricing = category || (payload.laptop?.selectedSurfaces ? 'laptop' : payload.phone ? 'phone' : payload.controller ? 'controller' : 'others');
+      const fallbackPricing = calculateRetailFallbackPricing({
+        category: categoryForPricing,
+        payload,
+        body,
+        quantity,
+      });
 
-      const total = lineItems.reduce((s, it) => s + (it.price || 0), 0) * quantity;
+      let lineItems = items.length > 0 ? items : fallbackPricing.lineItems;
+      const computedTotal = items.length > 0
+        ? lineItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0)
+        : fallbackPricing.total;
+      const resolvedTotal = totalAmount > 0 ? totalAmount : computedTotal;
 
       orderDoc.retailDetails = {
         device,
@@ -350,8 +461,8 @@ router.post('/', upload.any(), async (req, res) => {
         surfaceDesigns,
       };
       orderDoc.surfaces = surfaces.length > 0 ? surfaces : surfaceDesigns;
-      orderDoc.items = items.length > 0 ? items : lineItems;
-      orderDoc.pricing.totalAmount = totalAmount || total;
+      orderDoc.items = lineItems;
+      orderDoc.pricing.totalAmount = resolvedTotal;
       orderDoc.totalAmount = orderDoc.pricing.totalAmount;
     }
 

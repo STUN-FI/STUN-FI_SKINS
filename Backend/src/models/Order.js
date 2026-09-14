@@ -27,7 +27,6 @@ const WholesaleDetailsSchema = new mongoose.Schema(
     totalPaidUnits: { type: Number, default: 0 },
     freeBonusUnits: { type: Number, default: 0 },
     totalReceivedUnits: { type: Number, default: 0 },
-    technicianRequested: { type: Boolean, default: false },
   },
   { _id: false }
 );

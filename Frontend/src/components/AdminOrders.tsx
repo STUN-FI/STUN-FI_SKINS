@@ -21,7 +21,6 @@ type WholesaleDetails = {
   totalPaidUnits?: number;
   totalReceivedUnits?: number;
   freeBonusUnits?: number;
-  technicianRequested?: boolean;
 };
 
 type RetailDetails = {

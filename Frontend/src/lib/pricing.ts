@@ -10,24 +10,26 @@ export type FinishType = 'standard' | 'shiny-stones';
 export type InstallationOption = 'professional' | 'diy';
 export type Category = 'laptop' | 'phone' | 'controller' | 'others';
 export type LaptopSurface = 'top-lid' | 'keyboard-deck' | 'bottom-base';
-export type PhoneCoverage = 'back-panel' | 'full-body';
-export type ControllerSubtype =
-  | 'ps3'
-  | 'ps4'
-  | 'ps5-dualsense'
-  | 'xbox-360'
-  | 'xbox-one'
-  | 'xbox-series'
-  | 'switch-pro';
+export type ControllerSubtype = 'ps3' | 'ps4';
 export type OrderMode = 'individual' | 'wholesale';
 
-// Laptop pricing constants
-const LAPTOP_STANDARD_PRICE = 3000;
-const LAPTOP_PREMIUM_PRICE = 3500;
+const LAPTOP_CLASSIC_PRICE = 3000;
+const LAPTOP_SHINY_STONES_PRICE = 3500;
 const LAPTOP_TEXT_FEE_PER_SURFACE = 400;
 const LAPTOP_TEXT_FEE_3_SURFACES = 1000;
-const LAPTOP_MATCHING_QUALITY_DISCOUNT = 500; // Applied when all surfaces are the same quality (standard or premium)
-const LAPTOP_DIY_DISCOUNT = 500; // Additional discount for DIY installation
+const LAPTOP_MATCHING_FINISH_DISCOUNT = 500;
+const LAPTOP_DIY_DISCOUNT = 500;
+
+const WHOLESALE_CLASSIC_PER_SHEET = 1000;
+const WHOLESALE_SHINY_STONES_PER_SHEET = 1500;
+
+const PHONE_BASE = 2000;
+const PHONE_CUSTOM_TEXT_FEE = 300;
+const PHONE_DIY_DISCOUNT = 500;
+
+const CONTROLLER_BASE = 2500;
+const CONTROLLER_GAMER_TAG_FEE = 300;
+const CONTROLLER_DIY_DISCOUNT = 500;
 
 export interface SurfaceCustomization {
   selected: boolean;
@@ -66,10 +68,11 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
 
   const surfaceItems = selectedKeys.map((key) => {
     const surface = options.surfaces[key];
-    const price = surface.quality === 'standard' ? LAPTOP_STANDARD_PRICE : LAPTOP_PREMIUM_PRICE;
+    const price = surface.quality === 'standard' ? LAPTOP_CLASSIC_PRICE : LAPTOP_SHINY_STONES_PRICE;
+
     return {
       name: surfaceNames[key] || key,
-      quality: surface.quality === 'standard' ? 'Standard' : 'Premium',
+      quality: surface.quality === 'standard' ? 'Classic Finish' : 'Shiny Stones Finish',
       price,
     };
   });
@@ -78,8 +81,8 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
 
   let customTextFee = 0;
   if (options.customTextSurfaceCount > 0) {
-    customTextFee = options.customTextSurfaceCount === 3 
-      ? LAPTOP_TEXT_FEE_3_SURFACES 
+    customTextFee = options.customTextSurfaceCount === 3
+      ? LAPTOP_TEXT_FEE_3_SURFACES
       : options.customTextSurfaceCount * LAPTOP_TEXT_FEE_PER_SURFACE;
   }
 
@@ -90,10 +93,9 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
 
   let qualityAdjustment = 0;
   if (matchingQuality) {
-    qualityAdjustment = -LAPTOP_MATCHING_QUALITY_DISCOUNT;
+    qualityAdjustment = -LAPTOP_MATCHING_FINISH_DISCOUNT;
   }
 
-  // Apply DIY discount whenever user selects DIY installation, regardless of surface quality matching.
   let installationAdjustment = 0;
   if (options.installationType === 'diy') {
     installationAdjustment = -LAPTOP_DIY_DISCOUNT;
@@ -111,55 +113,33 @@ export function calculateLaptopPrice(options: LaptopPricingOptions): PriceBreakd
   };
 }
 
-const PHONE_BASE = 2000;
-const PHONE_FULL_BODY_UPGRADE = 1000;
-const PHONE_TEXT_FEE = 500;
-const PHONE_SHINY_FEE = 500;
-const PHONE_DYI_DISCOUNT = 500;
-
-const CONTROLLER_BASE = 2500;
-const CONTROLLER_GAMER_TAG_FEE = 500;
-const CONTROLLER_SHINY_FEE = 500;
-const CONTROLLER_DYI_DISCOUNT = 500;
-
 const CONTROLLER_TYPE_LABELS: Record<ControllerSubtype, string> = {
-  'ps3': 'PS3',
-  'ps4': 'PS4',
-  'ps5-dualsense': 'PS5 DualSense',
-  'xbox-360': 'Xbox 360',
-  'xbox-one': 'Xbox One',
-  'xbox-series': 'Xbox Series X/S',
-  'switch-pro': 'Nintendo Switch Pro',
+  ps3: 'PS3',
+  ps4: 'PS4',
 };
 
 export function getSheetPrice(finish: FinishType, mode: OrderMode = 'individual') {
   if (mode === 'wholesale') {
-    return finish === 'standard' ? 1500 : 2000;
+    return finish === 'standard' ? WHOLESALE_CLASSIC_PER_SHEET : WHOLESALE_SHINY_STONES_PER_SHEET;
   }
-  return finish === 'standard' ? 3000 : 3500;
+
+  return finish === 'standard' ? LAPTOP_CLASSIC_PRICE : LAPTOP_SHINY_STONES_PRICE;
 }
 
 export function calculatePhonePricing(options: {
-  coverage: PhoneCoverage;
-  finish: FinishType;
   customText: string;
   installOption: InstallationOption;
 }) {
   const lineItems: Array<{ label: string; price: number }> = [];
-  const basePrice = PHONE_BASE + (options.coverage === 'full-body' ? PHONE_FULL_BODY_UPGRADE : 0);
-  const coverageLabel = options.coverage === 'full-body' ? 'Phone full body wrap' : 'Phone back panel wrap';
-  lineItems.push({ label: coverageLabel, price: basePrice });
 
-  if (options.finish === 'shiny-stones') {
-    lineItems.push({ label: 'Shiny Stones finish', price: PHONE_SHINY_FEE });
-  }
+  lineItems.push({ label: 'Phone Skin', price: PHONE_BASE });
 
   if (options.customText.trim()) {
-    lineItems.push({ label: 'Custom text', price: PHONE_TEXT_FEE });
+    lineItems.push({ label: 'Custom text', price: PHONE_CUSTOM_TEXT_FEE });
   }
 
   if (options.installOption === 'diy') {
-    lineItems.push({ label: 'Self-application', price: -PHONE_DYI_DISCOUNT });
+    lineItems.push({ label: 'Self-application', price: -PHONE_DIY_DISCOUNT });
   }
 
   return {
@@ -170,24 +150,20 @@ export function calculatePhonePricing(options: {
 
 export function calculateControllerPricing(options: {
   subtype: ControllerSubtype;
-  finish: FinishType;
   gamerTag: string;
   installOption: InstallationOption;
 }) {
   const lineItems: Array<{ label: string; price: number }> = [];
   const controllerLabel = CONTROLLER_TYPE_LABELS[options.subtype] || 'Controller';
-  lineItems.push({ label: `${controllerLabel} wrap`, price: CONTROLLER_BASE });
 
-  if (options.finish === 'shiny-stones') {
-    lineItems.push({ label: 'Shiny Stones finish', price: CONTROLLER_SHINY_FEE });
-  }
+  lineItems.push({ label: `${controllerLabel} Skin`, price: CONTROLLER_BASE });
 
   if (options.gamerTag.trim()) {
-    lineItems.push({ label: 'GamerTag / custom text', price: CONTROLLER_GAMER_TAG_FEE });
+    lineItems.push({ label: 'Custom GamerTag / text', price: CONTROLLER_GAMER_TAG_FEE });
   }
 
   if (options.installOption === 'diy') {
-    lineItems.push({ label: 'Self-application', price: -CONTROLLER_DYI_DISCOUNT });
+    lineItems.push({ label: 'Self-application', price: -CONTROLLER_DIY_DISCOUNT });
   }
 
   return {
@@ -216,14 +192,11 @@ export function calculateClientOrderPricing(options: {
     installOption: InstallationOption;
   };
   phone: {
-    coverage: PhoneCoverage;
-    finish: FinishType;
     customText: string;
     installOption: InstallationOption;
   };
   controller: {
     subtype: ControllerSubtype;
-    finish: FinishType;
     gamerTag: string;
     installOption: InstallationOption;
   };
@@ -233,7 +206,6 @@ export function calculateClientOrderPricing(options: {
   };
 }): PricingResult {
   if (options.category === 'laptop') {
-    // Convert old format to new LaptopPricingOptions format
     const selectedSurfaces = options.laptop.selectedSurfaces;
     const customTextSurfaceCount = selectedSurfaces.filter(
       (surface) => options.laptop.customTexts[surface]?.trim().length > 0
@@ -261,7 +233,6 @@ export function calculateClientOrderPricing(options: {
     const breakdown = calculateLaptopPrice(laptopOptions);
     const lineItems: Array<{ label: string; price: number }> = [];
 
-    // Add surface items to line items
     breakdown.surfaceItems.forEach((item) => {
       lineItems.push({
         label: `${item.name} - ${item.quality}`,
@@ -269,7 +240,6 @@ export function calculateClientOrderPricing(options: {
       });
     });
 
-    // Add custom text fee if applicable
     if (breakdown.customTextFee > 0) {
       lineItems.push({
         label: 'Custom text overlay',
@@ -277,18 +247,16 @@ export function calculateClientOrderPricing(options: {
       });
     }
 
-    // Add quality adjustment if applicable (matching quality discount)
     if (breakdown.qualityAdjustment !== 0) {
       lineItems.push({
-        label: 'Matching quality discount',
+        label: 'Matching finish discount',
         price: breakdown.qualityAdjustment,
       });
     }
 
-    // Add installation adjustment if applicable
     if (breakdown.installationAdjustment !== 0) {
       lineItems.push({
-        label: breakdown.installationAdjustment < 0 ? 'Self-application discount' : 'Professional installation',
+        label: breakdown.installationAdjustment < 0 ? 'Self-application discount' : 'Professional fitting',
         price: breakdown.installationAdjustment,
       });
     }

@@ -12,7 +12,6 @@ type WholesaleFormState = {
   storeAddress: string;
   standardQty: number;
   shinyStonesQty: number;
-  technicianRequested: boolean;
 };
 
 export default function WholesaleForm() {
@@ -23,17 +22,15 @@ export default function WholesaleForm() {
     storeAddress: '',
     standardQty: 10,
     shinyStonesQty: 0,
-    technicianRequested: false,
   });
 
   const totalUnits = useMemo(() => form.standardQty + form.shinyStonesQty, [form.standardQty, form.shinyStonesQty]);
   const moqSatisfied = totalUnits >= 8;
   const freeUnits = useMemo(() => Math.floor(totalUnits / 12), [totalUnits]);
   const unitsReceived = useMemo(() => totalUnits + freeUnits, [totalUnits, freeUnits]);
-  const technicianFee = useMemo(() => (form.technicianRequested ? 5000 : 0), [form.technicianRequested]);
   const totalCost = useMemo(
-    () => form.standardQty * getSheetPrice('standard', 'wholesale') + form.shinyStonesQty * getSheetPrice('shiny-stones', 'wholesale') + technicianFee,
-    [form.standardQty, form.shinyStonesQty, technicianFee]
+    () => form.standardQty * getSheetPrice('standard', 'wholesale') + form.shinyStonesQty * getSheetPrice('shiny-stones', 'wholesale'),
+    [form.standardQty, form.shinyStonesQty]
   );
 
   const updateField = (key: keyof WholesaleFormState, value: string | number | boolean) => {
@@ -53,7 +50,6 @@ export default function WholesaleForm() {
         storeAddress: form.storeAddress,
         standardQty: form.standardQty,
         shinyStonesQty: form.shinyStonesQty,
-        technicianRequested: form.technicianRequested,
       };
 
       const result = await submitOrder(payload);
@@ -64,7 +60,7 @@ export default function WholesaleForm() {
       const rawOrderId = result.orderId || 'PENDING';
       const orderId = rawOrderId.startsWith('STN-') ? rawOrderId : `STN-${rawOrderId}`;
       const message = encodeURIComponent(
-        `Hello STUN-FI Skins,\n\n*Order Reference:* #${orderId}\nStore Name: ${form.storeName}\nContact Name: ${form.contactName}\nWhatsApp Number: ${form.whatsappNumber}\nStore Address: ${form.storeAddress}\nStandard Qty: ${form.standardQty}\nShiny Stones Qty: ${form.shinyStonesQty}\nTechnician Requested: ${form.technicianRequested ? 'Yes' : 'No'}\nTotal order cost: ₦${totalCost.toLocaleString()}\n\nPlease confirm this wholesale order request.`
+        `Hello STUN-FI Skins,\n\n*Order Reference:* #${orderId}\nStore Name: ${form.storeName}\nContact Name: ${form.contactName}\nWhatsApp Number: ${form.whatsappNumber}\nStore Address: ${form.storeAddress}\nStandard Qty: ${form.standardQty}\nShiny Stones Qty: ${form.shinyStonesQty}\nTotal order cost: ₦${totalCost.toLocaleString()}\n\nPlease confirm this wholesale order request.`
       );
 
       window.open(`https://wa.me/2349064234807?text=${message}`, '_blank');
@@ -151,7 +147,7 @@ export default function WholesaleForm() {
         <label className="space-y-2">
           <div className="flex items-center justify-between text-sm font-semibold text-black">
             <span>Standard Qty</span>
-            <span className="text-black/60">₦2,000 / sheet</span>
+            <span className="text-black/60">₦1,000 / sheet</span>
           </div>
           <input
             type="number"
@@ -166,7 +162,7 @@ export default function WholesaleForm() {
         <label className="space-y-2">
           <div className="flex items-center justify-between text-sm font-semibold text-black">
             <span>Shiny Stones Qty</span>
-            <span className="text-black/60">₦2,500 / sheet</span>
+            <span className="text-black/60">₦1,500 / sheet</span>
           </div>
           <input
             type="number"
@@ -178,19 +174,6 @@ export default function WholesaleForm() {
           />
         </label>
       </div>
-
-      <label className="flex items-start gap-3 rounded-2xl border border-black/10 bg-[#f7f7f5] p-4">
-        <input
-          type="checkbox"
-          checked={form.technicianRequested}
-          onChange={(event) => updateField('technicianRequested', event.target.checked)}
-          className="mt-1 h-5 w-5 accent-black"
-        />
-        <div className="text-sm text-black">
-          <span className="font-semibold">Request STUN-FI On-Site Installation Technician</span>
-          <div className="text-sm text-black/60">(+₦500/device)</div>
-        </div>
-      </label>
 
       <div className="rounded-[2rem] border border-black/10 bg-[#f7f7f5] p-5 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-3">
@@ -213,16 +196,9 @@ export default function WholesaleForm() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/60">Total cost</div>
-            <div className="mt-2 text-3xl font-black">₦{totalCost.toLocaleString()}</div>
-          </div>
-
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/60">Install fee</div>
-            <div className="mt-2 text-3xl font-black">₦{technicianFee.toLocaleString()}</div>
-          </div>
+        <div className="mt-4 rounded-3xl bg-white p-4 shadow-sm">
+          <div className="text-sm font-semibold uppercase tracking-[0.2em] text-black/60">Total cost</div>
+          <div className="mt-2 text-3xl font-black">₦{totalCost.toLocaleString()}</div>
         </div>
 
         <div className="mt-6">

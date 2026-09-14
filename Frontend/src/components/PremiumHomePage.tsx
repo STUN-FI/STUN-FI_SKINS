@@ -141,9 +141,18 @@ export default function PremiumHomePage() {
             <a href="/customize" className="transition-opacity hover:opacity-60">Customize</a>
             <a href="#gallery" className="transition-opacity hover:opacity-60">Gallery</a>
             <a href="#how-it-works" className="transition-opacity hover:opacity-60">How It Works</a>
+            <a href="/orders" className="transition-opacity hover:opacity-60">Track Your Order</a>
           </nav>
 
           <div className="flex items-center gap-3">
+            <a
+              href="/orders"
+              className={`hidden min-h-11 items-center justify-center px-5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] transition sm:inline-flex ${
+                isScrolled ? 'border border-black/15 bg-transparent text-black hover:bg-black/5' : 'border border-white/60 bg-transparent text-white hover:bg-white/10'
+              }`}
+            >
+              Track Your Order
+            </a>
             <a
               href="/customize"
               className={`hidden min-h-11 items-center justify-center px-5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] transition sm:inline-flex ${
@@ -168,7 +177,8 @@ export default function PremiumHomePage() {
           <nav className="border-t border-black/10 bg-white px-5 py-4 text-black shadow-xl lg:hidden" aria-label="Mobile navigation">
             <a href="/customize" onClick={closeMenu} className="block border-b border-black/10 py-3 text-xs font-bold uppercase tracking-[0.16em]">Customize</a>
             <a href="#gallery" onClick={closeMenu} className="block border-b border-black/10 py-3 text-xs font-bold uppercase tracking-[0.16em]">Gallery</a>
-            <a href="#how-it-works" onClick={closeMenu} className="block py-3 text-xs font-bold uppercase tracking-[0.16em]">How It Works</a>
+            <a href="#how-it-works" onClick={closeMenu} className="block border-b border-black/10 py-3 text-xs font-bold uppercase tracking-[0.16em]">How It Works</a>
+            <a href="/orders" onClick={closeMenu} className="block py-3 text-xs font-bold uppercase tracking-[0.16em]">Track Your Order</a>
           </nav>
         ) : null}
       </header>
@@ -195,6 +205,7 @@ export default function PremiumHomePage() {
             <p className="mt-8 max-w-sm text-sm font-medium leading-6 text-white/75 text-justify sm:text-base sm:text-left">Custom skins for laptops and devices.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="/customize" className="inline-flex min-h-14 w-full items-center justify-center bg-white px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-neutral-200 sm:w-auto">Design Your Skin</a>
+              <a href="/orders" className="inline-flex min-h-14 w-full items-center justify-center border border-white/50 px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white hover:bg-white/10 sm:w-auto">Track Your Order</a>
               <a href="#gallery" className="inline-flex min-h-14 w-full items-center justify-center border border-white/50 px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white hover:bg-white/10 sm:w-auto">Explore The Gallery</a>
             </div>
           </div>
