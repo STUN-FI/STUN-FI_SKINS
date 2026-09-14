@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://stunfi.com/img/stunfi-logo-black.png',
+        url: 'https://stunfi.com/og-preview.png',
         width: 1200,
         height: 630,
         alt: 'STUN-FI Skins',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     title: 'STUN-FI Skins | Custom Laptop, Phone & Controller Wraps',
     description:
       'Premium custom laptop skins, phone skins, and controller wraps from STUN-FI Skins.',
-    images: ['https://stunfi.com/img/stunfi-logo-black.png'],
+    images: ['https://stunfi.com/og-preview.png'],
   },
   alternates: {
     canonical: '/',
