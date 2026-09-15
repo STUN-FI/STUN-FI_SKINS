@@ -6,13 +6,13 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'STUN-FI Skins',
-  url: 'https://stunfi.com',
+  url: 'https://skins.stunfihub.com',
   description:
     'Custom laptop skins, phone skins, and controller wraps with premium precision-cut vinyl finishes.',
   inLanguage: 'en-US',
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://stunfi.com/?q={search_term_string}',
+    target: 'https://skins.stunfihub.com/?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 };
@@ -21,8 +21,8 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'STUN-FI Skins',
-  url: 'https://stunfi.com',
-  logo: 'https://stunfi.com/img/stunfi-logo-black.png',
+  url: 'https://skins.stunfihub.com',
+  logo: 'https://skins.stunfihub.com/img/stunfi-logo-black.png',
   sameAs: [
     'https://www.instagram.com/stunfihub',
     'https://www.tiktok.com/@stunfihub',
@@ -32,7 +32,7 @@ const organizationSchema = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://stunfi.com'),
+  metadataBase: new URL('https://skins.stunfihub.com'),
   title: {
     default: 'STUN-FI Skins | Custom Laptop, Phone & Controller Wraps',
     template: '%s | STUN-FI Skins',
@@ -57,13 +57,13 @@ export const metadata: Metadata = {
     title: 'STUN-FI Skins | Custom Laptop, Phone & Controller Wraps',
     description:
       'Precision-cut vinyl wraps for laptops, phones, and controllers. Order custom designs, custom text, and premium finishes online.',
-    url: 'https://stunfi.com',
+    url: 'https://skins.stunfihub.com',
     siteName: 'STUN-FI Skins',
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: 'https://stunfi.com/og-preview.png',
+        url: 'https://skins.stunfihub.com/og-preview.png',
         width: 1200,
         height: 630,
         alt: 'STUN-FI Skins',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     title: 'STUN-FI Skins | Custom Laptop, Phone & Controller Wraps',
     description:
       'Premium custom laptop skins, phone skins, and controller wraps from STUN-FI Skins.',
-    images: ['https://stunfi.com/og-preview.png'],
+    images: ['https://skins.stunfihub.com/og-preview.png'],
   },
   alternates: {
     canonical: '/',
