@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/orders',
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function OrdersLayout({ children }: { children: React.ReactNode }) {

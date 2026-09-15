@@ -7,7 +7,7 @@ import BrandedLogo from './BrandedLogo';
 
 const HERO_IMAGES = [
   { src: '/img/lap2.jpg', alt: 'Custom STUN-FI skin applied to a laptop' },
-  { src: '/img/lap3.jpg', alt: 'Custom laptop skin detail' },
+  { src: '/img/lap3.jpg', alt: 'Close-up of a custom laptop skin detail' },
   { src: '/img/lap4.jpg', alt: 'Custom laptop skin from another angle' },
 ];
 
@@ -201,8 +201,8 @@ export default function PremiumHomePage() {
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-16 pt-28 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
           <div className="hero-copy max-w-3xl text-justify sm:text-left">
             <p className="mb-6 text-center text-[0.58rem] font-medium uppercase tracking-[0.22em] text-white/70 sm:text-left">STUN-FI SKINS / CUSTOM DEVICE WRAPS</p>
-            <h1 className="max-w-2xl text-[clamp(3.1rem,8vw,7.8rem)] font-black uppercase leading-[0.86] tracking-[-0.065em] text-white text-justify sm:text-left">Make it<br />yours.</h1>
-            <p className="mt-8 max-w-sm text-sm font-medium leading-6 text-white/75 text-justify sm:text-base sm:text-left">Custom skins for laptops and devices.</p>
+            <h1 className="max-w-2xl text-[clamp(3.1rem,8vw,7.8rem)] font-black uppercase leading-[0.86] tracking-[-0.065em] text-white text-justify sm:text-left">Custom skins.<br />Made unmistakably yours.</h1>
+            <p className="mt-8 max-w-sm text-sm font-medium leading-6 text-white/75 text-justify sm:text-base sm:text-left">Custom laptop, phone, and controller skins with your artwork, your design, and premium finishes.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="/customize" className="inline-flex min-h-14 w-full items-center justify-center bg-white px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-neutral-200 sm:w-auto">Design Your Skin</a>
               <a href="/orders" className="inline-flex min-h-14 w-full items-center justify-center border border-white/50 px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white hover:bg-white/10 sm:w-auto">Track Your Order</a>
@@ -213,6 +213,32 @@ export default function PremiumHomePage() {
           <div className="hero-meta mt-14 flex items-end justify-between gap-5 border-t border-white/25 pt-5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/55">
             <span className="text-[0.56rem] sm:text-[0.62rem]">STUN-FI HUB</span>
             <span className="flex items-center gap-3"><span className="hidden sm:inline">Scroll</span><span className="inline-block h-10 w-px animate-pulse bg-white/70" /></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="devices" data-reveal className="reveal-section border-b border-black/10 py-16 sm:py-24">
+        <div className="mx-auto grid max-w-[1400px] gap-8 px-5 lg:grid-cols-[0.55fr_1.45fr] lg:items-end lg:gap-16 sm:px-8 lg:px-12">
+          <div>
+            <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-black/55">Choose your device</p>
+            <h2 className="mt-4 max-w-md text-3xl font-black leading-[0.96] tracking-[-0.04em] sm:text-5xl">Custom skins for the devices you use every day.</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <article className="border-t border-black/15 pt-4">
+              <h3 className="text-lg font-black">Laptops</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Custom skins precisely fitted to laptops.</p>
+              <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
+            </article>
+            <article className="border-t border-black/15 pt-4">
+              <h3 className="text-lg font-black">Phones</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Premium custom skins for phones.</p>
+              <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
+            </article>
+            <article className="border-t border-black/15 pt-4">
+              <h3 className="text-lg font-black">Controllers</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Custom skins and wraps for supported controllers.</p>
+              <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
+            </article>
           </div>
         </div>
       </section>
@@ -238,7 +264,7 @@ export default function PremiumHomePage() {
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-16">
             <div>
               <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-black/55">Why STUN-FI</p>
-              <h2 className="mt-4 max-w-sm text-3xl font-black leading-[0.96] tracking-[-0.04em] sm:text-4xl">Made to look right. Made to fit right.</h2>
+              <h2 className="mt-4 max-w-sm text-3xl font-black leading-[0.96] tracking-[-0.04em] sm:text-4xl">Custom skins made to fit your device.</h2>
             </div>
             <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
               {[
@@ -368,6 +394,7 @@ export default function PremiumHomePage() {
                 <p className="mt-3 max-w-xl text-sm leading-7 text-white/70">
                   Campus-first device protection with a focus on premium fit, high-shine finishes, and fast on-site fitting for students and retailers.
                 </p>
+                <p className="mt-4 max-w-xl text-sm leading-6 text-white/60">STUN-FI Skins creates custom laptop, phone, and controller skins for customers in Nigeria, with professional fitting available in Enugu.</p>
               </div>
               <div className="space-y-4 border border-white/10 bg-white/5 p-6">
                 <div>
