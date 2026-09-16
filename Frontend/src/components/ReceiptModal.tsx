@@ -13,7 +13,7 @@ type ReceiptModalProps = {
   category: string;
   lineItems: Array<{ label: string; price: number }>;
   totalPrice: number;
-  surfacePreviews?: Array<{ label: string; previewUrl: string; text?: string }>;
+  surfacePreviews?: Array<{ label: string; previewUrl: string }>;
   onClose: () => void;
 };
 
@@ -30,7 +30,6 @@ export default function ReceiptModal({
   onClose,
 }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement | null>(null);
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isSharing, setIsSharing] = useState(false);
 
   const receiptMessage = useMemo(
@@ -76,42 +75,6 @@ export default function ReceiptModal({
     }
   }, [orderId, receiptMessage]);
 
-  const renderPreview = (previewUrl: string, label: string) => {
-    if (!previewUrl) {
-      return (
-        <div className="mx-auto flex h-28 w-full max-w-[160px] items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#f2f4f7] text-xs text-black/50">
-          No artwork selected
-        </div>
-      );
-    }
-
-    const isColorValue = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(previewUrl)
-      || /^rgba?\(/i.test(previewUrl)
-      || /^hsla?\(/i.test(previewUrl)
-      || /^linear-gradient\(/i.test(previewUrl)
-      || /^radial-gradient\(/i.test(previewUrl)
-      || /^[a-z]+$/i.test(previewUrl);
-
-    if (isColorValue) {
-      return (
-        <div
-          aria-label={`${label} color preview`}
-          title={`${label} color preview`}
-          className="mx-auto h-28 w-full max-w-[160px] rounded-3xl border border-black/10 shadow-inner"
-          style={{ background: previewUrl }}
-        />
-      );
-    }
-
-    return (
-      <img
-        src={previewUrl}
-        alt={`${label} preview`}
-        className="mx-auto h-28 w-full max-w-[160px] rounded-3xl object-cover"
-      />
-    );
-  };
-
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -119,27 +82,20 @@ export default function ReceiptModal({
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    closeButtonRef.current?.focus();
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md" role="presentation">
-      <div className="relative h-[calc(100dvh-1rem)] w-full max-w-xl overflow-hidden rounded-[1.75rem] bg-white shadow-2xl md:max-w-3xl sm:h-[calc(100dvh-2rem)]" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-xl md:max-w-3xl h-[calc(100vh-2rem)] overflow-hidden rounded-[1.75rem] bg-white shadow-2xl">
         <button
-          ref={closeButtonRef}
           type="button"
           onClick={onClose}
           className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-900 sm:right-4 sm:top-4"
@@ -155,7 +111,7 @@ export default function ReceiptModal({
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/50">Stun-Fi</p>
-                    <h1 id="receipt-modal-title" className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
+                    <h1 className="mt-2 text-2xl font-black text-black sm:text-3xl">Order Receipt</h1>
                   </div>
                   <span className="rounded-full bg-black px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">{orderId}</span>
                 </div>
@@ -167,7 +123,7 @@ export default function ReceiptModal({
                   <p className="mt-2 text-base font-semibold text-black sm:text-lg">{clientName}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Date & time</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/50">Date</p>
                   <p className="mt-2 text-base font-semibold text-black sm:text-lg">{date}</p>
                 </div>
               </div>
@@ -189,10 +145,15 @@ export default function ReceiptModal({
                     {surfacePreviews.map((item) => (
                       <div key={item.label} className="rounded-[1.5rem] border border-black/10 bg-[#f8fafc] p-3 text-center">
                         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-black/50">{item.label}</p>
-                        {renderPreview(item.previewUrl, item.label)}
-                        {item.text?.trim() && (
-                          <div className="mt-3 rounded-xl bg-black/5 px-2 py-1.5 text-[11px] font-semibold text-black/80">
-                            {item.text}
+                        {item.previewUrl ? (
+                          <img
+                            src={item.previewUrl}
+                            alt={`${item.label} preview`}
+                            className="mx-auto h-28 w-full max-w-[160px] rounded-3xl object-cover"
+                          />
+                        ) : (
+                          <div className="mx-auto flex h-28 w-full max-w-[160px] items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#f2f4f7] text-xs text-black/50">
+                            No artwork selected
                           </div>
                         )}
                       </div>
@@ -218,8 +179,8 @@ export default function ReceiptModal({
                 <div className="my-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
                   <i className="bx bx-info-circle text-amber-600 text-xl flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-amber-900">Payment required</p>
-                    <p className="text-xs text-amber-800 mt-1">Please pay a 50% deposit before we process your order.</p>
+                    <p className="text-sm font-semibold text-amber-900">Production Timeline</p>
+                    <p className="text-xs text-amber-800 mt-1">Orders enter production immediately after initial deposit confirmation.</p>
                   </div>
                 </div>
 

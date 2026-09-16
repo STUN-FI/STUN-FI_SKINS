@@ -73,6 +73,8 @@ export default function OrdersPage() {
     }
   };
 
+  const getStatusLabel = (status: OrderStatus) => status.replace('_', ' ');
+
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'Unknown';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -91,29 +93,30 @@ export default function OrdersPage() {
   };
 
   return (
-    <main className="scroll-smooth min-h-screen overflow-x-hidden bg-[#f3f3f1] px-4 py-10 text-black md:px-8">
-      <div className="mx-auto max-w-6xl">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#efefe9] px-4 py-6 text-black sm:px-6 sm:py-8 md:px-8 lg:py-12">
+      <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.045)_1px,transparent_1px)] [background-size:3rem_3rem]" />
+      <div className="relative mx-auto max-w-6xl">
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 rounded-[2.5rem] border border-black/10 bg-white/90 p-5 sm:p-6 shadow-glow backdrop-blur"
+          className="mb-8 border-b border-black/15 pb-5 sm:mb-12 sm:pb-6"
         >
           <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-14 w-14 min-w-[3.5rem] items-center justify-center rounded-3xl bg-black p-2 sm:h-16 sm:w-16">
+              <div className="flex h-12 w-12 min-w-[3rem] items-center justify-center rounded-2xl bg-black p-2 shadow-[0_12px_24px_rgba(0,0,0,0.14)] sm:h-14 sm:w-14">
                 <Image src="/img/stunfi-logo-white.png" alt="STUN-FI logo" className="h-full w-full object-contain" width={64} height={64} />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-black">STUN-FI SKINS</h1>
-                <p className="mt-0.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.24em] text-black/70">Order History</p>
+                <h1 className="text-lg font-black tracking-[-0.04em] sm:text-xl">STUN-FI SKINS</h1>
+                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-black/55 sm:text-xs">Order tracking</p>
               </div>
             </div>
             <Link
               href="/"
-              className="rounded-2xl border border-black/20 bg-black/5 px-4 py-2 text-sm font-semibold text-black transition hover:bg-black/10 hover:border-black/30 sm:px-5 sm:py-2.5"
+              className="inline-flex min-h-10 items-center gap-2 border border-black/20 bg-white/60 px-4 text-xs font-bold uppercase tracking-[0.14em] text-black transition hover:border-black/40 hover:bg-white sm:px-5"
             >
-              New Order
+              <i className="bx bx-plus text-base" aria-hidden="true" /> New order
             </Link>
           </div>
         </motion.header>
@@ -123,17 +126,11 @@ export default function OrdersPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 sm:p-8 shadow-glow backdrop-blur"
+          className="mb-5 max-w-3xl sm:mb-8"
         >
-          <div className="space-y-2">
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-black/60">View your orders</p>
-            <h2 className="text-2xl sm:text-3xl font-black leading-tight tracking-[-0.04em] text-black">
-              Search Your Order History
-            </h2>
-            <p className="max-w-2xl text-sm leading-7 text-black/70 sm:text-base">
-              Enter your phone number or name to find and view your previous orders and receipts.
-            </p>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#2f7777] sm:text-xs">STUN-FI SKINS / CUSTOMER HUB</p>
+          <h2 className="mt-3 text-[clamp(2.5rem,7vw,5.8rem)] font-black uppercase leading-[0.88] tracking-[-0.07em] text-black">Find your order.</h2>
+          <p className="mt-5 max-w-xl text-sm font-medium leading-6 text-black/60 sm:text-base">Search by the phone number or name used at checkout to see progress, totals, and receipts.</p>
         </motion.section>
 
         {/* Search Form */}
@@ -141,29 +138,31 @@ export default function OrdersPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="mb-8 rounded-[2.5rem] border border-black/10 bg-white/90 p-6 sm:p-8 shadow-glow backdrop-blur"
+          className="mb-8 border-y border-black/15 bg-white/55 py-4 backdrop-blur sm:mb-10 sm:py-5"
         >
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="space-y-3">
-              <label htmlFor="search" className="block text-sm font-semibold text-black uppercase tracking-[0.1em]">
-                Phone Number or Name
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-                <input
+          <form onSubmit={handleSearch} className="space-y-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+              <div className="min-w-0 flex-1 space-y-2">
+                <label htmlFor="search" className="block text-[10px] font-bold uppercase tracking-[0.18em] text-black/60">
+                  Phone Number or Name
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+                  <input
                   type="text"
                   id="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="08012345678 or John Test"
-                  className="flex-1 rounded-2xl border border-black/10 bg-black/2 px-5 py-3 text-sm text-black placeholder-black/40 transition focus:border-black/30 focus:outline-none focus:ring-1 focus:ring-black/20"
-                />
-                <button
+                  className="min-h-12 w-full border border-black/15 bg-white px-4 text-sm text-black placeholder-black/35 transition focus:border-[#2f7777] focus:outline-none focus:ring-4 focus:ring-[#66cccc]/20"
+                  />
+                  <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full rounded-2xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                >
-                  {isLoading ? 'Searching...' : 'Search'}
-                </button>
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-black px-6 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#2f7777] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                  >
+                    {isLoading ? <><i className="bx bx-loader-alt animate-spin text-base" aria-hidden="true" /> Searching</> : <><i className="bx bx-search text-base" aria-hidden="true" /> Search orders</>}
+                  </button>
+                </div>
               </div>
             </div>
           </form>
@@ -174,7 +173,7 @@ export default function OrdersPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 backdrop-blur"
+            className="mb-6 flex items-center gap-2 border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 backdrop-blur"
           >
             <i className="bx bx-error-circle" /> {error}
           </motion.div>
@@ -187,26 +186,30 @@ export default function OrdersPage() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            <div className="text-sm font-semibold text-black uppercase tracking-[0.1em]">
-              Found {orders.length} order{orders.length !== 1 ? 's' : ''}
+            <div className="flex items-end justify-between gap-4 border-b border-black/15 pb-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2f7777]">Search results</p>
+                <p className="mt-1 text-sm font-semibold text-black">{orders.length} order{orders.length !== 1 ? 's' : ''} found</p>
+              </div>
+              <span className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-black/45 sm:block">Select an order to view receipt</span>
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden overflow-x-auto rounded-2xl border border-black/10 bg-white/90 shadow-glow backdrop-blur md:block">
+            <div className="hidden overflow-x-auto border-y border-black/15 bg-white/65 backdrop-blur md:block">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-black/10 bg-black/2">
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.1em] text-black/80">Order ID</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.1em] text-black/80">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.1em] text-black/80">Device</th>
-                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-[0.1em] text-black/80">Total</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-[0.1em] text-black/80">Status</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-[0.1em] text-black/80">Action</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Order ID</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Date</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Device</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Total</th>
+                    <th className="px-6 py-4 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Status</th>
+                    <th className="px-6 py-4 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order, idx) => (
-                    <tr key={order._id} className={`transition hover:bg-black/2 ${idx !== orders.length - 1 ? 'border-b border-black/10' : ''}`}>
+                    <motion.tr key={order._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }} className={`transition hover:bg-[#e9f6f5] ${idx !== orders.length - 1 ? 'border-b border-black/10' : ''}`}>
                       <td className="px-6 py-4 text-sm font-semibold text-black">{order.orderId}</td>
                       <td className="px-6 py-4 text-sm text-black/70">{formatDate(order.createdAt)}</td>
                       <td className="px-6 py-4 text-sm text-black/70">
@@ -223,7 +226,7 @@ export default function OrdersPage() {
                         <span
                           className={`inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] ${getStatusBadgeColor(order.status as OrderStatus)}`}
                         >
-                          {order.status}
+                          {getStatusLabel(order.status as OrderStatus)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -234,7 +237,7 @@ export default function OrdersPage() {
                           View
                         </button>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -247,7 +250,7 @@ export default function OrdersPage() {
                   key={order._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl border border-black/10 bg-white/90 p-4 shadow-glow backdrop-blur transition hover:border-black/20"
+                  className="border border-black/12 bg-white/70 p-5 shadow-[0_16px_30px_rgba(0,0,0,0.06)] backdrop-blur transition hover:-translate-y-1 hover:border-[#66cccc]"
                 >
                   <div className="mb-3 flex items-start justify-between">
                     <div>
@@ -257,7 +260,7 @@ export default function OrdersPage() {
                     <span
                       className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.1em] ${getStatusBadgeColor(order.status as OrderStatus)}`}
                     >
-                      {order.status}
+                      {getStatusLabel(order.status as OrderStatus)}
                     </span>
                   </div>
                   <div className="mb-3 space-y-1.5 text-sm">
@@ -277,9 +280,9 @@ export default function OrdersPage() {
                   </div>
                   <button
                     onClick={() => handleViewReceipt(order)}
-                    className="w-full rounded-2xl bg-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-neutral-800"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-black px-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[#2f7777]"
                   >
-                    View Receipt
+                    View receipt <i className="bx bx-arrow-up-right text-base" aria-hidden="true" />
                   </button>
                 </motion.div>
               ))}
@@ -292,9 +295,10 @@ export default function OrdersPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-black/10 bg-white/90 p-12 text-center shadow-glow backdrop-blur"
+            className="border-y border-black/15 bg-white/55 px-6 py-16 text-center backdrop-blur"
           >
-            <p className="text-black/70">No orders found. Try searching with a different phone number or name.</p>
+            <i className="bx bx-search-alt-2 text-4xl text-black/20" aria-hidden="true" />
+            <p className="mt-4 text-sm font-medium text-black/65">No orders found. Try a different phone number or name.</p>
           </motion.div>
         )}
 
@@ -303,9 +307,10 @@ export default function OrdersPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-black/10 bg-white/90 p-12 text-center shadow-glow backdrop-blur"
+            className="border-y border-black/15 bg-white/55 px-6 py-16 text-center backdrop-blur"
           >
-            <p className="text-black/70">Enter your phone number or name above to view your order history</p>
+            <i className="bx bx-receipt text-4xl text-[#2f7777]/60" aria-hidden="true" />
+            <p className="mt-4 text-sm font-medium text-black/65">Your order history will appear here after you search.</p>
           </motion.div>
         )}
       </div>
