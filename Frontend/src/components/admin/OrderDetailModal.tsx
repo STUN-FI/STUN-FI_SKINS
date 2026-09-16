@@ -142,6 +142,29 @@ const getReceiptLineItems = (order: Order) => {
   return [{ label: 'Order total', price: order.pricing.totalAmount }];
 };
 
+const isColorOrGradientValue = (value?: string) => {
+  if (!value || !value.trim()) return false;
+  const trimmed = value.trim();
+  return (
+    /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed) ||
+    /^rgba?\(/i.test(trimmed) ||
+    /^hsla?\(/i.test(trimmed) ||
+    /^linear-gradient\(/i.test(trimmed) ||
+    /^radial-gradient\(/i.test(trimmed) ||
+    /^conic-gradient\(/i.test(trimmed) ||
+    /^(transparent|currentColor|white|black|inherit|initial|unset)$/i.test(trimmed)
+  );
+};
+
+const getColorPreviewLabel = (value?: string) => {
+  if (!value || !value.trim()) return 'No design';
+  const trimmed = value.trim();
+  if (/^linear-gradient\(/i.test(trimmed) || /^radial-gradient\(/i.test(trimmed) || /^conic-gradient\(/i.test(trimmed)) {
+    return 'Gradient design';
+  }
+  return 'Solid color';
+};
+
 export default function OrderDetailModal({ order, isOpen, onClose, onStatusChange, onDelete }: OrderDetailModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<Status>(order?.status ?? 'pending');
   const [isSaving, setIsSaving] = useState(false);
@@ -360,7 +383,21 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
                       <div className="mt-4 grid gap-4 sm:grid-cols-[120px_1fr] sm:items-center">
                         <div className="overflow-hidden rounded-3xl bg-slate-100 p-2">
                           {surface.imageUrl && surface.imageUrl.trim() ? (
-                            <img src={surface.imageUrl} alt={`${surface.label} artwork preview`} className="h-28 w-full object-cover rounded-2xl" />
+                            isColorOrGradientValue(surface.imageUrl) ? (
+                              <div className="flex flex-col gap-2">
+                                <div
+                                  className="h-28 w-full rounded-2xl border border-slate-200"
+                                  style={{ background: surface.imageUrl }}
+                                  aria-label={`${surface.label} color preview`}
+                                  title={surface.imageUrl}
+                                />
+                                <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                                  {getColorPreviewLabel(surface.imageUrl)}
+                                </span>
+                              </div>
+                            ) : (
+                              <img src={surface.imageUrl} alt={`${surface.label} artwork preview`} className="h-28 w-full object-cover rounded-2xl" />
+                            )
                           ) : (
                             <div className="h-28 w-full flex items-center justify-center rounded-2xl bg-slate-200 text-xs text-slate-600">No artwork</div>
                           )}

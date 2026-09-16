@@ -200,9 +200,9 @@ export default function PremiumHomePage() {
 
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-16 pt-28 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
           <div className="hero-copy max-w-3xl text-justify sm:text-left">
-            <p className="mb-6 text-center text-[0.58rem] font-medium uppercase tracking-[0.22em] text-white/70 sm:text-left">STUN-FI SKINS / CUSTOM DEVICE WRAPS</p>
-            <h1 className="max-w-2xl text-[clamp(3.1rem,8vw,7.8rem)] font-black uppercase leading-[0.86] tracking-[-0.065em] text-white text-justify sm:text-left">Custom skins.<br />Made unmistakably yours.</h1>
-            <p className="mt-8 max-w-sm text-sm font-medium leading-6 text-white/75 text-justify sm:text-base sm:text-left">Custom laptop, phone, and controller skins with your artwork, your design, and premium finishes.</p>
+            <p className="mb-6 text-center text-[0.58rem] font-medium uppercase tracking-[0.22em] text-white/70 sm:text-left">STUN-FI SKINS / CUSTOM LAPTOP SKIN & DEVICE WRAPS</p>
+            <h1 className="max-w-2xl text-[clamp(2.35rem,12vw,7.8rem)] font-black uppercase leading-[0.86] tracking-[-0.06em] text-white text-justify sm:text-left">Custom laptop skins.<br />Made <span className="whitespace-nowrap">unmistakably</span> yours.</h1>
+            <p className="mt-8 max-w-sm text-sm font-medium leading-6 text-white/75 text-justify sm:text-base sm:text-left">Premium custom laptop skin, phone skin, and controller wrap designs with your artwork, your design, and premium finishes.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="/customize" className="inline-flex min-h-14 w-full items-center justify-center bg-white px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-neutral-200 sm:w-auto">Design Your Skin</a>
               <a href="/orders" className="inline-flex min-h-14 w-full items-center justify-center border border-white/50 px-9 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white hover:bg-white/10 sm:w-auto">Track Your Order</a>
@@ -221,22 +221,22 @@ export default function PremiumHomePage() {
         <div className="mx-auto grid max-w-[1400px] gap-8 px-5 lg:grid-cols-[0.55fr_1.45fr] lg:items-end lg:gap-16 sm:px-8 lg:px-12">
           <div>
             <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-black/55">Choose your device</p>
-            <h2 className="mt-4 max-w-md text-3xl font-black leading-[0.96] tracking-[-0.04em] sm:text-5xl">Custom skins for the devices you use every day.</h2>
+            <h2 className="mt-4 max-w-md text-3xl font-black leading-[0.96] tracking-[-0.04em] sm:text-5xl">Custom laptop skins and device wraps for the tech you use every day.</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <article className="border-t border-black/15 pt-4">
-              <h3 className="text-lg font-black">Laptops</h3>
-              <p className="mt-2 text-sm leading-6 text-black/65">Custom skins precisely fitted to laptops.</p>
+              <h3 className="text-lg font-black">Laptop Skin</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Custom laptop skins precisely fitted to your MacBook, gaming laptop, or work setup.</p>
               <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
             </article>
             <article className="border-t border-black/15 pt-4">
-              <h3 className="text-lg font-black">Phones</h3>
-              <p className="mt-2 text-sm leading-6 text-black/65">Premium custom skins for phones.</p>
+              <h3 className="text-lg font-black">Phone Skin</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Premium custom phone skins for a clean look and protected finish.</p>
               <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
             </article>
             <article className="border-t border-black/15 pt-4">
-              <h3 className="text-lg font-black">Controllers</h3>
-              <p className="mt-2 text-sm leading-6 text-black/65">Custom skins and wraps for supported controllers.</p>
+              <h3 className="text-lg font-black">Controller Wrap</h3>
+              <p className="mt-2 text-sm leading-6 text-black/65">Custom controller skin wraps and premium finishes for supported devices.</p>
               <a href="/customize" className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-60">Customize yours</a>
             </article>
           </div>
